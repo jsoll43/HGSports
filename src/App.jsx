@@ -14,7 +14,7 @@ function App() {
 
         <div className="hello-copy">
           <p className="eyebrow">Tiny React starter</p>
-          <h1>Hello, world.</h1>
+          <h1>Hello World</h1>
           <p>Fresh page, small graphic, ready to build from here.</p>
         </div>
       </section>
