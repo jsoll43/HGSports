@@ -621,6 +621,10 @@ textarea {
   gap: 8px;
 }
 
+.single-button-row {
+  display: grid;
+}
+
 .match-action-buttons button:first-child {
   min-height: 58px;
   background: #00899a;

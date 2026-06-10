@@ -703,9 +703,7 @@ function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, su
 function ContactTools({ match, selectedPlayer }) {
   const [copied, setCopied] = useState('')
   const matchPlayers = [...teamPlayers(match.teamA), ...teamPlayers(match.teamB)]
-  const selectedTeam = getTeam(selectedPlayer.teamId)
   const numbers = matchPlayers.map((player) => player.phone)
-  const message = `Hey, this is ${selectedPlayer.first} from ${selectedTeam.name}. We're scheduled to play Week ${match.week} on ${formatDate(match.date)} at ${match.time}. Any chance you can reschedule?`
 
   async function copyText(text, label) {
     await navigator.clipboard.writeText(text)
@@ -720,9 +718,8 @@ function ContactTools({ match, selectedPlayer }) {
           <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
         ))}
       </div>
-      <div className="button-row">
+      <div className="single-button-row">
         <button type="button" onClick={() => copyText(numbers.join(', '), 'Copied all numbers.')}>Copy All Numbers</button>
-        <button type="button" onClick={() => copyText(message, 'Copied message.')}>Copy Message</button>
       </div>
       {copied && <p className="helper-text">{copied}</p>}
     </div>
