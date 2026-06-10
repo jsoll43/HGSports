@@ -680,30 +680,23 @@ function ContactTools({ match, selectedPlayer }) {
   const matchPlayers = [...teamPlayers(match.teamA), ...teamPlayers(match.teamB)]
   const selectedTeam = getTeam(selectedPlayer.teamId)
   const numbers = matchPlayers.map((player) => player.phone)
-  const cleanNumbers = numbers.map(cleanPhone)
   const message = `Hey, this is ${selectedPlayer.first} from ${selectedTeam.name}. We're scheduled to play Week ${match.week} on ${formatDate(match.date)} at ${match.time}. Any chance you can reschedule?`
 
-  async function copyFallback() {
-    await navigator.clipboard.writeText(`Numbers: ${numbers.join(', ')}\n\n${message}`)
-    setCopied('Copied all numbers and the message.')
+  async function copyText(text, label) {
+    await navigator.clipboard.writeText(text)
+    setCopied(label)
   }
 
   return (
     <div className="contacts">
-      <div className="group-text-grid">
-        <a className="primary-link" href={groupSmsHref(cleanNumbers, message, 'ios')}>Group Text - iPhone</a>
-        <a className="primary-link android" href={groupSmsHref(cleanNumbers, message, 'androidSms')}>Group Text - Android</a>
-        <a className="primary-link android-alt" href={groupSmsHref(cleanNumbers, message, 'androidSmsto')}>Android Alt</a>
-      </div>
-      <p className="helper-text">If your phone only fills the first person, try Android Alt. Some messaging apps handle group SMS links differently.</p>
+      <p className="helper-text">Tap any player below to launch a text message to that person.</p>
       {matchPlayers.map((player) => (
         <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last} · {player.phone}</a>
       ))}
       <div className="button-row">
-        <button type="button" onClick={() => navigator.clipboard.writeText(numbers.join(', '))}>Copy Numbers</button>
-        <button type="button" onClick={() => navigator.clipboard.writeText(message)}>Copy Message</button>
+        <button type="button" onClick={() => copyText(numbers.join(', '), 'Copied all numbers.')}>Copy All Numbers</button>
+        <button type="button" onClick={() => copyText(message, 'Copied message.')}>Copy Message</button>
       </div>
-      <button className="fallback-copy" type="button" onClick={copyFallback}>Copy Group Text Fallback</button>
       {copied && <p className="helper-text">{copied}</p>}
     </div>
   )
@@ -973,20 +966,6 @@ function looksLikeTime(value) {
 
 function cleanPhone(phone) {
   return phone.replace(/\D/g, '')
-}
-
-function groupSmsHref(numbers, message, platform) {
-  const body = encodeURIComponent(message)
-
-  if (platform === 'ios') {
-    return `sms:${numbers.join(',')}&body=${body}`
-  }
-
-  if (platform === 'androidSmsto') {
-    return `smsto:${numbers.join(';')}?body=${body}`
-  }
-
-  return `sms:${numbers.join(';')}?body=${body}`
 }
 
 function BigButton({ label, onClick }) {

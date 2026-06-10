@@ -213,11 +213,16 @@ a {
   font-weight: 900;
 }
 
-.quick-grid,
-.stat-grid {
+.quick-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .big-button {
@@ -483,12 +488,6 @@ textarea {
   gap: 10px;
 }
 
-.group-text-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-
 .contacts a {
   display: block;
   border-radius: 8px;
@@ -496,30 +495,6 @@ textarea {
   background: #dff8fb;
   color: #0b2545;
   text-decoration: none;
-  font-weight: 900;
-}
-
-.contacts .primary-link {
-  background: #00899a;
-  color: #fff;
-  text-align: center;
-}
-
-.contacts .primary-link.android {
-  background: #0b2545;
-}
-
-.contacts .primary-link.android-alt {
-  background: #1f6fb8;
-}
-
-.fallback-copy {
-  min-height: 44px;
-  border: 1px solid #a9dfe8;
-  border-radius: 8px;
-  background: #fff;
-  color: #0b2545;
-  cursor: pointer;
   font-weight: 900;
 }
 
@@ -707,7 +682,7 @@ textarea {
   display: grid;
   gap: 2px;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   background: #effbff;
 }
 
@@ -720,7 +695,7 @@ textarea {
 
 .stat strong {
   color: #0b2545;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
 }
 
 .empty {
@@ -772,7 +747,4 @@ textarea {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  .group-text-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
