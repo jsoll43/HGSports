@@ -79,11 +79,25 @@ function App() {
   const [snapshots, setSnapshots] = useState(() => readStored('hg-snapshots', []))
   const [adminUnlocked, setAdminUnlocked] = useState(false)
   const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
+  const [headerHidden, setHeaderHidden] = useState(false)
 
   useEffect(() => localStorage.setItem('hg-player', selectedPlayerId), [selectedPlayerId])
   useEffect(() => localStorage.setItem('hg-matches', JSON.stringify(matches)), [matches])
   useEffect(() => localStorage.setItem('hg-audit', JSON.stringify(audit)), [audit])
   useEffect(() => localStorage.setItem('hg-snapshots', JSON.stringify(snapshots)), [snapshots])
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+
+    function handleScroll() {
+      const currentScrollY = window.scrollY
+      const scrollingDown = currentScrollY > lastScrollY
+      setHeaderHidden(scrollingDown && currentScrollY > 90)
+      lastScrollY = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const selectedPlayer = players.find((player) => player.id === selectedPlayerId)
   const selectedTeam = selectedPlayer ? getTeam(selectedPlayer.teamId) : null
@@ -170,7 +184,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="site-header">
+      <header className={`site-header ${headerHidden ? 'hidden' : ''}`}>
         <div className="club-bar">
           <span></span>
           <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>
