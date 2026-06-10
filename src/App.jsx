@@ -78,6 +78,7 @@ function App() {
   const [audit, setAudit] = useState(() => readStored('hg-audit', []))
   const [snapshots, setSnapshots] = useState(() => readStored('hg-snapshots', []))
   const [adminUnlocked, setAdminUnlocked] = useState(false)
+  const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
 
   useEffect(() => localStorage.setItem('hg-player', selectedPlayerId), [selectedPlayerId])
   useEffect(() => localStorage.setItem('hg-matches', JSON.stringify(matches)), [matches])
@@ -101,7 +102,8 @@ function App() {
       ),
     )
     log('score_submitted', { matchId, submittedBy, score })
-    setPage('my')
+    setSubmissionConfirmation({ matchId, at: new Date().toISOString() })
+    setPage('submitted')
   }
 
   function markRescheduled(matchId, note, submittedBy) {
@@ -170,16 +172,12 @@ function App() {
     <div className="app-shell">
       <header className="site-header">
         <div className="club-bar">
-          <div className="social-links" aria-hidden="true">
-            <span>f</span>
-            <span>◎</span>
-          </div>
-          <button className="admin-link" type="button" onClick={() => setPage('admin')}>{adminUnlocked ? 'Admin' : 'Sign in'}</button>
+          <span></span>
+          <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>
         </div>
         <button className="club-logo" type="button" onClick={() => setPage('home')}>
           <strong>HADDON GLEN</strong>
           <span>SWIM CLUB</span>
-          <em>HG Sports</em>
         </button>
       </header>
 
@@ -201,6 +199,12 @@ function App() {
         {page === 'standings' && <Standings standings={standings} />}
         {page === 'schedule' && <Schedule matches={matches} />}
         {page === 'trophy' && <TrophyRoom />}
+        {page === 'submitted' && (
+          <ScoreSubmitted
+            confirmation={submissionConfirmation}
+            setPage={setPage}
+          />
+        )}
         {page === 'admin' && (
           <Admin
             adminUnlocked={adminUnlocked}
@@ -222,7 +226,7 @@ function App() {
           <button type="button" onClick={() => setPage('my')}>My Matches</button>
           <button type="button" onClick={() => setPage('standings')}>Standings</button>
           <button type="button" onClick={() => setPage('schedule')}>Schedule</button>
-          <button type="button" onClick={() => setPage('trophy')}>Trophy</button>
+          <button type="button" onClick={() => setPage('trophy')}>Trophy Room</button>
         </nav>
       )}
     </div>
@@ -235,7 +239,7 @@ function Home({ standings, setPage }) {
       <div className="hero-card">
         <p className="eyebrow">Haddon Glen Cornhole League</p>
         <h1>Summer 2026</h1>
-        <p>Schedules, standings, score submission, and quick match texting for pool club cornhole.</p>
+        <p>Schedules, standings, score submission, and quick match texting.</p>
       </div>
       <div className="quick-grid">
         <BigButton label="My Matches" onClick={() => setPage('my')} />
@@ -350,21 +354,26 @@ function Standings({ standings }) {
     <section className="stack">
       <PageTitle eyebrow="Public scoreboard" title="Standings" />
       <Segmented options={flights} value={flight} onChange={setFlight} />
-      {standings[flight].map((row) => (
-        <article className="standing-card" key={row.team.id}>
-          <div>
-            <p>Rank {row.rank}</p>
-            <h2>{row.team.name}</h2>
-          </div>
-          <strong>{row.points} pts</strong>
-          <dl>
-            <Stat label="Match W-L" value={`${row.matchWins}-${row.matchLosses}`} />
-            <Stat label="Game W-L" value={`${row.gameWins}-${row.gameLosses}`} />
-            <Stat label="Diff" value={row.diff} />
-            <Stat label="Played" value={row.played} />
-          </dl>
-        </article>
-      ))}
+      <section className="standings-grid" aria-label={`${flight} standings`}>
+        <div className="standings-header">
+          <span>Rank</span>
+          <span>Team</span>
+          <span>Pts</span>
+          <span>Match</span>
+          <span>Game</span>
+          <span>Diff</span>
+        </div>
+        {standings[flight].map((row) => (
+          <article className="standing-row" key={row.team.id}>
+            <strong>{row.rank}</strong>
+            <span className="team-name">{row.team.name}</span>
+            <span className="points">{row.points}</span>
+            <span>{row.matchWins}-{row.matchLosses}</span>
+            <span>{row.gameWins}-{row.gameLosses}</span>
+            <span>{row.diff}</span>
+          </article>
+        ))}
+      </section>
     </section>
   )
 }
@@ -400,6 +409,23 @@ function TrophyRoom() {
             <h2>{entry.winners}</h2>
           </article>
         ))}
+      </div>
+    </section>
+  )
+}
+
+function ScoreSubmitted({ confirmation, setPage }) {
+  return (
+    <section className="submitted-screen">
+      <div className="submitted-card">
+        <p className="eyebrow">Pending commissioner approval</p>
+        <h1>Score Submitted</h1>
+        <p>Your score was saved and sent to the admin queue. Standings will update after approval.</p>
+        {confirmation?.at && <span>Submitted {new Date(confirmation.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>}
+        <div className="submitted-actions">
+          <button type="button" onClick={() => setPage('my')}>Back to My Matches</button>
+          <button type="button" className="secondary" onClick={() => setPage('home')}>Back to Home</button>
+        </div>
       </div>
     </section>
   )
@@ -481,11 +507,71 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
       {tab === 'Audit' && (
         <Card title="Audit Log">
           <div className="card-list">
-            {audit.map((item) => <article className="simple-card" key={item.id}><p>{new Date(item.at).toLocaleString()}</p><h2>{item.action}</h2></article>)}
+            {audit.length === 0 && <p className="empty">No audit entries yet.</p>}
+            {audit.map((item) => <AuditEntry key={item.id} item={item} matches={matches} />)}
           </div>
         </Card>
       )}
     </section>
+  )
+}
+
+function AuditEntry({ item, matches }) {
+  const match = item.details?.matchId ? matches.find((candidate) => candidate.id === item.details.matchId) : null
+  const actor = item.details?.submittedBy ? playerName(item.details.submittedBy) : 'Admin'
+
+  if (item.action === 'score_submitted' && match) {
+    const teamA = getTeam(match.teamA)
+    const teamB = getTeam(match.teamB)
+    const score = item.details.score
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} submitted a score</h2>
+        <p>{matchTitle(match)}</p>
+        <p>{teamA.name}: {score[0][0]} + {score[1][0]} = {score[0][0] + score[1][0]} points</p>
+        <p>{teamB.name}: {score[0][1]} + {score[1][1]} = {score[0][1] + score[1][1]} points</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'match_rescheduled' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} marked a match rescheduled</h2>
+        <p>{matchTitle(match)}</p>
+        <p>{item.details.note || 'No note provided.'}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_approved' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin approved a score</h2>
+        <p>{matchTitle(match)}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_rejected' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin rejected a score</h2>
+        <p>{matchTitle(match)}</p>
+      </article>
+    )
+  }
+
+  return (
+    <article className="simple-card audit-entry">
+      <p>{new Date(item.at).toLocaleString()}</p>
+      <h2>{item.action.replaceAll('_', ' ')}</h2>
+      <p>{JSON.stringify(item.details)}</p>
+    </article>
   )
 }
 
@@ -590,26 +676,35 @@ function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, su
 }
 
 function ContactTools({ match, selectedPlayer }) {
+  const [copied, setCopied] = useState('')
   const matchPlayers = [...teamPlayers(match.teamA), ...teamPlayers(match.teamB)]
   const selectedTeam = getTeam(selectedPlayer.teamId)
   const numbers = matchPlayers.map((player) => player.phone)
   const cleanNumbers = numbers.map(cleanPhone)
   const message = `Hey, this is ${selectedPlayer.first} from ${selectedTeam.name}. We're scheduled to play Week ${match.week} on ${formatDate(match.date)} at ${match.time}. Any chance you can reschedule?`
 
+  async function copyFallback() {
+    await navigator.clipboard.writeText(`Numbers: ${numbers.join(', ')}\n\n${message}`)
+    setCopied('Copied all numbers and the message.')
+  }
+
   return (
     <div className="contacts">
       <div className="group-text-grid">
-        <a className="primary-link" href={groupSmsHref(cleanNumbers, message, 'ios')}>Text Group - iPhone</a>
-        <a className="primary-link android" href={groupSmsHref(cleanNumbers, message, 'android')}>Text Group - Android</a>
+        <a className="primary-link" href={groupSmsHref(cleanNumbers, message, 'ios')}>Group Text - iPhone</a>
+        <a className="primary-link android" href={groupSmsHref(cleanNumbers, message, 'androidSms')}>Group Text - Android</a>
+        <a className="primary-link android-alt" href={groupSmsHref(cleanNumbers, message, 'androidSmsto')}>Android Alt</a>
       </div>
-      <p className="helper-text">If one group text button does not fill all 4 recipients, use the other one. Phones handle group SMS links differently.</p>
+      <p className="helper-text">If your phone only fills the first person, try Android Alt. Some messaging apps handle group SMS links differently.</p>
       {matchPlayers.map((player) => (
-        <a key={player.id} href={`sms:${player.phone}`}>Text {player.first} {player.last} · {player.phone}</a>
+        <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last} · {player.phone}</a>
       ))}
       <div className="button-row">
         <button type="button" onClick={() => navigator.clipboard.writeText(numbers.join(', '))}>Copy Numbers</button>
         <button type="button" onClick={() => navigator.clipboard.writeText(message)}>Copy Message</button>
       </div>
+      <button className="fallback-copy" type="button" onClick={copyFallback}>Copy Group Text Fallback</button>
+      {copied && <p className="helper-text">{copied}</p>}
     </div>
   )
 }
@@ -881,9 +976,17 @@ function cleanPhone(phone) {
 }
 
 function groupSmsHref(numbers, message, platform) {
-  const separator = platform === 'ios' ? ',' : ';'
-  const bodySeparator = platform === 'ios' ? '&body=' : '?body='
-  return `sms:${numbers.join(separator)}${bodySeparator}${encodeURIComponent(message)}`
+  const body = encodeURIComponent(message)
+
+  if (platform === 'ios') {
+    return `sms:${numbers.join(',')}&body=${body}`
+  }
+
+  if (platform === 'androidSmsto') {
+    return `smsto:${numbers.join(';')}?body=${body}`
+  }
+
+  return `sms:${numbers.join(';')}?body=${body}`
 }
 
 function BigButton({ label, onClick }) {

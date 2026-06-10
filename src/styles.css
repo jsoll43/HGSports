@@ -48,25 +48,9 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 44px;
-  padding: 8px 16px;
+  min-height: 34px;
+  padding: 5px 16px;
   background: #2f69bf;
-}
-
-.social-links {
-  display: flex;
-  gap: 8px;
-}
-
-.social-links span {
-  display: grid;
-  width: 28px;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 999px;
-  background: #fff;
-  color: #2f69bf;
-  font-weight: 900;
 }
 
 .club-logo {
@@ -74,8 +58,8 @@ a {
   justify-items: center;
   gap: 0;
   width: 100%;
-  min-height: 92px;
-  padding: 10px 16px 14px;
+  min-height: 62px;
+  padding: 7px 16px 9px;
   border: 0;
   background: transparent;
   color: #1b559e;
@@ -84,7 +68,7 @@ a {
 
 .club-logo strong {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.8rem, 8vw, 2.55rem);
+  font-size: clamp(1.45rem, 7vw, 2.15rem);
   font-weight: 900;
   letter-spacing: 0.12em;
   line-height: 1;
@@ -93,19 +77,10 @@ a {
 .club-logo span {
   color: #4fb8e6;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.25rem, 6vw, 2rem);
+  font-size: clamp(1rem, 5vw, 1.55rem);
   letter-spacing: 0.45em;
   line-height: 1;
   padding-left: 0.45em;
-}
-
-.club-logo em {
-  color: #1b559e;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1rem;
-  font-style: normal;
-  font-weight: 900;
-  text-transform: uppercase;
 }
 
 .admin-link,
@@ -154,7 +129,7 @@ a {
 }
 
 .hero-card {
-  padding: 24px;
+  padding: 18px;
 }
 
 .profile-card {
@@ -170,7 +145,7 @@ a {
 }
 
 .hero-card h1 {
-  font-size: clamp(2.4rem, 12vw, 4.8rem);
+  font-size: clamp(1.9rem, 10vw, 3.4rem);
 }
 
 .profile-card h1 {
@@ -329,6 +304,79 @@ a {
   font-weight: 700;
 }
 
+.audit-entry h2 {
+  font-size: 1.05rem;
+}
+
+.audit-entry p + p {
+  color: #0b2545;
+}
+
+.submitted-screen {
+  min-height: calc(100svh - 170px);
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  padding: 18px;
+  background: #0b4ea2;
+}
+
+.submitted-card {
+  width: min(100%, 520px);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 34px 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.submitted-card .eyebrow {
+  color: #bdefff;
+}
+
+.submitted-card h1 {
+  margin: 0;
+  font-size: clamp(2.75rem, 13vw, 5rem);
+  line-height: 0.92;
+}
+
+.submitted-card p {
+  max-width: 28rem;
+  margin: 0;
+  color: #e8f8ff;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.submitted-card span {
+  color: #bdefff;
+  font-weight: 800;
+}
+
+.submitted-actions {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.submitted-actions button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b2545;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.submitted-actions .secondary {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  color: #fff;
+}
+
 .filters {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -437,7 +485,7 @@ textarea {
 
 .group-text-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
@@ -459,6 +507,20 @@ textarea {
 
 .contacts .primary-link.android {
   background: #0b2545;
+}
+
+.contacts .primary-link.android-alt {
+  background: #1f6fb8;
+}
+
+.fallback-copy {
+  min-height: 44px;
+  border: 1px solid #a9dfe8;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b2545;
+  cursor: pointer;
+  font-weight: 900;
 }
 
 .download-link {
@@ -591,6 +653,56 @@ textarea {
   margin: 0;
 }
 
+.standings-grid {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #cfeff6;
+  border-radius: 12px;
+  padding: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(11, 37, 69, 0.07);
+}
+
+.standings-header,
+.standing-row {
+  display: grid;
+  grid-template-columns: 38px minmax(92px, 1fr) 48px 54px 54px 44px;
+  align-items: center;
+  gap: 4px;
+}
+
+.standings-header {
+  padding: 6px 8px;
+  color: #617181;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.standing-row {
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: #effbff;
+  color: #0b2545;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.standing-row .team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.standing-row .points {
+  width: fit-content;
+  border-radius: 6px;
+  padding: 4px 7px;
+  background: #0b2545;
+  color: #fff;
+}
+
 .stat {
   display: grid;
   gap: 2px;
@@ -637,7 +749,7 @@ textarea {
   border-radius: 0;
   background: transparent;
   color: #0b2545;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
 }
 
 @media (min-width: 720px) {
@@ -658,5 +770,9 @@ textarea {
 
   .quick-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .group-text-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
