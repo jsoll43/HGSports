@@ -528,7 +528,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} submitted a score</h2>
-        <p>{matchTitle(match)}</p>
+        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
         <p>{teamA.name}: {score[0][0]} + {score[1][0]} = {score[0][0] + score[1][0]} points</p>
         <p>{teamB.name}: {score[0][1]} + {score[1][1]} = {score[0][1] + score[1][1]} points</p>
       </article>
@@ -540,7 +540,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} marked a match rescheduled</h2>
-        <p>{matchTitle(match)}</p>
+        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
         <p>{item.details.note || 'No note provided.'}</p>
       </article>
     )
@@ -551,7 +551,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>Admin approved a score</h2>
-        <p>{matchTitle(match)}</p>
+        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -561,7 +561,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>Admin rejected a score</h2>
-        <p>{matchTitle(match)}</p>
+        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -853,6 +853,10 @@ function matchTitle(match) {
 
 function formatDate(date) {
   return new Date(`${date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function gameDateLabel(match) {
+  return `Game date: ${formatDate(match.date)} at ${match.time}`
 }
 
 function formatScore(score) {
