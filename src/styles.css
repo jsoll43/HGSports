@@ -136,6 +136,8 @@ a {
 }
 
 .hero-card {
+  display: grid;
+  gap: 8px;
   padding: 18px;
 }
 
@@ -159,7 +161,8 @@ a {
 }
 
 .hero-card h1 {
-  font-size: clamp(1.9rem, 10vw, 3.4rem);
+  max-width: 18rem;
+  font-size: clamp(1.65rem, 7vw, 2.45rem);
 }
 
 .profile-card h1 {

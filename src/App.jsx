@@ -251,8 +251,7 @@ function Home({ standings, setPage }) {
   return (
     <section className="stack">
       <div className="hero-card">
-        <p className="eyebrow">Haddon Glen Cornhole League</p>
-        <h1>Summer 2026</h1>
+        <h1>Summer 2026 Cornhole League</h1>
         <p>Schedules, standings, score submission, and quick match texting.</p>
       </div>
       <div className="quick-grid">
