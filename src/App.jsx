@@ -296,18 +296,29 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
   return (
     <section className="stack">
       <div className="profile-card">
-        <p>Continue as {selectedPlayer.first} {selectedPlayer.last}</p>
+        <div className="profile-top">
+          <p>Continue as {selectedPlayer.first} {selectedPlayer.last}</p>
+          <button type="button" onClick={() => setSelectedPlayerId('')}>Change player</button>
+        </div>
         <h1>{selectedTeam.name}</h1>
         <span>{selectedTeam.flight} Band</span>
-        <button type="button" onClick={() => setSelectedPlayerId('')}>Change player</button>
       </div>
       <div className="stat-grid">
         <Stat label="Record" value={`${row?.matchWins || 0}-${row?.matchLosses || 0}`} />
         <Stat label="Points" value={row?.points || 0} />
         <Stat label="Rank" value={row ? `#${row.rank}` : '-'} />
       </div>
+      {nextMatch && (
+        <button
+          className="jump-button"
+          type="button"
+          onClick={() => document.getElementById('next-match')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        >
+          Go to Next Match
+        </button>
+      )}
       {nextMatch ? (
-        <section className="priority-match">
+        <section className="priority-match" id="next-match">
           <p className="eyebrow">Next match</p>
           <MatchCard
             match={nextMatch}
@@ -823,9 +834,9 @@ function scheduleTime(match) {
 }
 
 function publicStatus(match) {
+  if (match.status === 'rescheduled') return 'Pending reschedule'
   if (isOverdue(match)) return 'Score needed or makeup required'
   if (match.status === 'pending') return 'Pending commissioner approval'
-  if (match.status === 'rescheduled') return 'Rescheduled / makeup needed'
   if (match.status === 'final') return 'Final'
   return 'Scheduled'
 }
@@ -993,7 +1004,13 @@ function Stat({ label, value }) {
 }
 
 function StatusBadge({ status }) {
-  return <span className={`status ${status.includes('needed') ? 'warning' : ''}`}>{status}</span>
+  const className = [
+    'status',
+    status.includes('needed') ? 'warning' : '',
+    status.includes('Pending reschedule') ? 'reschedule' : '',
+  ].filter(Boolean).join(' ')
+
+  return <span className={className}>{status}</span>
 }
 
 export default App

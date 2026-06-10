@@ -138,6 +138,13 @@ a {
   padding: 14px 16px;
 }
 
+.profile-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .hero-card h1,
 .profile-card h1 {
   margin: 0;
@@ -173,6 +180,14 @@ a {
   padding: 0 16px;
   background: #fff;
   color: #0b2545;
+}
+
+.profile-top button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  margin-top: 0;
+  padding: 0 12px;
+  font-size: 0.82rem;
 }
 
 .eyebrow {
@@ -472,6 +487,11 @@ textarea {
   color: #a31027;
 }
 
+.status.reschedule {
+  background: #fff2bd;
+  color: #805600;
+}
+
 .score-line {
   border-radius: 8px;
   padding: 10px;
@@ -582,10 +602,19 @@ textarea {
 .actions button,
 .form button,
 .inline-form button,
-.card > button {
+.card > button,
+.jump-button {
   padding: 0 14px;
   background: #0b2545;
   color: #fff;
+}
+
+.jump-button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
 }
 
 .button-row .secondary,
