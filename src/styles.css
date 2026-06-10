@@ -35,38 +35,77 @@ a {
     linear-gradient(180deg, #f5fbff 0%, #ffffff 48%, #e8faff 100%);
 }
 
-.topbar {
+.site-header {
   position: sticky;
   top: 0;
   z-index: 20;
+  border-bottom: 1px solid #d7dfe8;
+  background: #fff;
+}
+
+.club-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #cfeff6;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
+  min-height: 44px;
+  padding: 8px 16px;
+  background: #2f69bf;
 }
 
-.brand {
+.social-links {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  background: transparent;
-  color: #0b2545;
-  font-weight: 900;
+  gap: 8px;
 }
 
-.brand span {
+.social-links span {
   display: grid;
-  width: 42px;
+  width: 28px;
   aspect-ratio: 1;
   place-items: center;
   border-radius: 999px;
-  background: #0b2545;
-  color: #fff;
+  background: #fff;
+  color: #2f69bf;
+  font-weight: 900;
+}
+
+.club-logo {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  width: 100%;
+  min-height: 92px;
+  padding: 10px 16px 14px;
+  border: 0;
+  background: transparent;
+  color: #1b559e;
+  cursor: pointer;
+}
+
+.club-logo strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 8vw, 2.55rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.club-logo span {
+  color: #4fb8e6;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 6vw, 2rem);
+  letter-spacing: 0.45em;
+  line-height: 1;
+  padding-left: 0.45em;
+}
+
+.club-logo em {
+  color: #1b559e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .admin-link,
@@ -89,9 +128,10 @@ a {
 
 .admin-link {
   padding: 0 14px;
-  border: 1px solid #bce9f1;
+  border: 0;
   background: #fff;
-  color: #0b2545;
+  color: #5b6470;
+  min-height: 34px;
 }
 
 .content {
@@ -108,17 +148,33 @@ a {
 .hero-card,
 .profile-card {
   border-radius: 12px;
-  padding: 24px;
   background: #0b2545;
   color: #fff;
   box-shadow: 0 18px 50px rgba(11, 37, 69, 0.18);
 }
 
+.hero-card {
+  padding: 24px;
+}
+
+.profile-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
 .hero-card h1,
 .profile-card h1 {
-  margin: 4px 0 8px;
+  margin: 0;
+  line-height: 1;
+}
+
+.hero-card h1 {
   font-size: clamp(2.4rem, 12vw, 4.8rem);
-  line-height: 0.95;
+}
+
+.profile-card h1 {
+  font-size: clamp(1.45rem, 7vw, 2.4rem);
 }
 
 .hero-card p,
@@ -130,12 +186,15 @@ a {
 
 .profile-card span {
   display: block;
-  margin-bottom: 16px;
   color: #dff8fb;
+  font-size: 0.86rem;
   font-weight: 800;
 }
 
 .profile-card button {
+  width: fit-content;
+  min-height: 38px;
+  margin-top: 4px;
   padding: 0 16px;
   background: #fff;
   color: #0b2545;
@@ -161,6 +220,24 @@ a {
   line-height: 1;
 }
 
+.admin-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sign-out-button {
+  min-height: 40px;
+  border: 1px solid #bce9f1;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #fff;
+  color: #0b2545;
+  cursor: pointer;
+  font-weight: 900;
+}
+
 .quick-grid,
 .stat-grid {
   display: grid;
@@ -181,7 +258,8 @@ a {
 .card,
 .match-card,
 .standing-card,
-.simple-card {
+.simple-card,
+.history-panel {
   border: 1px solid #cfeff6;
   border-radius: 12px;
   background: #fff;
@@ -206,6 +284,25 @@ a {
 .card-list {
   display: grid;
   gap: 10px;
+}
+
+.priority-match {
+  display: grid;
+  gap: 8px;
+}
+
+.history-panel {
+  padding: 12px;
+}
+
+.history-panel summary {
+  cursor: pointer;
+  color: #0b2545;
+  font-weight: 900;
+}
+
+.history-panel .card-list {
+  margin-top: 12px;
 }
 
 .mini-list p {
@@ -338,6 +435,12 @@ textarea {
   gap: 10px;
 }
 
+.group-text-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .contacts a {
   display: block;
   border-radius: 8px;
@@ -352,6 +455,84 @@ textarea {
   background: #00899a;
   color: #fff;
   text-align: center;
+}
+
+.contacts .primary-link.android {
+  background: #0b2545;
+}
+
+.download-link {
+  display: block;
+  min-height: 48px;
+  border-radius: 8px;
+  padding: 13px 14px;
+  background: #00899a;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.helper-text {
+  margin: 0;
+  color: #617181;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.import-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.validation-list {
+  border-radius: 8px;
+  padding: 12px;
+  background: #effbff;
+}
+
+.validation-list h3 {
+  margin: 0 0 8px;
+}
+
+.validation-list ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  font-weight: 700;
+}
+
+.validation-list.error {
+  background: #ffe4e6;
+}
+
+.validation-list.error h3 {
+  color: #a31027;
+}
+
+.validation-list.warning-text {
+  background: #fff7d6;
+}
+
+.validation-list.warning-text h3 {
+  color: #8a5b00;
+}
+
+.preview-table {
+  display: grid;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fcff;
+}
+
+.preview-table p {
+  margin: 0;
+  color: #334155;
+  font-weight: 700;
 }
 
 .button-row {

@@ -145,14 +145,42 @@ function App() {
     log('snapshot_created', { snapshotId: snapshot.id })
   }
 
+  function importSchedule(rows) {
+    const importedMatches = rows.map((row, index) => {
+      const teamA = teamByNumber(row.teamANumber)
+      const teamB = teamByNumber(row.teamBNumber)
+      return {
+        id: `import-${Date.now()}-${index}`,
+        week: row.week,
+        date: row.date,
+        time: row.time,
+        flight: row.flight,
+        teamA: teamA.id,
+        teamB: teamB.id,
+        status: 'scheduled',
+        notes: row.notes,
+      }
+    })
+    setMatches(importedMatches)
+    log('schedule_imported', { matches: importedMatches.length })
+    setPage('schedule')
+  }
+
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <button className="brand" type="button" onClick={() => setPage('home')}>
-          <span>HG</span>
-          <strong>HG Sports</strong>
+      <header className="site-header">
+        <div className="club-bar">
+          <div className="social-links" aria-hidden="true">
+            <span>f</span>
+            <span>◎</span>
+          </div>
+          <button className="admin-link" type="button" onClick={() => setPage('admin')}>{adminUnlocked ? 'Admin' : 'Sign in'}</button>
+        </div>
+        <button className="club-logo" type="button" onClick={() => setPage('home')}>
+          <strong>HADDON GLEN</strong>
+          <span>SWIM CLUB</span>
+          <em>HG Sports</em>
         </button>
-        <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>
       </header>
 
       <main className="content">
@@ -183,6 +211,7 @@ function App() {
             approveScore={approveScore}
             rejectScore={rejectScore}
             createSnapshot={createSnapshot}
+            importSchedule={importSchedule}
           />
         )}
       </main>
@@ -238,7 +267,7 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
               <option value="">Choose player</option>
               {[...players].sort((a, b) => a.last.localeCompare(b.last)).map((player) => (
                 <option key={player.id} value={player.id}>
-                  {player.last}, {player.first} - {getTeam(player.teamId).name}
+                  {player.last}, {player.first}
                 </option>
               ))}
             </select>
@@ -249,9 +278,16 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
   }
 
   const row = standings[selectedTeam.flight].find((item) => item.team.id === selectedTeam.id)
-  const myMatches = matches
+  const allMyMatches = matches
     .filter((match) => match.teamA === selectedTeam.id || match.teamB === selectedTeam.id)
+    .sort(bySchedule)
+  const openMatches = allMyMatches
     .filter((match) => match.status !== 'final' || isOverdue(match))
+  const playedMatches = allMyMatches
+    .filter((match) => match.status === 'final' && !isOverdue(match))
+    .reverse()
+  const nextMatch = openMatches[0]
+  const otherOpenMatches = openMatches.slice(1)
 
   return (
     <section className="stack">
@@ -266,9 +302,24 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
         <Stat label="Points" value={row?.points || 0} />
         <Stat label="Rank" value={row ? `#${row.rank}` : '-'} />
       </div>
-      <Card title="Upcoming and Needs Attention">
+      {nextMatch ? (
+        <section className="priority-match">
+          <p className="eyebrow">Next match</p>
+          <MatchCard
+            match={nextMatch}
+            viewerTeam={selectedTeam}
+            selectedPlayer={selectedPlayer}
+            submitScore={submitScore}
+            markRescheduled={markRescheduled}
+            showContacts
+          />
+        </section>
+      ) : (
+        <p className="empty">No upcoming matches need attention right now.</p>
+      )}
+      {otherOpenMatches.length > 0 && (
         <div className="card-list">
-          {myMatches.map((match) => (
+          {otherOpenMatches.map((match) => (
             <MatchCard
               key={match.id}
               match={match}
@@ -280,7 +331,15 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
             />
           ))}
         </div>
-      </Card>
+      )}
+      <details className="history-panel">
+        <summary>Played matches ({playedMatches.length})</summary>
+        <div className="card-list">
+          {playedMatches.map((match) => (
+            <MatchCard key={match.id} match={match} viewerTeam={selectedTeam} />
+          ))}
+        </div>
+      </details>
     </section>
   )
 }
@@ -346,7 +405,7 @@ function TrophyRoom() {
   )
 }
 
-function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, approveScore, rejectScore, createSnapshot }) {
+function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, approveScore, rejectScore, createSnapshot, importSchedule }) {
   const [password, setPassword] = useState('')
   const [tab, setTab] = useState('Scores')
 
@@ -371,8 +430,20 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
 
   return (
     <section className="stack">
-      <PageTitle eyebrow="Commissioner tools" title="Admin" />
-      <Segmented options={['Scores', 'Schedule', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
+      <div className="admin-heading">
+        <PageTitle eyebrow="Commissioner tools" title="Admin" />
+        <button
+          className="sign-out-button"
+          type="button"
+          onClick={() => {
+            setAdminUnlocked(false)
+            setPassword('')
+          }}
+        >
+          Sign out
+        </button>
+      </div>
+      <Segmented options={['Scores', 'Import', 'Schedule', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
       {tab === 'Scores' && (
         <Card title="Pending Scores">
           {pending.length === 0 && <p className="empty">No pending scores.</p>}
@@ -391,7 +462,14 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
           </div>
         </Card>
       )}
-      {tab === 'Schedule' && <Card title="Schedule Import"><p className="empty">CSV upload will go here. For now, use the mock schedule as the working prototype.</p></Card>}
+      {tab === 'Import' && <ScheduleImport importSchedule={importSchedule} />}
+      {tab === 'Schedule' && (
+        <Card title="Current Schedule">
+          <div className="card-list">
+            {matches.map((match) => <MatchCard key={match.id} match={match} />)}
+          </div>
+        </Card>
+      )}
       {tab === 'Snapshots' && (
         <Card title="Daily Snapshots">
           <button type="button" onClick={createSnapshot}>Create Snapshot Now</button>
@@ -408,6 +486,79 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
         </Card>
       )}
     </section>
+  )
+}
+
+function ScheduleImport({ importSchedule }) {
+  const [fileName, setFileName] = useState('')
+  const [rows, setRows] = useState([])
+  const [warnings, setWarnings] = useState([])
+  const [errors, setErrors] = useState([])
+  const [message, setMessage] = useState('')
+
+  async function handleFile(file) {
+    setFileName(file.name)
+    setMessage('')
+    const text = await file.text()
+    const parsed = parseScheduleCsv(text)
+    const validation = validateScheduleRows(parsed)
+    setRows(validation.rows)
+    setWarnings(validation.warnings)
+    setErrors(validation.errors)
+  }
+
+  function confirmImport() {
+    if (errors.length) return
+    importSchedule(rows)
+    setMessage(`Imported ${rows.length} matches.`)
+  }
+
+  return (
+    <Card title="Import League Schedule">
+      <p className="empty">Upload a CSV schedule. Importing replaces the current schedule, so use this for a new season or a clean schedule reset.</p>
+      <a className="download-link" href={`data:text/csv;charset=utf-8,${encodeURIComponent(sampleScheduleCsv())}`} download="hg-sports-schedule-template.csv">
+        Download Sample Schedule CSV
+      </a>
+      <label className="field">
+        Upload CSV
+        <input accept=".csv,text/csv" type="file" onChange={(event) => event.target.files?.[0] && handleFile(event.target.files[0])} />
+      </label>
+      {fileName && <p className="helper-text">Previewing {fileName}</p>}
+      {rows.length > 0 && (
+        <div className="import-summary">
+          <Stat label="Matches" value={rows.length} />
+          <Stat label="Weeks" value={new Set(rows.map((row) => row.week)).size} />
+          <Stat label="Flights" value={new Set(rows.map((row) => row.flight)).size} />
+        </div>
+      )}
+      {errors.length > 0 && <ValidationList title="Errors to fix" items={errors} tone="error" />}
+      {warnings.length > 0 && <ValidationList title="Warnings" items={warnings} tone="warning-text" />}
+      {rows.length > 0 && (
+        <div className="preview-table">
+          {rows.slice(0, 8).map((row, index) => (
+            <p key={`${row.week}-${row.teamANumber}-${row.teamBNumber}-${index}`}>
+              Week {row.week}: {teamByNumber(row.teamANumber)?.name || `Team ${row.teamANumber}`} vs {teamByNumber(row.teamBNumber)?.name || `Team ${row.teamBNumber}`} - {row.date} {row.time}
+            </p>
+          ))}
+          {rows.length > 8 && <p>And {rows.length - 8} more matches...</p>}
+        </div>
+      )}
+      <button type="button" disabled={!rows.length || errors.length > 0} onClick={confirmImport}>
+        Confirm Import
+      </button>
+      {message && <p className="helper-text">{message}</p>}
+    </Card>
+  )
+}
+
+function ValidationList({ title, items, tone }) {
+  return (
+    <div className={`validation-list ${tone}`}>
+      <h3>{title}</h3>
+      <ul>
+        {items.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    </div>
   )
 }
 
@@ -441,17 +592,22 @@ function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, su
 function ContactTools({ match, selectedPlayer }) {
   const matchPlayers = [...teamPlayers(match.teamA), ...teamPlayers(match.teamB)]
   const selectedTeam = getTeam(selectedPlayer.teamId)
-  const numbers = matchPlayers.map((player) => player.phone).join(',')
+  const numbers = matchPlayers.map((player) => player.phone)
+  const cleanNumbers = numbers.map(cleanPhone)
   const message = `Hey, this is ${selectedPlayer.first} from ${selectedTeam.name}. We're scheduled to play Week ${match.week} on ${formatDate(match.date)} at ${match.time}. Any chance you can reschedule?`
 
   return (
     <div className="contacts">
-      <a className="primary-link" href={`sms:${numbers}?&body=${encodeURIComponent(message)}`}>Text Match Group</a>
+      <div className="group-text-grid">
+        <a className="primary-link" href={groupSmsHref(cleanNumbers, message, 'ios')}>Text Group - iPhone</a>
+        <a className="primary-link android" href={groupSmsHref(cleanNumbers, message, 'android')}>Text Group - Android</a>
+      </div>
+      <p className="helper-text">If one group text button does not fill all 4 recipients, use the other one. Phones handle group SMS links differently.</p>
       {matchPlayers.map((player) => (
         <a key={player.id} href={`sms:${player.phone}`}>Text {player.first} {player.last} · {player.phone}</a>
       ))}
       <div className="button-row">
-        <button type="button" onClick={() => navigator.clipboard.writeText(numbers)}>Copy Numbers</button>
+        <button type="button" onClick={() => navigator.clipboard.writeText(numbers.join(', '))}>Copy Numbers</button>
         <button type="button" onClick={() => navigator.clipboard.writeText(message)}>Copy Message</button>
       </div>
     </div>
@@ -459,6 +615,8 @@ function ContactTools({ match, selectedPlayer }) {
 }
 
 function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
+  const teamA = getTeam(match.teamA)
+  const teamB = getTeam(match.teamB)
   const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
   const [game1A, setGame1A] = useState(21)
@@ -487,10 +645,10 @@ function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
         }}>
           <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
           <div className="score-grid">
-            <label>Game 1 Team A<input type="number" min="0" max="21" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
-            <label>Game 1 Team B<input type="number" min="0" max="21" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
-            <label>Game 2 Team A<input type="number" min="0" max="21" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
-            <label>Game 2 Team B<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
+            <label>Game 1 {teamA.name}<input type="number" min="0" max="21" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
+            <label>Game 1 {teamB.name}<input type="number" min="0" max="21" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
+            <label>Game 2 {teamA.name}<input type="number" min="0" max="21" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
+            <label>Game 2 {teamB.name}<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
           </div>
           {errors.map((error) => <p className="error" key={error}>{error}</p>)}
           {!pinIsValid() && pin && <p className="error">PIN should be Glen.</p>}
@@ -568,6 +726,14 @@ function isOverdue(match) {
   return new Date(`${match.date}T23:59:59`) < new Date('2026-06-10T12:00:00') && !['final', 'pending'].includes(match.status)
 }
 
+function bySchedule(a, b) {
+  return scheduleTime(a) - scheduleTime(b)
+}
+
+function scheduleTime(match) {
+  return new Date(`${match.date} ${match.time}`).getTime()
+}
+
 function publicStatus(match) {
   if (isOverdue(match)) return 'Score needed or makeup required'
   if (match.status === 'pending') return 'Pending commissioner approval'
@@ -578,6 +744,10 @@ function publicStatus(match) {
 
 function getTeam(id) {
   return teams.find((team) => team.id === id)
+}
+
+function teamByNumber(number) {
+  return teams.find((team) => team.number === Number(number))
 }
 
 function teamPlayers(teamId) {
@@ -599,6 +769,121 @@ function formatDate(date) {
 
 function formatScore(score) {
   return score ? `${score[0][0]}-${score[0][1]}, ${score[1][0]}-${score[1][1]}` : ''
+}
+
+function sampleScheduleCsv() {
+  return [
+    ['Week', 'Date', 'Time', 'Flight', 'Team A Number', 'Team B Number', 'Notes'],
+    ['1', '2026-05-07', '6:30 PM', 'Green', '1', '2', 'Opening night'],
+    ['1', '2026-05-07', '7:15 PM', 'Red', '3', '4', ''],
+    ['1', '2026-05-07', '8:00 PM', 'White', '5', '6', ''],
+  ].map((row) => row.map(csvEscape).join(',')).join('\n')
+}
+
+function parseScheduleCsv(text) {
+  const rows = parseCsv(text)
+  return rows.map((row) => ({
+    week: Number(row.Week || row.week),
+    date: String(row.Date || row.date || '').trim(),
+    time: String(row.Time || row.time || '').trim(),
+    flight: String(row.Flight || row.flight || '').trim(),
+    teamANumber: Number(row['Team A Number'] || row.teamANumber || row.team_a_number),
+    teamBNumber: Number(row['Team B Number'] || row.teamBNumber || row.team_b_number),
+    notes: String(row.Notes || row.notes || '').trim(),
+  }))
+}
+
+function validateScheduleRows(inputRows) {
+  const warnings = []
+  const errors = []
+  const matchKeys = new Set()
+  const teamWeekKeys = new Set()
+  const validFlights = new Set(flights)
+  const validTeamNumbers = new Set(teams.map((team) => team.number))
+  const rows = inputRows.filter((row) => Object.values(row).some((value) => String(value || '').trim()))
+
+  rows.forEach((row, index) => {
+    const label = `Row ${index + 2}`
+    if (!row.week) errors.push(`${label}: Week is required.`)
+    if (!row.date) errors.push(`${label}: Date is required.`)
+    if (!row.time) errors.push(`${label}: Time is required.`)
+    if (!row.flight) errors.push(`${label}: Flight is required.`)
+    if (!row.teamANumber) errors.push(`${label}: Team A Number is required.`)
+    if (!row.teamBNumber) errors.push(`${label}: Team B Number is required.`)
+    if (row.flight && !validFlights.has(row.flight)) errors.push(`${label}: Flight "${row.flight}" does not exist.`)
+    if (row.teamANumber && !validTeamNumbers.has(row.teamANumber)) errors.push(`${label}: Team A Number ${row.teamANumber} does not exist.`)
+    if (row.teamBNumber && !validTeamNumbers.has(row.teamBNumber)) errors.push(`${label}: Team B Number ${row.teamBNumber} does not exist.`)
+    if (row.teamANumber === row.teamBNumber) errors.push(`${label}: A team cannot play itself.`)
+    if (row.date && Number.isNaN(Date.parse(row.date))) warnings.push(`${label}: Date looks unusual. Use YYYY-MM-DD if possible.`)
+    if (row.time && !looksLikeTime(row.time)) warnings.push(`${label}: Time looks unusual. Example: 6:30 PM.`)
+
+    const sortedTeams = [row.teamANumber, row.teamBNumber].sort().join('-')
+    const matchKey = `${row.week}:${row.date}:${row.flight}:${sortedTeams}`
+    if (matchKeys.has(matchKey)) warnings.push(`${label}: This looks like a duplicate match.`)
+    matchKeys.add(matchKey)
+
+    ;[row.teamANumber, row.teamBNumber].forEach((teamNumber) => {
+      if (!teamNumber) return
+      const key = `${row.week}:${teamNumber}`
+      if (teamWeekKeys.has(key)) warnings.push(`${label}: Team ${teamNumber} is scheduled more than once in week ${row.week}.`)
+      teamWeekKeys.add(key)
+    })
+  })
+
+  if (!rows.length) errors.push('No schedule rows found in the CSV.')
+  return { rows, warnings, errors }
+}
+
+function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/)
+  const headers = splitCsvLine(lines.shift() || '').map((header) => header.trim())
+  return lines.map((line) => {
+    const values = splitCsvLine(line)
+    return Object.fromEntries(headers.map((header, index) => [header, values[index]?.trim() || '']))
+  })
+}
+
+function splitCsvLine(line) {
+  const values = []
+  let current = ''
+  let inQuotes = false
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index]
+    const next = line[index + 1]
+    if (char === '"' && next === '"') {
+      current += '"'
+      index += 1
+    } else if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      values.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  values.push(current)
+  return values
+}
+
+function csvEscape(value) {
+  const text = String(value)
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
+}
+
+function looksLikeTime(value) {
+  return /^\d{1,2}:\d{2}\s?(AM|PM)$/i.test(value) || /^([01]?\d|2[0-3]):[0-5]\d$/.test(value)
+}
+
+function cleanPhone(phone) {
+  return phone.replace(/\D/g, '')
+}
+
+function groupSmsHref(numbers, message, platform) {
+  const separator = platform === 'ios' ? ',' : ';'
+  const bodySeparator = platform === 'ios' ? '&body=' : '?body='
+  return `sms:${numbers.join(separator)}${bodySeparator}${encodeURIComponent(message)}`
 }
 
 function BigButton({ label, onClick }) {
