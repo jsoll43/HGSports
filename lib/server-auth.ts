@@ -3,6 +3,7 @@ import 'server-only'
 import { createHash, timingSafeEqual } from 'crypto'
 import { cookies } from 'next/headers'
 import { createServiceSupabaseClient } from './supabase'
+import { hashPin, verifyPinHash } from './pin-validation'
 
 const adminCookieName = 'hg_admin_session'
 
@@ -31,8 +32,8 @@ export async function verifyPlayerPin(seasonId: string, pin: string) {
   const settings = new Map((data ?? []).map((setting: { key: string; value: unknown }) => [setting.key, setting.value]))
   if (settings.get('player_pin_enabled') === false) return true
 
-  const stored = String(settings.get('player_pin_hash') ?? hashSecret('glen'))
-  return safeCompare(hashSecret(pin.trim().toLowerCase()), stored)
+  const stored = String(settings.get('player_pin_hash') ?? hashPin('glen'))
+  return verifyPinHash(pin, stored)
 }
 
 export async function verifyAdminPassword(password: string) {

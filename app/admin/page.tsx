@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { PinGate } from '@/components/PinGate'
 import { useLeague } from '@/components/LeagueProvider'
 import { matchTitle, playerById, playerName, scoreTotals } from '@/lib/league'
+import { AdvancedSettingsPanel, AuditLogPanel, BasicAdminList, ImportPanel, SeasonsPanel, SnapshotsPanel, TrophyAdminPanel } from './AdminPanels'
 
-const tabs = ['Pending Scores', 'Teams', 'Schedule', 'Import', 'Settings', 'Seasons', 'Audit Log', 'Snapshots']
+const tabs = ['Scores', 'Teams', 'Schedule', 'Import', 'Settings', 'Seasons', 'Audit Log', 'Snapshots', 'Trophy']
 
 export default function AdminPage() {
-  const { submissions, matches, teams, players, approveSubmission, rejectSubmission } = useLeague()
-  const { seasonId, source } = useLeague()
-  const [activeTab, setActiveTab] = useState('Pending Scores')
+  const { submissions, matches, teams, players, leagueId, seasonId, source, approveSubmission, rejectSubmission } = useLeague()
+  const [activeTab, setActiveTab] = useState('Scores')
   const [pinEnabled, setPinEnabled] = useState(true)
   const [newPin, setNewPin] = useState('')
   const [settingsMessage, setSettingsMessage] = useState('')
@@ -29,12 +29,7 @@ export default function AdminPage() {
     const response = await fetch(`/api/admin/submissions/${submissionId}/edit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        score: {
-          game1: { teamA: g1a, teamB: g1b },
-          game2: { teamA: g2a, teamB: g2b },
-        },
-      }),
+      body: JSON.stringify({ score: { game1: { teamA: g1a, teamB: g1b }, game2: { teamA: g2a, teamB: g2b } } }),
     })
     if (!response.ok) window.alert(await response.text())
     window.location.reload()
@@ -43,7 +38,7 @@ export default function AdminPage() {
   return (
     <main className="grid gap-4">
       <div>
-        <p className="text-sm font-black uppercase tracking-wide text-cyan-700">Prototype admin</p>
+        <p className="text-sm font-black uppercase tracking-wide text-cyan-700">League admin</p>
         <h1 className="text-3xl font-black text-navy">Admin</h1>
       </div>
 
@@ -70,10 +65,10 @@ export default function AdminPage() {
           ) : null}
         </div>
 
-        {activeTab === 'Pending Scores' ? (
+        {activeTab === 'Scores' ? (
           <section className="grid gap-3">
             {pending.length === 0 ? (
-              <div className="rounded-lg border border-cyan-100 bg-white p-5 text-center font-bold text-slate-600 shadow-sm">No pending scores.</div>
+              <div className="rounded-lg border border-cyan-100 bg-white p-5 text-center font-bold text-slate-600 shadow-sm">No pending scores. Nice and quiet.</div>
             ) : null}
             {pending.map((submission) => {
               const match = matches.find((item) => item.id === submission.matchId)
@@ -84,9 +79,7 @@ export default function AdminPage() {
                   <div>
                     <p className="text-sm font-black text-cyan-700">Week {match?.week}</p>
                     <h2 className="text-xl font-black text-navy">{match ? matchTitle(match, teams) : 'Unknown match'}</h2>
-                    <p className="font-semibold text-slate-600">
-                      Submitted by {player ? playerName(player) : 'Unknown'} · {new Date(submission.submittedAt).toLocaleString()}
-                    </p>
+                    <p className="font-semibold text-slate-600">Submitted by {player ? playerName(player) : 'Unknown'} - {new Date(submission.submittedAt).toLocaleString()}</p>
                   </div>
                   <div className="grid gap-2 rounded-lg bg-deck p-3 font-bold text-navy">
                     <p>Game 1: {submission.score.game1.teamA}-{submission.score.game1.teamB}</p>
@@ -94,15 +87,9 @@ export default function AdminPage() {
                     <p>Total: Team A {totals.teamA}, Team B {totals.teamB}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <button className="min-h-12 rounded-lg bg-emerald-600 px-3 font-black text-white" type="button" onClick={() => void approveSubmission(submission.id)}>
-                      Approve
-                    </button>
-                    <button className="min-h-12 rounded-lg bg-aqua px-3 font-black text-navy" type="button" onClick={() => void editSubmission(submission.id)}>
-                      Edit
-                    </button>
-                    <button className="min-h-12 rounded-lg bg-rose-600 px-3 font-black text-white" type="button" onClick={() => void rejectSubmission(submission.id)}>
-                      Reject
-                    </button>
+                    <button className="min-h-12 rounded-lg bg-emerald-600 px-3 font-black text-white" type="button" onClick={() => void approveSubmission(submission.id)}>Approve</button>
+                    <button className="min-h-12 rounded-lg bg-aqua px-3 font-black text-navy" type="button" onClick={() => void editSubmission(submission.id)}>Edit</button>
+                    <button className="min-h-12 rounded-lg bg-rose-600 px-3 font-black text-white" type="button" onClick={() => void rejectSubmission(submission.id)}>Reject</button>
                   </div>
                 </article>
               )
@@ -127,21 +114,31 @@ export default function AdminPage() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ seasonId, enabled: pinEnabled, pin: newPin }),
                 })
-                setSettingsMessage(response.ok ? 'Settings saved.' : 'Could not save settings.')
+                setSettingsMessage(response.ok ? 'Settings saved.' : await response.text())
                 if (response.ok) setNewPin('')
               }}
               type="button"
             >
               Save PIN Settings
             </button>
+            <AdvancedSettingsPanel seasonId={seasonId} />
             {settingsMessage ? <p className="font-bold text-cyan-700">{settingsMessage}</p> : null}
           </section>
-        ) : (
-          <section className="rounded-lg border border-cyan-100 bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black text-navy">{activeTab}</h2>
-            <p className="mt-2 font-semibold text-slate-600">Prototype placeholder for future admin tools.</p>
-          </section>
-        )}
+        ) : activeTab === 'Import' ? (
+          <ImportPanel />
+        ) : activeTab === 'Seasons' ? (
+          <SeasonsPanel />
+        ) : activeTab === 'Snapshots' ? (
+          <SnapshotsPanel />
+        ) : activeTab === 'Audit Log' ? (
+          <AuditLogPanel />
+        ) : activeTab === 'Trophy' ? (
+          <TrophyAdminPanel leagueId={leagueId} />
+        ) : activeTab === 'Teams' ? (
+          <BasicAdminList title="Teams" items={teams} />
+        ) : activeTab === 'Schedule' ? (
+          <BasicAdminList title="Schedule" items={matches} />
+        ) : null}
       </PinGate>
     </main>
   )

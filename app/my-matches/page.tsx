@@ -26,7 +26,7 @@ export default function MyMatchesPage() {
               </option>
               {sortedPlayers(players).map((player) => (
                 <option key={player.id} value={player.id}>
-                  {player.lastName}, {player.firstName}
+                  {player.lastName}, {player.firstName} - {teamById(player.teamId, teams)?.name ?? 'Team'}
                 </option>
               ))}
             </select>
