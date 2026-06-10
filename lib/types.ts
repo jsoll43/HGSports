@@ -1,5 +1,12 @@
 export type Flight = 'Green' | 'Red' | 'White'
 
+export type FlightRecord = {
+  id: string
+  name: Flight
+  sortOrder: number
+  colorLabel: string
+}
+
 export type MatchStatus =
   | 'Scheduled'
   | 'Rescheduled / Makeup Needed'
@@ -12,12 +19,15 @@ export type Player = {
   lastName: string
   phone: string
   teamId: string
+  email?: string | null
 }
 
 export type Team = {
   id: string
   name: string
   flight: Flight
+  flightId?: string
+  teamNumber?: number
 }
 
 export type GameScore = {
@@ -32,6 +42,8 @@ export type Score = {
 
 export type Match = {
   id: string
+  seasonId?: string
+  flightId?: string
   week: number
   date: string
   time: string
@@ -40,6 +52,7 @@ export type Match = {
   teamBId: string
   status: MatchStatus
   approvedScore?: Score
+  previousStatus?: MatchStatus
 }
 
 export type ScoreSubmission = {
@@ -67,6 +80,19 @@ export type Champion = {
   season: string
   flight: Flight
   teamName: string
+  playerNames?: string
+}
+
+export type LeagueData = {
+  source: 'supabase' | 'mock'
+  seasonId: string
+  leagueId: string
+  activeSeason: string
+  flights: FlightRecord[]
+  teams: Team[]
+  players: Player[]
+  matches: Match[]
+  champions: Champion[]
 }
 
 export type StandingRow = {

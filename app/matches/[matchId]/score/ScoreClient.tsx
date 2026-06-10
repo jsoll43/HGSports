@@ -8,10 +8,10 @@ import { displayDate, isPlayerInMatch, matchTitle, playerById, scoreTotals, vali
 import type { Score } from '@/lib/types'
 
 export default function ScoreClient({ matchId }: { matchId: string }) {
-  const { matches, selectedPlayerId, addSubmission } = useLeague()
+  const { matches, selectedPlayerId, addSubmission, players, teams } = useLeague()
   const router = useRouter()
   const match = matches.find((item) => item.id === matchId)
-  const player = selectedPlayerId ? playerById(selectedPlayerId) : undefined
+  const player = selectedPlayerId ? playerById(selectedPlayerId, players) : undefined
   const [score, setScore] = useState<Score>({ game1: { teamA: 21, teamB: 0 }, game2: { teamA: 0, teamB: 21 } })
   const [playedDate, setPlayedDate] = useState(match?.date ?? '')
   const [notes, setNotes] = useState('')
@@ -39,17 +39,17 @@ export default function ScoreClient({ matchId }: { matchId: string }) {
     <main className="grid gap-4">
       <div>
         <p className="text-sm font-black uppercase tracking-wide text-cyan-700">Score submission</p>
-        <h1 className="text-3xl font-black text-navy">{matchTitle(match)}</h1>
+        <h1 className="text-3xl font-black text-navy">{matchTitle(match, teams)}</h1>
         <p className="font-semibold text-slate-600">Week {match.week} - {displayDate(match)}</p>
       </div>
 
       <PinGate label="Enter league PIN to submit a score">
         <form
           className="grid gap-4 rounded-lg border border-cyan-100 bg-white p-4 shadow-sm"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
             if (errors.length) return
-            addSubmission({
+            await addSubmission({
               id: `sub-${Date.now()}`,
               matchId: match.id,
               submittedByPlayerId: player.id,

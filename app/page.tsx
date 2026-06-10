@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { activeSeason } from '@/lib/data'
-import { currentLeaders, effectiveMatches } from '@/lib/league'
+import { useLeague } from '@/components/LeagueProvider'
+import { currentLeaders } from '@/lib/league'
 
 const navCards = [
   { href: '/my-matches', label: 'My Matches' },
@@ -12,7 +12,8 @@ const navCards = [
 ]
 
 export default function HomePage() {
-  const leaders = currentLeaders(effectiveMatches())
+  const { activeSeason, matches, teams } = useLeague()
+  const leaders = currentLeaders(matches, teams)
 
   return (
     <main className="grid gap-5">

@@ -3,13 +3,12 @@
 import Link from 'next/link'
 import { MatchCard } from '@/components/MatchCard'
 import { useLeague } from '@/components/LeagueProvider'
-import { players } from '@/lib/data'
 import { isOverdue, playerById, playerName, recordForTeam, sortedPlayers, teamById } from '@/lib/league'
 
 export default function MyMatchesPage() {
-  const { selectedPlayerId, setSelectedPlayerId, changePlayer, matches } = useLeague()
-  const selectedPlayer = selectedPlayerId ? playerById(selectedPlayerId) : undefined
-  const team = selectedPlayer ? teamById(selectedPlayer.teamId) : undefined
+  const { selectedPlayerId, setSelectedPlayerId, changePlayer, matches, players, teams } = useLeague()
+  const selectedPlayer = selectedPlayerId ? playerById(selectedPlayerId, players) : undefined
+  const team = selectedPlayer ? teamById(selectedPlayer.teamId, teams) : undefined
 
   if (!selectedPlayer || !team) {
     return (
@@ -25,7 +24,7 @@ export default function MyMatchesPage() {
               <option value="" disabled>
                 Choose player
               </option>
-              {sortedPlayers().map((player) => (
+              {sortedPlayers(players).map((player) => (
                 <option key={player.id} value={player.id}>
                   {player.lastName}, {player.firstName}
                 </option>
@@ -37,7 +36,7 @@ export default function MyMatchesPage() {
     )
   }
 
-  const row = recordForTeam(team, matches)
+  const row = recordForTeam(team, matches, teams)
   const teamMatches = matches
     .filter((match) => match.teamAId === team.id || match.teamBId === team.id)
     .filter((match) => match.status !== 'Final' || isOverdue(match))
@@ -67,7 +66,7 @@ export default function MyMatchesPage() {
       <section className="grid gap-3">
         <h2 className="text-xl font-black text-navy">Upcoming and Needs Attention</h2>
         {teamMatches.map((match) => (
-          <MatchCard key={match.id} match={match} player={selectedPlayer} />
+          <MatchCard key={match.id} match={match} player={selectedPlayer} teams={teams} />
         ))}
       </section>
     </main>

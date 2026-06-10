@@ -1,7 +1,11 @@
+'use client'
+
 import Link from 'next/link'
-import { champions } from '@/lib/data'
+import { useLeague } from '@/components/LeagueProvider'
 
 export default function TrophyRoomPage() {
+  const { champions } = useLeague()
+
   return (
     <main className="grid gap-4">
       <div>

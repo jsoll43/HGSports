@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 import { useLeague } from '@/components/LeagueProvider'
-import { flights } from '@/lib/data'
 import { standingsForFlight } from '@/lib/league'
 import type { Flight } from '@/lib/types'
 
 export default function StandingsPage() {
-  const { matches } = useLeague()
+  const { matches, teams, flights } = useLeague()
   const [flight, setFlight] = useState<Flight>('Green')
-  const rows = standingsForFlight(flight, matches)
+  const rows = standingsForFlight(flight, matches, teams)
 
   return (
     <main className="grid gap-4">
@@ -21,12 +20,12 @@ export default function StandingsPage() {
       <div className="grid grid-cols-3 gap-2 rounded-lg bg-white p-2 shadow-sm">
         {flights.map((band) => (
           <button
-            key={band}
-            className={`min-h-12 rounded-lg font-black ${flight === band ? 'bg-navy text-white' : 'bg-aqua text-navy'}`}
-            onClick={() => setFlight(band)}
+            key={band.id}
+            className={`min-h-12 rounded-lg font-black ${flight === band.name ? 'bg-navy text-white' : 'bg-aqua text-navy'}`}
+            onClick={() => setFlight(band.name)}
             type="button"
           >
-            {band}
+            {band.name}
           </button>
         ))}
       </div>

@@ -7,10 +7,10 @@ import { useLeague } from '@/components/LeagueProvider'
 import { displayDate, isPlayerInMatch, matchTitle, playerById } from '@/lib/league'
 
 export default function RescheduleClient({ matchId }: { matchId: string }) {
-  const { matches, selectedPlayerId, addReschedule } = useLeague()
+  const { matches, selectedPlayerId, addReschedule, players, teams } = useLeague()
   const router = useRouter()
   const match = matches.find((item) => item.id === matchId)
-  const player = selectedPlayerId ? playerById(selectedPlayerId) : undefined
+  const player = selectedPlayerId ? playerById(selectedPlayerId, players) : undefined
   const [proposedDateTime, setProposedDateTime] = useState('')
   const [notes, setNotes] = useState('')
 
@@ -35,16 +35,16 @@ export default function RescheduleClient({ matchId }: { matchId: string }) {
     <main className="grid gap-4">
       <div>
         <p className="text-sm font-black uppercase tracking-wide text-cyan-700">Reschedule request</p>
-        <h1 className="text-3xl font-black text-navy">{matchTitle(match)}</h1>
+        <h1 className="text-3xl font-black text-navy">{matchTitle(match, teams)}</h1>
         <p className="font-semibold text-slate-600">Week {match.week} - {displayDate(match)}</p>
       </div>
 
       <PinGate label="Enter league PIN to mark rescheduled">
         <form
           className="grid gap-4 rounded-lg border border-cyan-100 bg-white p-4 shadow-sm"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
-            addReschedule({
+            await addReschedule({
               id: `res-${Date.now()}`,
               matchId: match.id,
               submittedByPlayerId: player.id,

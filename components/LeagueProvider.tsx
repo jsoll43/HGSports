@@ -11,42 +11,61 @@ import {
   saveSubmissions,
 } from '@/lib/storage'
 import { effectiveMatches } from '@/lib/league'
-import type { Match, RescheduleLog, ScoreSubmission } from '@/lib/types'
+import { getMockLeagueData } from '@/lib/mock-data'
+import type { FlightRecord, LeagueData, Match, RescheduleLog, ScoreSubmission } from '@/lib/types'
 
 type LeagueContextValue = {
+  source: LeagueData['source']
+  seasonId: string
+  leagueId: string
+  activeSeason: string
+  flights: FlightRecord[]
+  teams: LeagueData['teams']
+  players: LeagueData['players']
+  champions: LeagueData['champions']
   selectedPlayerId: string
   setSelectedPlayerId: (playerId: string) => void
   changePlayer: () => void
   submissions: ScoreSubmission[]
   reschedules: RescheduleLog[]
   matches: Match[]
-  addSubmission: (submission: ScoreSubmission) => void
-  approveSubmission: (submissionId: string) => void
-  rejectSubmission: (submissionId: string) => void
-  addReschedule: (log: RescheduleLog) => void
+  addSubmission: (submission: ScoreSubmission) => Promise<void>
+  approveSubmission: (submissionId: string) => Promise<void>
+  rejectSubmission: (submissionId: string) => Promise<void>
+  addReschedule: (log: RescheduleLog) => Promise<void>
 }
 
 const LeagueContext = createContext<LeagueContextValue | null>(null)
 
-export function LeagueProvider({ children }: { children: React.ReactNode }) {
+export function LeagueProvider({
+  children,
+  initialData = getMockLeagueData(),
+  initialSubmissions = [],
+}: {
+  children: React.ReactNode
+  initialData?: LeagueData
+  initialSubmissions?: ScoreSubmission[]
+}) {
+  const [leagueData, setLeagueData] = useState(initialData)
   const [selectedPlayerId, setSelectedPlayerIdState] = useState('')
-  const [submissions, setSubmissions] = useState<ScoreSubmission[]>([])
+  const [submissions, setSubmissions] = useState<ScoreSubmission[]>(initialSubmissions)
   const [reschedules, setReschedules] = useState<RescheduleLog[]>([])
 
   useEffect(() => {
     setSelectedPlayerIdState(readSelectedPlayerId())
-    setSubmissions(readSubmissions())
+    if (initialData.source === 'mock') setSubmissions(readSubmissions())
     setReschedules(readReschedules())
-  }, [])
+  }, [initialData.source])
 
   const matches = useMemo(() => {
     const rescheduledMatchIds = new Set(reschedules.map((log) => log.matchId))
-    return effectiveMatches(submissions).map((match) =>
+    const baseMatches = leagueData.source === 'mock' ? effectiveMatches(submissions) : leagueData.matches
+    return baseMatches.map((match) =>
       rescheduledMatchIds.has(match.id) && match.status !== 'Final'
         ? { ...match, status: 'Rescheduled / Makeup Needed' as const }
         : match,
     )
-  }, [submissions, reschedules])
+  }, [leagueData, submissions, reschedules])
 
   function setSelectedPlayerId(playerId: string) {
     setSelectedPlayerIdState(playerId)
@@ -63,11 +82,35 @@ export function LeagueProvider({ children }: { children: React.ReactNode }) {
     saveSubmissions(next)
   }
 
-  function addSubmission(submission: ScoreSubmission) {
+  async function refreshLeagueData() {
+    const response = await fetch('/api/league-data')
+    if (!response.ok) return
+    setLeagueData((await response.json()) as LeagueData)
+  }
+
+  async function addSubmission(submission: ScoreSubmission) {
+    if (leagueData.source === 'supabase') {
+      const response = await fetch('/api/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submission),
+      })
+      if (!response.ok) throw new Error(await response.text())
+      setSubmissions([submission, ...submissions])
+      await refreshLeagueData()
+      return
+    }
     updateSubmissions([submission, ...submissions])
   }
 
-  function approveSubmission(submissionId: string) {
+  async function approveSubmission(submissionId: string) {
+    if (leagueData.source === 'supabase') {
+      const response = await fetch(`/api/admin/submissions/${submissionId}/approve`, { method: 'POST' })
+      if (!response.ok) throw new Error(await response.text())
+      setSubmissions(submissions.filter((submission) => submission.id !== submissionId))
+      await refreshLeagueData()
+      return
+    }
     updateSubmissions(
       submissions.map((submission) =>
         submission.id === submissionId ? { ...submission, status: 'Approved' } : submission,
@@ -75,7 +118,14 @@ export function LeagueProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  function rejectSubmission(submissionId: string) {
+  async function rejectSubmission(submissionId: string) {
+    if (leagueData.source === 'supabase') {
+      const response = await fetch(`/api/admin/submissions/${submissionId}/reject`, { method: 'POST' })
+      if (!response.ok) throw new Error(await response.text())
+      setSubmissions(submissions.filter((submission) => submission.id !== submissionId))
+      await refreshLeagueData()
+      return
+    }
     updateSubmissions(
       submissions.map((submission) =>
         submission.id === submissionId ? { ...submission, status: 'Rejected' } : submission,
@@ -83,7 +133,17 @@ export function LeagueProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  function addReschedule(log: RescheduleLog) {
+  async function addReschedule(log: RescheduleLog) {
+    if (leagueData.source === 'supabase') {
+      const response = await fetch('/api/reschedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(log),
+      })
+      if (!response.ok) throw new Error(await response.text())
+      await refreshLeagueData()
+      return
+    }
     const next = [log, ...reschedules]
     setReschedules(next)
     saveReschedules(next)
@@ -92,6 +152,14 @@ export function LeagueProvider({ children }: { children: React.ReactNode }) {
   return (
     <LeagueContext.Provider
       value={{
+        source: leagueData.source,
+        seasonId: leagueData.seasonId,
+        leagueId: leagueData.leagueId,
+        activeSeason: leagueData.activeSeason,
+        flights: leagueData.flights,
+        teams: leagueData.teams,
+        players: leagueData.players,
+        champions: leagueData.champions,
         selectedPlayerId,
         setSelectedPlayerId,
         changePlayer,

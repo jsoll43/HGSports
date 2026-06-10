@@ -5,32 +5,32 @@ export function playerName(player: Player) {
   return `${player.firstName} ${player.lastName}`
 }
 
-export function teamById(teamId: string) {
-  return teams.find((team) => team.id === teamId)
+export function teamById(teamId: string, teamList: Team[] = teams) {
+  return teamList.find((team) => team.id === teamId)
 }
 
-export function playerById(playerId: string) {
-  return players.find((player) => player.id === playerId)
+export function playerById(playerId: string, playerList: Player[] = players) {
+  return playerList.find((player) => player.id === playerId)
 }
 
-export function teamPlayers(teamId: string) {
-  return players.filter((player) => player.teamId === teamId)
+export function teamPlayers(teamId: string, playerList: Player[] = players) {
+  return playerList.filter((player) => player.teamId === teamId)
 }
 
-export function sortedPlayers() {
-  return [...players].sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName))
+export function sortedPlayers(playerList: Player[] = players) {
+  return [...playerList].sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName))
 }
 
 export function isPlayerInMatch(player: Player, match: Match) {
   return player.teamId === match.teamAId || player.teamId === match.teamBId
 }
 
-export function opponentTeam(player: Player, match: Match) {
-  return teamById(player.teamId === match.teamAId ? match.teamBId : match.teamAId)
+export function opponentTeam(player: Player, match: Match, teamList: Team[] = teams) {
+  return teamById(player.teamId === match.teamAId ? match.teamBId : match.teamAId, teamList)
 }
 
-export function matchTitle(match: Match) {
-  return `${teamById(match.teamAId)?.name ?? 'Team A'} vs ${teamById(match.teamBId)?.name ?? 'Team B'}`
+export function matchTitle(match: Match, teamList: Team[] = teams) {
+  return `${teamById(match.teamAId, teamList)?.name ?? 'Team A'} vs ${teamById(match.teamBId, teamList)?.name ?? 'Team B'}`
 }
 
 export function displayDate(match: Pick<Match, 'date' | 'time'>) {
@@ -86,8 +86,8 @@ export function effectiveMatches(submissions: ScoreSubmission[] = []) {
   })
 }
 
-export function standingsForFlight(flight: Flight, matches: Match[]): StandingRow[] {
-  const rows = teams
+export function standingsForFlight(flight: Flight, matches: Match[], teamList: Team[] = teams): StandingRow[] {
+  const rows = teamList
     .filter((team) => team.flight === flight)
     .map<StandingRow>((team) => ({
       team,
@@ -146,12 +146,12 @@ export function standingsForFlight(flight: Flight, matches: Match[]): StandingRo
     .map((row, index) => ({ ...row, rank: index + 1 }))
 }
 
-export function currentLeaders(matches: Match[]) {
-  return (['Green', 'Red', 'White'] as Flight[]).map((flight) => standingsForFlight(flight, matches)[0])
+export function currentLeaders(matches: Match[], teamList: Team[] = teams) {
+  return (['Green', 'Red', 'White'] as Flight[]).map((flight) => standingsForFlight(flight, matches, teamList)[0])
 }
 
-export function recordForTeam(team: Team, matches: Match[]) {
+export function recordForTeam(team: Team, matches: Match[], teamList: Team[] = teams) {
   return (['Green', 'Red', 'White'] as Flight[])
-    .flatMap((flight) => standingsForFlight(flight, matches))
+    .flatMap((flight) => standingsForFlight(flight, matches, teamList))
     .find((row) => row.team.id === team.id)
 }

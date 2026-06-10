@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { activeSeason } from '@/lib/data'
 
-export function Shell({ children }: { children: React.ReactNode }) {
+export function Shell({ children, activeSeason }: { children: React.ReactNode; activeSeason: string }) {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-cyan-100 bg-white/92 backdrop-blur">

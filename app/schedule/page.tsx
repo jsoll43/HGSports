@@ -3,11 +3,10 @@
 import { useMemo, useState } from 'react'
 import { MatchCard } from '@/components/MatchCard'
 import { useLeague } from '@/components/LeagueProvider'
-import { flights } from '@/lib/data'
 import type { Flight } from '@/lib/types'
 
 export default function SchedulePage() {
-  const { matches } = useLeague()
+  const { matches, teams, flights } = useLeague()
   const [flight, setFlight] = useState<Flight | 'All'>('All')
   const [week, setWeek] = useState('All')
   const weeks = useMemo(() => [...new Set(matches.map((match) => match.week))], [matches])
@@ -26,7 +25,7 @@ export default function SchedulePage() {
           <select className="min-h-12 rounded-lg border border-cyan-200 px-3" value={flight} onChange={(event) => setFlight(event.target.value as Flight | 'All')}>
             <option>All</option>
             {flights.map((band) => (
-              <option key={band}>{band}</option>
+              <option key={band.id}>{band.name}</option>
             ))}
           </select>
         </label>
@@ -43,7 +42,7 @@ export default function SchedulePage() {
 
       <section className="grid gap-3">
         {filtered.map((match) => (
-          <MatchCard key={match.id} match={match} />
+          <MatchCard key={match.id} match={match} teams={teams} />
         ))}
       </section>
     </main>

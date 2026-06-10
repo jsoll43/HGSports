@@ -5,13 +5,13 @@ import { useLeague } from '@/components/LeagueProvider'
 import { displayDate, isPlayerInMatch, matchTitle, playerById, playerName, teamById, teamPlayers } from '@/lib/league'
 
 export default function MatchContactClient({ matchId }: { matchId: string }) {
-  const { matches, selectedPlayerId } = useLeague()
+  const { matches, selectedPlayerId, players, teams } = useLeague()
   const [copied, setCopied] = useState('')
   const match = matches.find((item) => item.id === matchId)
-  const selectedPlayer = selectedPlayerId ? playerById(selectedPlayerId) : undefined
+  const selectedPlayer = selectedPlayerId ? playerById(selectedPlayerId, players) : undefined
   const allPlayers = useMemo(
-    () => (match ? [...teamPlayers(match.teamAId), ...teamPlayers(match.teamBId)] : []),
-    [match],
+    () => (match ? [...teamPlayers(match.teamAId, players), ...teamPlayers(match.teamBId, players)] : []),
+    [match, players],
   )
 
   if (!match) {
@@ -33,7 +33,7 @@ export default function MatchContactClient({ matchId }: { matchId: string }) {
     )
   }
 
-  const selectedTeam = teamById(selectedPlayer.teamId)
+  const selectedTeam = teamById(selectedPlayer.teamId, teams)
   const message = `Hey, this is ${playerName(selectedPlayer)} from ${selectedTeam?.name}. We're scheduled to play Week ${match.week} on ${displayDate(match)}. Any chance you can reschedule?`
   const numbers = allPlayers.map((player) => player.phone).join(',')
 
@@ -46,7 +46,7 @@ export default function MatchContactClient({ matchId }: { matchId: string }) {
     <main className="grid gap-4">
       <div>
         <p className="text-sm font-black uppercase tracking-wide text-cyan-700">Match group</p>
-        <h1 className="text-3xl font-black text-navy">{matchTitle(match)}</h1>
+        <h1 className="text-3xl font-black text-navy">{matchTitle(match, teams)}</h1>
         <p className="font-semibold text-slate-600">Week {match.week} - {displayDate(match)}</p>
       </div>
 
@@ -57,9 +57,9 @@ export default function MatchContactClient({ matchId }: { matchId: string }) {
       <section className="grid gap-3">
         {[match.teamAId, match.teamBId].map((teamId) => (
           <div key={teamId} className="rounded-lg border border-cyan-100 bg-white p-4 shadow-sm">
-            <h2 className="text-xl font-black text-navy">{teamById(teamId)?.name}</h2>
+            <h2 className="text-xl font-black text-navy">{teamById(teamId, teams)?.name}</h2>
             <div className="mt-3 grid gap-2">
-              {teamPlayers(teamId).map((player) => (
+              {teamPlayers(teamId, players).map((player) => (
                 <a key={player.id} className="rounded-lg bg-aqua px-4 py-3 font-black text-navy" href={`sms:${player.phone}`}>
                   Text {playerName(player)} - {player.phone}
                 </a>

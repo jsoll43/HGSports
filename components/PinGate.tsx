@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLeague } from './LeagueProvider'
 
 export function PinGate({
   label,
@@ -11,6 +12,7 @@ export function PinGate({
   password?: string
   children: React.ReactNode
 }) {
+  const { source, seasonId } = useLeague()
   const [unlocked, setUnlocked] = useState(false)
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
@@ -20,8 +22,36 @@ export function PinGate({
   return (
     <form
       className="grid gap-3 rounded-lg border border-cyan-100 bg-white p-4 shadow-sm"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault()
+        if (source === 'supabase' && password === 'Glen') {
+          const response = await fetch('/api/pin/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ seasonId, pin }),
+          })
+          if (response.ok) {
+            setUnlocked(true)
+            setError('')
+          } else {
+            setError('That PIN did not match.')
+          }
+          return
+        }
+        if (source === 'supabase' && password !== 'Glen') {
+          const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pin }),
+          })
+          if (response.ok) {
+            setUnlocked(true)
+            setError('')
+          } else {
+            setError('That password did not match.')
+          }
+          return
+        }
         if (pin.trim().toLowerCase() === password.toLowerCase()) {
           setUnlocked(true)
           setError('')
