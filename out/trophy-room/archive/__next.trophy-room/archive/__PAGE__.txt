@@ -1,6 +1,0 @@
-1:"$Sreact.fragment"
-2:I[22016,["/_next/static/chunks/099c5pguf8v5t.js","/_next/static/chunks/14mrh2-p_w84d.js"],""]
-3:I[97367,["/_next/static/chunks/099c5pguf8v5t.js","/_next/static/chunks/14mrh2-p_w84d.js"],"OutletBoundary"]
-4:"$Sreact.suspense"
-0:{"rsc":["$","$1","c",{"children":[["$","main",null,{"className":"grid gap-4 rounded-lg border border-cyan-100 bg-white p-5 shadow-sm","children":[["$","h1",null,{"className":"text-3xl font-black text-navy","children":"Archived Seasons"}],["$","p",null,{"className":"font-semibold text-slate-600","children":"Season archives will live here once historical schedules and standings are imported."}],["$","$L2",null,{"href":"/trophy-room","className":"min-h-12 rounded-lg bg-navy px-4 py-3 text-center font-black text-white","children":"Back to Trophy Room"}]]}],null,["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"YJXGttBS6lcBoWT8LFBX2"}
-5:null
