@@ -94,6 +94,7 @@ a {
 .form button,
 .inline-form button,
 .actions button,
+.match-action-buttons button,
 .button-row button,
 .contacts .primary-link,
 .bottom-nav button,
@@ -515,12 +516,17 @@ textarea {
 }
 
 .contacts a {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
   border-radius: 8px;
-  padding: 12px;
+  padding: 9px 10px;
   background: #dff8fb;
   color: #0b2545;
+  text-align: center;
   text-decoration: none;
+  font-size: 0.88rem;
   font-weight: 900;
 }
 
@@ -602,6 +608,27 @@ textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.text-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.match-action-buttons {
+  display: grid;
+  gap: 8px;
+}
+
+.match-action-buttons button:first-child {
+  min-height: 58px;
+  background: #00899a;
+  font-size: 1.08rem;
+}
+
+.match-action-buttons button.secondary {
+  min-height: 42px;
 }
 
 .button-row button,

@@ -300,9 +300,9 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
     .filter((match) => match.teamA === selectedTeam.id || match.teamB === selectedTeam.id)
     .sort(bySchedule)
   const openMatches = allMyMatches
-    .filter((match) => match.status !== 'final' || isOverdue(match))
+    .filter((match) => !isPlayedForPlayer(match))
   const playedMatches = allMyMatches
-    .filter((match) => match.status === 'final' && !isOverdue(match))
+    .filter(isPlayedForPlayer)
     .reverse()
   const nextMatch = openMatches[0]
   const otherOpenMatches = openMatches.slice(1)
@@ -314,7 +314,7 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
           <p>Continue as {selectedPlayer.first} {selectedPlayer.last}</p>
           <button type="button" onClick={() => setSelectedPlayerId('')}>Change player</button>
         </div>
-        <h1>{selectedTeam.name}</h1>
+        <h1>Team: {selectedTeam.name}</h1>
         <span>{selectedTeam.flight} Band</span>
       </div>
       <div className="stat-grid">
@@ -690,11 +690,11 @@ function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, su
         <StatusBadge status={status} />
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
-      {showContacts && selectedPlayer && (
-        <ContactTools match={match} selectedPlayer={selectedPlayer} />
-      )}
       {showContacts && match.status !== 'final' && (
         <MatchActions match={match} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
+      )}
+      {showContacts && selectedPlayer && (
+        <ContactTools match={match} selectedPlayer={selectedPlayer} />
       )}
     </article>
   )
@@ -715,9 +715,11 @@ function ContactTools({ match, selectedPlayer }) {
   return (
     <div className="contacts">
       <p className="helper-text">Tap any player below to launch a text message to that person.</p>
-      {matchPlayers.map((player) => (
-        <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last} · {player.phone}</a>
-      ))}
+      <div className="text-grid">
+        {matchPlayers.map((player) => (
+          <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+        ))}
+      </div>
       <div className="button-row">
         <button type="button" onClick={() => copyText(numbers.join(', '), 'Copied all numbers.')}>Copy All Numbers</button>
         <button type="button" onClick={() => copyText(message, 'Copied message.')}>Copy Message</button>
@@ -746,7 +748,7 @@ function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
 
   return (
     <div className="actions">
-      <div className="button-row">
+      <div className="match-action-buttons">
         <button type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>Submit Score</button>
         <button type="button" className="secondary" onClick={() => setOpen(open === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
       </div>
@@ -837,6 +839,10 @@ function validateScore(score) {
 
 function isOverdue(match) {
   return new Date(`${match.date}T23:59:59`) < new Date('2026-06-10T12:00:00') && !['final', 'pending'].includes(match.status)
+}
+
+function isPlayedForPlayer(match) {
+  return (match.status === 'final' || match.status === 'pending') && !isOverdue(match)
 }
 
 function bySchedule(a, b) {
