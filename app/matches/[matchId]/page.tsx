@@ -1,5 +1,5 @@
 import MatchContactClient from './MatchContactClient'
-import { matches } from '@/lib/league'
+import { matches } from '@/lib/data'
 
 export function generateStaticParams() {
   return matches.map((match) => ({
@@ -7,10 +7,11 @@ export function generateStaticParams() {
   }))
 }
 
-export default function MatchContactPage({
+export default async function MatchContactPage({
   params,
 }: {
-  params: { matchId: string }
+  params: Promise<{ matchId: string }>
 }) {
-  return <MatchContactClient matchId={params.matchId} />
+  const { matchId } = await params
+  return <MatchContactClient matchId={matchId} />
 }

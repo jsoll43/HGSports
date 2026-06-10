@@ -7,8 +7,12 @@ import { displayDate, isPlayerInMatch, matchTitle, playerById, playerName, teamB
 export default function MatchContactClient({ matchId }: { matchId: string }) {
   const { matches, selectedPlayerId } = useLeague()
   const [copied, setCopied] = useState('')
-const match = matches.find((item) => item.id === matchId)
+  const match = matches.find((item) => item.id === matchId)
   const selectedPlayer = selectedPlayerId ? playerById(selectedPlayerId) : undefined
+  const allPlayers = useMemo(
+    () => (match ? [...teamPlayers(match.teamAId), ...teamPlayers(match.teamBId)] : []),
+    [match],
+  )
 
   if (!match) {
     return (
@@ -19,7 +23,6 @@ const match = matches.find((item) => item.id === matchId)
   }
 
   const canView = selectedPlayer && isPlayerInMatch(selectedPlayer, match)
-  const allPlayers = useMemo(() => [...teamPlayers(match.teamAId), ...teamPlayers(match.teamBId)], [match.teamAId, match.teamBId])
 
   if (!canView) {
     return (
@@ -44,7 +47,7 @@ const match = matches.find((item) => item.id === matchId)
       <div>
         <p className="text-sm font-black uppercase tracking-wide text-cyan-700">Match group</p>
         <h1 className="text-3xl font-black text-navy">{matchTitle(match)}</h1>
-        <p className="font-semibold text-slate-600">Week {match.week} · {displayDate(match)}</p>
+        <p className="font-semibold text-slate-600">Week {match.week} - {displayDate(match)}</p>
       </div>
 
       <a className="min-h-12 rounded-lg bg-navy px-4 py-3 text-center font-black text-white" href={`sms:${numbers}?&body=${encodeURIComponent(message)}`}>
@@ -58,7 +61,7 @@ const match = matches.find((item) => item.id === matchId)
             <div className="mt-3 grid gap-2">
               {teamPlayers(teamId).map((player) => (
                 <a key={player.id} className="rounded-lg bg-aqua px-4 py-3 font-black text-navy" href={`sms:${player.phone}`}>
-                  Text {playerName(player)} · {player.phone}
+                  Text {playerName(player)} - {player.phone}
                 </a>
               ))}
             </div>
