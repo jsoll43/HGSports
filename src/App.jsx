@@ -714,7 +714,7 @@ function ContactTools({ match, selectedPlayer }) {
 
   return (
     <div className="contacts">
-      <p className="helper-text">Tap any player below to launch a text message to that person.</p>
+      <p className="helper-text">Tap any player to begin a text message</p>
       <div className="text-grid">
         {matchPlayers.map((player) => (
           <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
