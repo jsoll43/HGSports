@@ -613,6 +613,66 @@ textarea {
   font-weight: 700;
 }
 
+.payment-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.payment-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #cfeff6;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.payment-row.paid {
+  background: #effbf3;
+  border-color: #b7edc8;
+}
+
+.payment-row p,
+.payment-row h2 {
+  margin: 0;
+}
+
+.payment-row p {
+  color: #617181;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.payment-row h2 {
+  color: #0b2545;
+  font-size: 1rem;
+}
+
+.payment-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #0b2545;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.payment-toggle input {
+  width: auto;
+  min-height: auto;
+}
+
+.payment-note {
+  grid-column: 1 / -1;
+}
+
 .admin-team-card,
 .admin-match-card {
   gap: 12px;
@@ -854,6 +914,7 @@ textarea {
   .admin-team-head,
   .admin-player-grid,
   .admin-player-card,
+  .payment-row,
   .admin-match-grid {
     grid-template-columns: 1fr;
   }

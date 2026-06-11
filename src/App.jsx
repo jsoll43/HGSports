@@ -2,35 +2,35 @@ import { useEffect, useMemo, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
-const STORAGE_PREFIX = 'hg-2026-v2'
+const STORAGE_PREFIX = 'hg-2026-v3'
 
 const flights = ['Green', 'Red', 'White']
 
 const initialTeams = [
-  { id: 'team-1', flight: 'Green', number: 1, name: 'Tronco / Soll' },
-  { id: 'team-2', flight: 'Green', number: 2, name: 'Gatti / Hourani' },
-  { id: 'team-3', flight: 'Green', number: 3, name: 'Brody / Van Leeuwen' },
-  { id: 'team-4', flight: 'Green', number: 4, name: 'Kemner / Polizzi' },
-  { id: 'team-5', flight: 'Green', number: 5, name: 'Schreiber / Schreiber' },
-  { id: 'team-6', flight: 'Green', number: 6, name: 'Merrill / Devino' },
-  { id: 'team-7', flight: 'Green', number: 7, name: 'Mertz' },
-  { id: 'team-8', flight: 'Green', number: 8, name: 'Sharkey / Wade' },
-  { id: 'team-9', flight: 'Red', number: 9, name: 'Walter / Mueller' },
-  { id: 'team-10', flight: 'Red', number: 10, name: 'Babcock / Babcock' },
-  { id: 'team-11', flight: 'Red', number: 11, name: 'Stola / Murray' },
-  { id: 'team-12', flight: 'Red', number: 12, name: 'Danenza / Jecmen' },
-  { id: 'team-13', flight: 'Red', number: 13, name: 'Angelone / McDonald' },
-  { id: 'team-14', flight: 'Red', number: 14, name: 'Franecki / Contino' },
-  { id: 'team-15', flight: 'Red', number: 15, name: 'Gledhill / Lofink' },
-  { id: 'team-16', flight: 'Red', number: 16, name: 'Mills / Carlin' },
-  { id: 'team-17', flight: 'White', number: 17, name: 'Anderson / Anderson' },
-  { id: 'team-18', flight: 'White', number: 18, name: 'Brumbach / Brumbach' },
-  { id: 'team-19', flight: 'White', number: 19, name: 'Hourani / Hourani' },
-  { id: 'team-20', flight: 'White', number: 20, name: 'Houck / McCarthy' },
-  { id: 'team-21', flight: 'White', number: 21, name: 'Stola / Monschein' },
-  { id: 'team-22', flight: 'White', number: 22, name: 'Moore / Moore' },
-  { id: 'team-23', flight: 'White', number: 23, name: 'Morrondo / Whittle' },
-  { id: 'team-24', flight: 'White', number: 24, name: 'Luciano / Luciano' },
+  { id: 'team-1', flight: 'Green', number: 1, name: 'Tronco / Soll', paid: false, paymentNote: '' },
+  { id: 'team-2', flight: 'Green', number: 2, name: 'Gatti / Hourani', paid: false, paymentNote: '' },
+  { id: 'team-3', flight: 'Green', number: 3, name: 'Brody / Van Leeuwen', paid: false, paymentNote: '' },
+  { id: 'team-4', flight: 'Green', number: 4, name: 'Kemner / Polizzi', paid: false, paymentNote: '' },
+  { id: 'team-5', flight: 'Green', number: 5, name: 'Walter / Mueller', paid: false, paymentNote: '' },
+  { id: 'team-6', flight: 'Green', number: 6, name: 'Babcock / Babcock', paid: false, paymentNote: '' },
+  { id: 'team-7', flight: 'Green', number: 7, name: 'Anderson / Anderson', paid: false, paymentNote: '' },
+  { id: 'team-8', flight: 'Green', number: 8, name: 'Franecki / Contino', paid: false, paymentNote: '' },
+  { id: 'team-9', flight: 'Red', number: 9, name: 'Hourani / Hourani', paid: false, paymentNote: '' },
+  { id: 'team-10', flight: 'Red', number: 10, name: 'Moore / Moore', paid: false, paymentNote: '' },
+  { id: 'team-11', flight: 'Red', number: 11, name: 'Luciano / Luciano', paid: false, paymentNote: '' },
+  { id: 'team-12', flight: 'Red', number: 12, name: 'Stola / Monschein', paid: false, paymentNote: '' },
+  { id: 'team-13', flight: 'Red', number: 13, name: 'Danenza / Jecmen', paid: false, paymentNote: '' },
+  { id: 'team-14', flight: 'Red', number: 14, name: 'Mills / Carlin', paid: false, paymentNote: '' },
+  { id: 'team-15', flight: 'Red', number: 15, name: 'Gledhill / Lofink', paid: false, paymentNote: '' },
+  { id: 'team-16', flight: 'Red', number: 16, name: 'Schreiber / Schreiber', paid: false, paymentNote: '' },
+  { id: 'team-17', flight: 'White', number: 17, name: 'Stola / Murray', paid: false, paymentNote: '' },
+  { id: 'team-18', flight: 'White', number: 18, name: 'Brumbach / Brumbach', paid: false, paymentNote: '' },
+  { id: 'team-19', flight: 'White', number: 19, name: 'Angelone / McDonald', paid: false, paymentNote: '' },
+  { id: 'team-20', flight: 'White', number: 20, name: 'Houck / McCarthy', paid: false, paymentNote: '' },
+  { id: 'team-21', flight: 'White', number: 21, name: 'Morrondo / Whittle', paid: false, paymentNote: '' },
+  { id: 'team-22', flight: 'White', number: 22, name: 'Mertz', paid: false, paymentNote: '' },
+  { id: 'team-23', flight: 'White', number: 23, name: 'Sharkey / Wade', paid: false, paymentNote: '' },
+  { id: 'team-24', flight: 'White', number: 24, name: 'Merrill / Devino', paid: false, paymentNote: '' },
 ]
 
 const initialPlayers = [
@@ -42,46 +42,46 @@ const initialPlayers = [
   { id: 'player-3b', first: 'Keith', last: 'Van Leeuwen', phone: '302-723-9449', email: 'Keith.vanleeuwen@gmail.com', teamId: 'team-3' },
   { id: 'player-4a', first: 'Brian', last: 'Kemner', phone: '856-261-3748', email: 'bkemner11@msn.com', teamId: 'team-4' },
   { id: 'player-4b', first: 'Tom', last: 'Polizzi', phone: '(856) 981-6803', email: 'Tompolizzi78@gmail.com', teamId: 'team-4' },
-  { id: 'player-5a', first: 'Scott', last: 'Schreiber', phone: '', email: 'schreibs13@gmail.com', teamId: 'team-5' },
-  { id: 'player-5b', first: 'Travis', last: 'Schreiber', phone: '', email: '', teamId: 'team-5' },
-  { id: 'player-6a', first: 'JJ', last: 'Merrill', phone: '215-260-2947', email: 'jmer125@gmail.com', teamId: 'team-6' },
-  { id: 'player-6b', first: 'Chad', last: 'Devino', phone: '', email: 'chaddevino@gmail.com', teamId: 'team-6' },
-  { id: 'player-7a', first: 'Shane', last: 'Mertz', phone: '', email: 'shanem75@aol.com', teamId: 'team-7' },
-  { id: 'player-7b', first: '', last: '', phone: '', email: '', teamId: 'team-7' },
-  { id: 'player-8a', first: 'Jim', last: 'Sharkey', phone: '', email: 'jshark1987@gmail.com', teamId: 'team-8' },
-  { id: 'player-8b', first: 'John', last: 'Wade', phone: '', email: 'Jmwade87@gmail.com', teamId: 'team-8' },
-  { id: 'player-9a', first: 'Chris', last: 'Walter', phone: '856-304-8263', email: 'chrisw427@mac.com', teamId: 'team-9' },
-  { id: 'player-9b', first: 'Cory', last: 'Mueller', phone: '973-224-0276', email: 'corymueller@gmail.com', teamId: 'team-9' },
-  { id: 'player-10a', first: 'Brian', last: 'Babcock', phone: '6095131312', email: 'Brianbabcock383@hotmail.com', teamId: 'team-10' },
-  { id: 'player-10b', first: 'Sean', last: 'Babcock', phone: '609-417-1338', email: 'Seanbabcock5@hotmail.com', teamId: 'team-10' },
-  { id: 'player-11a', first: 'Anthony', last: 'Stola', phone: '8598899218', email: 'anthony.stola@gmail.com', teamId: 'team-11' },
-  { id: 'player-11b', first: 'Brendan', last: 'Murray', phone: '518 - 527-1901', email: 'Bmurray2@gmail.com', teamId: 'team-11' },
-  { id: 'player-12a', first: 'Warren', last: 'Danenza', phone: '', email: 'wmdanenza@gmail.com', teamId: 'team-12' },
-  { id: 'player-12b', first: 'Chris', last: 'Jecmen', phone: '856-562-1227', email: 'Cjecmen@gmail.com', teamId: 'team-12' },
-  { id: 'player-13a', first: 'Jay', last: 'Angelone', phone: '8569965611', email: 'jasonangelone@comcast.net', teamId: 'team-13' },
-  { id: 'player-13b', first: 'Kevin', last: 'McDonald', phone: '', email: '', teamId: 'team-13' },
-  { id: 'player-14a', first: 'Gary', last: 'Franecki', phone: '856-761-6930', email: 'gfranecki@gmail.com', teamId: 'team-14' },
-  { id: 'player-14b', first: 'Alex', last: 'Contino', phone: '609-760-9509', email: 'acontino@hotmail.com', teamId: 'team-14' },
+  { id: 'player-5a', first: 'Chris', last: 'Walter', phone: '856-304-8263', email: 'chrisw427@mac.com', teamId: 'team-5' },
+  { id: 'player-5b', first: 'Cory', last: 'Mueller', phone: '973-224-0276', email: 'corymueller@gmail.com', teamId: 'team-5' },
+  { id: 'player-6a', first: 'Brian', last: 'Babcock', phone: '6095131312', email: 'Brianbabcock383@hotmail.com', teamId: 'team-6' },
+  { id: 'player-6b', first: 'Sean', last: 'Babcock', phone: '609-417-1338', email: 'Seanbabcock5@hotmail.com', teamId: 'team-6' },
+  { id: 'player-7a', first: 'Mary Ann', last: 'Anderson', phone: '8569525951', email: 'manderson616@gmail.com', teamId: 'team-7' },
+  { id: 'player-7b', first: 'Todd', last: 'Anderson', phone: '8562780891', email: 'manderson616@gmail.com', teamId: 'team-7' },
+  { id: 'player-8a', first: 'Gary', last: 'Franecki', phone: '856-761-6930', email: 'gfranecki@gmail.com', teamId: 'team-8' },
+  { id: 'player-8b', first: 'Alex', last: 'Contino', phone: '609-760-9509', email: 'acontino@hotmail.com', teamId: 'team-8' },
+  { id: 'player-9a', first: 'John', last: 'Hourani', phone: '856-2619462', email: 'jhourani@comcast.net', teamId: 'team-9' },
+  { id: 'player-9b', first: 'Wendy', last: 'Hourani', phone: '856-261-9462', email: 'Wendyhourani@hotmail.com', teamId: 'team-9' },
+  { id: 'player-10a', first: 'Korie', last: 'Moore', phone: '856-816-0195', email: 'Koriemaej@yahoo.com', teamId: 'team-10' },
+  { id: 'player-10b', first: 'Justin', last: 'Moore', phone: '732-309-4178', email: 'Jnmcrew7@gmail.com', teamId: 'team-10' },
+  { id: 'player-11a', first: 'Alison', last: 'Luciano', phone: '8563131888', email: 'Tabytha25@yahoo.com', teamId: 'team-11' },
+  { id: 'player-11b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-11' },
+  { id: 'player-12a', first: 'Francesca', last: 'Stola', phone: '267-693-8338', email: 'francesca.m.stola@gmail.com', teamId: 'team-12' },
+  { id: 'player-12b', first: 'Lauren', last: 'Monschein', phone: '856-816-4699', email: 'lalacull@icloud.com', teamId: 'team-12' },
+  { id: 'player-13a', first: 'Warren', last: 'Danenza', phone: '', email: 'wmdanenza@gmail.com', teamId: 'team-13' },
+  { id: 'player-13b', first: 'Chris', last: 'Jecmen', phone: '856-562-1227', email: 'Cjecmen@gmail.com', teamId: 'team-13' },
+  { id: 'player-14a', first: 'Jim', last: 'Mills', phone: '609-405-6258', email: 'jim.mills0205@gmail.com', teamId: 'team-14' },
+  { id: 'player-14b', first: 'Mark', last: 'Carlin', phone: '(609) 513-8782', email: 'markc1487@gmail.com', teamId: 'team-14' },
   { id: 'player-15a', first: 'Steve', last: 'Gledhill', phone: '', email: 'steve.gledhill@hotmail.com', teamId: 'team-15' },
   { id: 'player-15b', first: 'Cole', last: 'Lofink', phone: '', email: 'Colelofink@gmail.com', teamId: 'team-15' },
-  { id: 'player-16a', first: 'Jim', last: 'Mills', phone: '609-405-6258', email: 'jim.mills0205@gmail.com', teamId: 'team-16' },
-  { id: 'player-16b', first: 'Mark', last: 'Carlin', phone: '(609) 513-8782', email: 'markc1487@gmail.com', teamId: 'team-16' },
-  { id: 'player-17a', first: 'Mary Ann', last: 'Anderson', phone: '8569525951', email: 'manderson616@gmail.com', teamId: 'team-17' },
-  { id: 'player-17b', first: 'Todd', last: 'Anderson', phone: '8562780891', email: 'manderson616@gmail.com', teamId: 'team-17' },
+  { id: 'player-16a', first: 'Scott', last: 'Schreiber', phone: '', email: 'schreibs13@gmail.com', teamId: 'team-16' },
+  { id: 'player-16b', first: 'Travis', last: 'Schreiber', phone: '', email: '', teamId: 'team-16' },
+  { id: 'player-17a', first: 'Anthony', last: 'Stola', phone: '8598899218', email: 'anthony.stola@gmail.com', teamId: 'team-17' },
+  { id: 'player-17b', first: 'Brenden', last: 'Murray', phone: '518 - 527-1901', email: 'Bmurray2@gmail.com', teamId: 'team-17' },
   { id: 'player-18a', first: 'Joe', last: 'Brumbach', phone: '6092045246', email: 'Joe.brumbach@gmail.com', teamId: 'team-18' },
   { id: 'player-18b', first: 'Andrea', last: 'Brumbach', phone: '6094325897', email: 'brumbachandrea@gmail.com', teamId: 'team-18' },
-  { id: 'player-19a', first: 'John', last: 'Hourani', phone: '856-2619462', email: 'jhourani@comcast.net', teamId: 'team-19' },
-  { id: 'player-19b', first: 'Wendy', last: 'Hourani', phone: '856-261-9462', email: 'Wendyhourani@hotmail.com', teamId: 'team-19' },
+  { id: 'player-19a', first: 'Jay', last: 'Angelone', phone: '8569965611', email: 'jasonangelone@comcast.net', teamId: 'team-19' },
+  { id: 'player-19b', first: 'Kevin', last: 'McDonald', phone: '', email: '', teamId: 'team-19' },
   { id: 'player-20a', first: 'Brittany', last: 'Houck', phone: '856.304.0748', email: 'Brittanyhouck8@gmail.com', teamId: 'team-20' },
   { id: 'player-20b', first: 'Lisa', last: 'McCarthy', phone: '(856) 264-2488', email: 'Lisamariemc619@gmail.com', teamId: 'team-20' },
-  { id: 'player-21a', first: 'Francesca M.', last: 'Stola', phone: '267-693-8338', email: 'francesca.m.stola@gmail.com', teamId: 'team-21' },
-  { id: 'player-21b', first: 'Lauren', last: 'Monschein', phone: '856-816-4699', email: 'lalacull@icloud.com', teamId: 'team-21' },
-  { id: 'player-22a', first: 'Korie', last: 'Moore', phone: '856-816-0195', email: 'Koriemaej@yahoo.com', teamId: 'team-22' },
-  { id: 'player-22b', first: 'Justin', last: 'Moore', phone: '732-309-4178', email: 'Jnmcrew7@gmail.com', teamId: 'team-22' },
-  { id: 'player-23a', first: 'Julia', last: 'Morrondo', phone: '302-381-1092', email: 'Jhmondoro@gmail.com', teamId: 'team-23' },
-  { id: 'player-23b', first: 'Jackie', last: 'Whittle', phone: '201-486-8278', email: 'Lange.Jaclyn@gmail.com', teamId: 'team-23' },
-  { id: 'player-24a', first: 'Alison', last: 'Luciano', phone: '8563131888', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
-  { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
+  { id: 'player-21a', first: 'Julia', last: 'Morrondo', phone: '302-381-1092', email: 'Jhmondoro@gmail.com', teamId: 'team-21' },
+  { id: 'player-21b', first: 'Jackie', last: 'Whittle', phone: '201-486-8278', email: 'Lange.Jaclyn@gmail.com', teamId: 'team-21' },
+  { id: 'player-22a', first: 'Shane', last: 'Mertz', phone: '', email: 'shanem75@aol.com', teamId: 'team-22' },
+  { id: 'player-22b', first: '', last: '', phone: '', email: '', teamId: 'team-22' },
+  { id: 'player-23a', first: 'Jim', last: 'Sharkey', phone: '', email: 'jshark1987@gmail.com', teamId: 'team-23' },
+  { id: 'player-23b', first: 'John', last: 'Wade', phone: '', email: 'Jmwade87@gmail.com', teamId: 'team-23' },
+  { id: 'player-24a', first: 'JJ', last: 'Merrill', phone: '215-260-2947', email: 'jmer125@gmail.com', teamId: 'team-24' },
+  { id: 'player-24b', first: 'Chad', last: 'Devino', phone: '', email: 'chaddevino@gmail.com', teamId: 'team-24' },
 ]
 
 const initialMatches = createSeasonSchedule(initialTeams)
@@ -578,7 +578,7 @@ function Admin({
           Sign out
         </button>
       </div>
-      <Segmented options={['Scores', 'Roster', 'Schedule', 'Import', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
+      <Segmented options={['Scores', 'Payments', 'Roster', 'Schedule', 'Import', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
       {tab === 'Scores' && (
         <Card title="Pending Scores">
           {pending.length === 0 && <p className="empty">No pending scores.</p>}
@@ -599,6 +599,9 @@ function Admin({
       )}
       {tab === 'Roster' && (
         <RosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
+      )}
+      {tab === 'Payments' && (
+        <PaymentTracker teams={teams} updateTeam={updateTeam} />
       )}
       {tab === 'Schedule' && (
         <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
@@ -621,6 +624,47 @@ function Admin({
         </Card>
       )}
     </section>
+  )
+}
+
+function PaymentTracker({ teams, updateTeam }) {
+  const sortedTeams = [...teams].sort((a, b) => a.number - b.number)
+  const paidCount = sortedTeams.filter((team) => team.paid).length
+
+  return (
+    <Card title="Registration Payments">
+      <div className="payment-summary">
+        <Stat label="Paid" value={paidCount} />
+        <Stat label="Unpaid" value={sortedTeams.length - paidCount} />
+        <Stat label="Teams" value={sortedTeams.length} />
+      </div>
+      <div className="card-list">
+        {sortedTeams.map((team) => (
+          <article className={`payment-row ${team.paid ? 'paid' : ''}`} key={team.id}>
+            <div>
+              <p>Team {team.number} · {team.flight} Band</p>
+              <h2>{team.name}</h2>
+            </div>
+            <label className="payment-toggle">
+              <input
+                type="checkbox"
+                checked={Boolean(team.paid)}
+                onChange={(event) => updateTeam(team.id, { paid: event.target.checked })}
+              />
+              Paid
+            </label>
+            <label className="field payment-note">
+              Note
+              <input
+                value={team.paymentNote || ''}
+                placeholder="Check, Venmo, cash, etc."
+                onChange={(event) => updateTeam(team.id, { paymentNote: event.target.value })}
+              />
+            </label>
+          </article>
+        ))}
+      </div>
+    </Card>
   )
 }
 
