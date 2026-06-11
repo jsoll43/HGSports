@@ -518,7 +518,8 @@ textarea {
   gap: 10px;
 }
 
-.contacts a {
+.contacts a,
+.text-disabled {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -531,6 +532,11 @@ textarea {
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 900;
+}
+
+.text-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .download-link {
@@ -605,6 +611,54 @@ textarea {
   margin: 0;
   color: #334155;
   font-weight: 700;
+}
+
+.admin-team-card,
+.admin-match-card {
+  gap: 12px;
+}
+
+.admin-team-head,
+.admin-match-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-team-head {
+  grid-template-columns: 92px 120px minmax(0, 1fr);
+}
+
+.admin-player-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.admin-player-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fcff;
+}
+
+.admin-player-card .field:nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+.admin-match-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.schedule-week {
+  display: grid;
+  gap: 8px;
+}
+
+.schedule-week h3 {
+  margin: 0;
+  color: #0b2545;
 }
 
 .button-row {
@@ -794,6 +848,20 @@ textarea {
   background: transparent;
   color: #0b2545;
   font-size: 0.68rem;
+}
+
+@media (max-width: 640px) {
+  .admin-team-head,
+  .admin-player-grid,
+  .admin-player-card,
+  .admin-match-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-name-field,
+  .admin-player-card .field:nth-child(n + 3) {
+    grid-column: auto;
+  }
 }
 
 @media (min-width: 720px) {

@@ -2,56 +2,89 @@ import { useEffect, useMemo, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
+const STORAGE_PREFIX = 'hg-2026-v2'
 
 const flights = ['Green', 'Red', 'White']
 
-const teams = [
-  { id: 'green-1', flight: 'Green', number: 1, name: 'Soll / Tronco' },
-  { id: 'green-2', flight: 'Green', number: 2, name: 'Gatti / Hourani' },
-  { id: 'red-1', flight: 'Red', number: 3, name: 'Kemner / Polizzi' },
-  { id: 'red-2', flight: 'Red', number: 4, name: 'Mueller / Walter' },
-  { id: 'white-1', flight: 'White', number: 5, name: 'Hourani / Hourani' },
-  { id: 'white-2', flight: 'White', number: 6, name: 'Deck Duo' },
+const initialTeams = [
+  { id: 'team-1', flight: 'Green', number: 1, name: 'Tronco / Soll' },
+  { id: 'team-2', flight: 'Green', number: 2, name: 'Gatti / Hourani' },
+  { id: 'team-3', flight: 'Green', number: 3, name: 'Brody / Van Leeuwen' },
+  { id: 'team-4', flight: 'Green', number: 4, name: 'Kemner / Polizzi' },
+  { id: 'team-5', flight: 'Green', number: 5, name: 'Schreiber / Schreiber' },
+  { id: 'team-6', flight: 'Green', number: 6, name: 'Merrill / Devino' },
+  { id: 'team-7', flight: 'Green', number: 7, name: 'Mertz' },
+  { id: 'team-8', flight: 'Green', number: 8, name: 'Sharkey / Wade' },
+  { id: 'team-9', flight: 'Red', number: 9, name: 'Walter / Mueller' },
+  { id: 'team-10', flight: 'Red', number: 10, name: 'Babcock / Babcock' },
+  { id: 'team-11', flight: 'Red', number: 11, name: 'Stola / Murray' },
+  { id: 'team-12', flight: 'Red', number: 12, name: 'Danenza / Jecmen' },
+  { id: 'team-13', flight: 'Red', number: 13, name: 'Angelone / McDonald' },
+  { id: 'team-14', flight: 'Red', number: 14, name: 'Franecki / Contino' },
+  { id: 'team-15', flight: 'Red', number: 15, name: 'Gledhill / Lofink' },
+  { id: 'team-16', flight: 'Red', number: 16, name: 'Mills / Carlin' },
+  { id: 'team-17', flight: 'White', number: 17, name: 'Anderson / Anderson' },
+  { id: 'team-18', flight: 'White', number: 18, name: 'Brumbach / Brumbach' },
+  { id: 'team-19', flight: 'White', number: 19, name: 'Hourani / Hourani' },
+  { id: 'team-20', flight: 'White', number: 20, name: 'Houck / McCarthy' },
+  { id: 'team-21', flight: 'White', number: 21, name: 'Stola / Monschein' },
+  { id: 'team-22', flight: 'White', number: 22, name: 'Moore / Moore' },
+  { id: 'team-23', flight: 'White', number: 23, name: 'Morrondo / Whittle' },
+  { id: 'team-24', flight: 'White', number: 24, name: 'Luciano / Luciano' },
 ]
 
-const players = [
-  { id: 'jon-soll', first: 'Jonathan', last: 'Soll', phone: '856-555-0101', teamId: 'green-1' },
-  { id: 'matt-tronco', first: 'Matt', last: 'Tronco', phone: '856-555-0102', teamId: 'green-1' },
-  { id: 'mike-gatti', first: 'Mike', last: 'Gatti', phone: '856-555-0103', teamId: 'green-2' },
-  { id: 'john-hourani-g', first: 'John', last: 'Hourani', phone: '856-555-0104', teamId: 'green-2' },
-  { id: 'brian-kemner', first: 'Brian', last: 'Kemner', phone: '856-555-0105', teamId: 'red-1' },
-  { id: 'tom-polizzi', first: 'Tom', last: 'Polizzi', phone: '856-555-0106', teamId: 'red-1' },
-  { id: 'cory-mueller', first: 'Cory', last: 'Mueller', phone: '856-555-0107', teamId: 'red-2' },
-  { id: 'chris-walter', first: 'Chris', last: 'Walter', phone: '856-555-0108', teamId: 'red-2' },
-  { id: 'john-hourani-w', first: 'John', last: 'Hourani', phone: '856-555-0109', teamId: 'white-1' },
-  { id: 'wendy-hourani', first: 'Wendy', last: 'Hourani', phone: '856-555-0110', teamId: 'white-1' },
-  { id: 'casey-deck', first: 'Casey', last: 'Deck', phone: '856-555-0111', teamId: 'white-2' },
-  { id: 'taylor-deck', first: 'Taylor', last: 'Deck', phone: '856-555-0112', teamId: 'white-2' },
+const initialPlayers = [
+  { id: 'player-1a', first: 'Matthew', last: 'Tronco', phone: '6092029539', email: 'matthewtronco@yahoo.com', teamId: 'team-1' },
+  { id: 'player-1b', first: 'Jon', last: 'Soll', phone: '6092302432', email: 'jsoll43@gmail.com', teamId: 'team-1' },
+  { id: 'player-2a', first: 'Mike', last: 'Gatti', phone: '6096347552', email: 'm.gatti3@gmail.com', teamId: 'team-2' },
+  { id: 'player-2b', first: 'John', last: 'Hourani', phone: '8562619462', email: 'jhourani@comcast.net', teamId: 'team-2' },
+  { id: 'player-3a', first: 'Michael', last: 'Brody', phone: '609-556-9824', email: 'mbrody31@gmail.com', teamId: 'team-3' },
+  { id: 'player-3b', first: 'Keith', last: 'Van Leeuwen', phone: '302-723-9449', email: 'Keith.vanleeuwen@gmail.com', teamId: 'team-3' },
+  { id: 'player-4a', first: 'Brian', last: 'Kemner', phone: '856-261-3748', email: 'bkemner11@msn.com', teamId: 'team-4' },
+  { id: 'player-4b', first: 'Tom', last: 'Polizzi', phone: '(856) 981-6803', email: 'Tompolizzi78@gmail.com', teamId: 'team-4' },
+  { id: 'player-5a', first: 'Scott', last: 'Schreiber', phone: '', email: 'schreibs13@gmail.com', teamId: 'team-5' },
+  { id: 'player-5b', first: 'Travis', last: 'Schreiber', phone: '', email: '', teamId: 'team-5' },
+  { id: 'player-6a', first: 'JJ', last: 'Merrill', phone: '215-260-2947', email: 'jmer125@gmail.com', teamId: 'team-6' },
+  { id: 'player-6b', first: 'Chad', last: 'Devino', phone: '', email: 'chaddevino@gmail.com', teamId: 'team-6' },
+  { id: 'player-7a', first: 'Shane', last: 'Mertz', phone: '', email: 'shanem75@aol.com', teamId: 'team-7' },
+  { id: 'player-7b', first: '', last: '', phone: '', email: '', teamId: 'team-7' },
+  { id: 'player-8a', first: 'Jim', last: 'Sharkey', phone: '', email: 'jshark1987@gmail.com', teamId: 'team-8' },
+  { id: 'player-8b', first: 'John', last: 'Wade', phone: '', email: 'Jmwade87@gmail.com', teamId: 'team-8' },
+  { id: 'player-9a', first: 'Chris', last: 'Walter', phone: '856-304-8263', email: 'chrisw427@mac.com', teamId: 'team-9' },
+  { id: 'player-9b', first: 'Cory', last: 'Mueller', phone: '973-224-0276', email: 'corymueller@gmail.com', teamId: 'team-9' },
+  { id: 'player-10a', first: 'Brian', last: 'Babcock', phone: '6095131312', email: 'Brianbabcock383@hotmail.com', teamId: 'team-10' },
+  { id: 'player-10b', first: 'Sean', last: 'Babcock', phone: '609-417-1338', email: 'Seanbabcock5@hotmail.com', teamId: 'team-10' },
+  { id: 'player-11a', first: 'Anthony', last: 'Stola', phone: '8598899218', email: 'anthony.stola@gmail.com', teamId: 'team-11' },
+  { id: 'player-11b', first: 'Brendan', last: 'Murray', phone: '518 - 527-1901', email: 'Bmurray2@gmail.com', teamId: 'team-11' },
+  { id: 'player-12a', first: 'Warren', last: 'Danenza', phone: '', email: 'wmdanenza@gmail.com', teamId: 'team-12' },
+  { id: 'player-12b', first: 'Chris', last: 'Jecmen', phone: '856-562-1227', email: 'Cjecmen@gmail.com', teamId: 'team-12' },
+  { id: 'player-13a', first: 'Jay', last: 'Angelone', phone: '8569965611', email: 'jasonangelone@comcast.net', teamId: 'team-13' },
+  { id: 'player-13b', first: 'Kevin', last: 'McDonald', phone: '', email: '', teamId: 'team-13' },
+  { id: 'player-14a', first: 'Gary', last: 'Franecki', phone: '856-761-6930', email: 'gfranecki@gmail.com', teamId: 'team-14' },
+  { id: 'player-14b', first: 'Alex', last: 'Contino', phone: '609-760-9509', email: 'acontino@hotmail.com', teamId: 'team-14' },
+  { id: 'player-15a', first: 'Steve', last: 'Gledhill', phone: '', email: 'steve.gledhill@hotmail.com', teamId: 'team-15' },
+  { id: 'player-15b', first: 'Cole', last: 'Lofink', phone: '', email: 'Colelofink@gmail.com', teamId: 'team-15' },
+  { id: 'player-16a', first: 'Jim', last: 'Mills', phone: '609-405-6258', email: 'jim.mills0205@gmail.com', teamId: 'team-16' },
+  { id: 'player-16b', first: 'Mark', last: 'Carlin', phone: '(609) 513-8782', email: 'markc1487@gmail.com', teamId: 'team-16' },
+  { id: 'player-17a', first: 'Mary Ann', last: 'Anderson', phone: '8569525951', email: 'manderson616@gmail.com', teamId: 'team-17' },
+  { id: 'player-17b', first: 'Todd', last: 'Anderson', phone: '8562780891', email: 'manderson616@gmail.com', teamId: 'team-17' },
+  { id: 'player-18a', first: 'Joe', last: 'Brumbach', phone: '6092045246', email: 'Joe.brumbach@gmail.com', teamId: 'team-18' },
+  { id: 'player-18b', first: 'Andrea', last: 'Brumbach', phone: '6094325897', email: 'brumbachandrea@gmail.com', teamId: 'team-18' },
+  { id: 'player-19a', first: 'John', last: 'Hourani', phone: '856-2619462', email: 'jhourani@comcast.net', teamId: 'team-19' },
+  { id: 'player-19b', first: 'Wendy', last: 'Hourani', phone: '856-261-9462', email: 'Wendyhourani@hotmail.com', teamId: 'team-19' },
+  { id: 'player-20a', first: 'Brittany', last: 'Houck', phone: '856.304.0748', email: 'Brittanyhouck8@gmail.com', teamId: 'team-20' },
+  { id: 'player-20b', first: 'Lisa', last: 'McCarthy', phone: '(856) 264-2488', email: 'Lisamariemc619@gmail.com', teamId: 'team-20' },
+  { id: 'player-21a', first: 'Francesca M.', last: 'Stola', phone: '267-693-8338', email: 'francesca.m.stola@gmail.com', teamId: 'team-21' },
+  { id: 'player-21b', first: 'Lauren', last: 'Monschein', phone: '856-816-4699', email: 'lalacull@icloud.com', teamId: 'team-21' },
+  { id: 'player-22a', first: 'Korie', last: 'Moore', phone: '856-816-0195', email: 'Koriemaej@yahoo.com', teamId: 'team-22' },
+  { id: 'player-22b', first: 'Justin', last: 'Moore', phone: '732-309-4178', email: 'Jnmcrew7@gmail.com', teamId: 'team-22' },
+  { id: 'player-23a', first: 'Julia', last: 'Morrondo', phone: '302-381-1092', email: 'Jhmondoro@gmail.com', teamId: 'team-23' },
+  { id: 'player-23b', first: 'Jackie', last: 'Whittle', phone: '201-486-8278', email: 'Lange.Jaclyn@gmail.com', teamId: 'team-23' },
+  { id: 'player-24a', first: 'Alison', last: 'Luciano', phone: '8563131888', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
+  { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
 ]
 
-const initialMatches = [
-  { id: 'm1', week: 1, date: '2026-05-07', time: '6:30 PM', flight: 'Green', teamA: 'green-1', teamB: 'green-2', status: 'final', score: [[21, 18], [14, 21]], submittedBy: 'jon-soll', approvedAt: '2026-05-08T10:00:00' },
-  { id: 'm2', week: 1, date: '2026-05-07', time: '7:15 PM', flight: 'Red', teamA: 'red-1', teamB: 'red-2', status: 'final', score: [[21, 12], [21, 19]], submittedBy: 'brian-kemner', approvedAt: '2026-05-08T10:00:00' },
-  { id: 'm3', week: 1, date: '2026-05-07', time: '8:00 PM', flight: 'White', teamA: 'white-1', teamB: 'white-2', status: 'final', score: [[17, 21], [21, 14]], submittedBy: 'wendy-hourani', approvedAt: '2026-05-08T10:00:00' },
-  { id: 'm4', week: 2, date: '2026-05-14', time: '6:30 PM', flight: 'Green', teamA: 'green-2', teamB: 'green-1', status: 'pending', score: [[21, 19], [18, 21]], submittedBy: 'mike-gatti' },
-  { id: 'm5', week: 2, date: '2026-05-14', time: '7:15 PM', flight: 'Red', teamA: 'red-2', teamB: 'red-1', status: 'rescheduled', rescheduleNote: 'Makeup date needed' },
-  { id: 'm6', week: 2, date: '2026-05-14', time: '8:00 PM', flight: 'White', teamA: 'white-2', teamB: 'white-1', status: 'scheduled' },
-  { id: 'm7', week: 3, date: '2026-05-21', time: '6:30 PM', flight: 'Green', teamA: 'green-1', teamB: 'green-2', status: 'final', score: [[21, 10], [21, 20]], submittedBy: 'matt-tronco', approvedAt: '2026-05-22T09:30:00' },
-  { id: 'm8', week: 3, date: '2026-05-21', time: '7:15 PM', flight: 'Red', teamA: 'red-1', teamB: 'red-2', status: 'scheduled' },
-  { id: 'm9', week: 3, date: '2026-05-21', time: '8:00 PM', flight: 'White', teamA: 'white-1', teamB: 'white-2', status: 'pending', score: [[21, 18], [15, 21]], submittedBy: 'john-hourani-w' },
-  { id: 'm10', week: 4, date: '2026-05-28', time: '6:30 PM', flight: 'Green', teamA: 'green-2', teamB: 'green-1', status: 'scheduled' },
-  { id: 'm11', week: 4, date: '2026-05-28', time: '7:15 PM', flight: 'Red', teamA: 'red-2', teamB: 'red-1', status: 'final', score: [[21, 15], [12, 21]], submittedBy: 'cory-mueller', approvedAt: '2026-05-29T09:00:00' },
-  { id: 'm12', week: 4, date: '2026-05-28', time: '8:00 PM', flight: 'White', teamA: 'white-2', teamB: 'white-1', status: 'scheduled' },
-  { id: 'm13', week: 5, date: '2026-06-04', time: '6:30 PM', flight: 'Green', teamA: 'green-1', teamB: 'green-2', status: 'scheduled' },
-  { id: 'm14', week: 5, date: '2026-06-04', time: '7:15 PM', flight: 'Red', teamA: 'red-1', teamB: 'red-2', status: 'scheduled' },
-  { id: 'm15', week: 5, date: '2026-06-04', time: '8:00 PM', flight: 'White', teamA: 'white-1', teamB: 'white-2', status: 'rescheduled', rescheduleNote: 'Vacation conflict' },
-  { id: 'm16', week: 6, date: '2026-06-11', time: '6:30 PM', flight: 'Green', teamA: 'green-2', teamB: 'green-1', status: 'scheduled' },
-  { id: 'm17', week: 6, date: '2026-06-11', time: '7:15 PM', flight: 'Red', teamA: 'red-2', teamB: 'red-1', status: 'scheduled' },
-  { id: 'm18', week: 6, date: '2026-06-11', time: '8:00 PM', flight: 'White', teamA: 'white-2', teamB: 'white-1', status: 'scheduled' },
-  { id: 'm19', week: 7, date: '2026-06-18', time: '6:30 PM', flight: 'Green', teamA: 'green-1', teamB: 'green-2', status: 'scheduled' },
-  { id: 'm20', week: 7, date: '2026-06-18', time: '7:15 PM', flight: 'Red', teamA: 'red-1', teamB: 'red-2', status: 'scheduled' },
-  { id: 'm21', week: 7, date: '2026-06-18', time: '8:00 PM', flight: 'White', teamA: 'white-1', teamB: 'white-2', status: 'scheduled' },
-]
+const initialMatches = createSeasonSchedule(initialTeams)
 
 const trophyEntries = [
   { year: 2025, flight: 'Green', winners: 'Jonathan Soll and Matt Tronco' },
@@ -73,18 +106,22 @@ function readStored(key, fallback) {
 
 function App() {
   const [page, setPage] = useState('home')
-  const [selectedPlayerId, setSelectedPlayerId] = useState(() => localStorage.getItem('hg-player') || '')
-  const [matches, setMatches] = useState(() => readStored('hg-matches', initialMatches))
-  const [audit, setAudit] = useState(() => readStored('hg-audit', []))
-  const [snapshots, setSnapshots] = useState(() => readStored('hg-snapshots', []))
+  const [selectedPlayerId, setSelectedPlayerId] = useState(() => localStorage.getItem(`${STORAGE_PREFIX}-player`) || '')
+  const [teams, setTeams] = useState(() => readStored(`${STORAGE_PREFIX}-teams`, initialTeams))
+  const [players, setPlayers] = useState(() => readStored(`${STORAGE_PREFIX}-players`, initialPlayers))
+  const [matches, setMatches] = useState(() => readStored(`${STORAGE_PREFIX}-matches`, initialMatches))
+  const [audit, setAudit] = useState(() => readStored(`${STORAGE_PREFIX}-audit`, []))
+  const [snapshots, setSnapshots] = useState(() => readStored(`${STORAGE_PREFIX}-snapshots`, []))
   const [adminUnlocked, setAdminUnlocked] = useState(false)
   const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
   const [headerHidden, setHeaderHidden] = useState(false)
 
-  useEffect(() => localStorage.setItem('hg-player', selectedPlayerId), [selectedPlayerId])
-  useEffect(() => localStorage.setItem('hg-matches', JSON.stringify(matches)), [matches])
-  useEffect(() => localStorage.setItem('hg-audit', JSON.stringify(audit)), [audit])
-  useEffect(() => localStorage.setItem('hg-snapshots', JSON.stringify(snapshots)), [snapshots])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-player`, selectedPlayerId), [selectedPlayerId])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-teams`, JSON.stringify(teams)), [teams])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-players`, JSON.stringify(players)), [players])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-matches`, JSON.stringify(matches)), [matches])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-audit`, JSON.stringify(audit)), [audit])
+  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-snapshots`, JSON.stringify(snapshots)), [snapshots])
   useEffect(() => {
     let lastScrollY = window.scrollY
 
@@ -100,8 +137,8 @@ function App() {
   }, [])
 
   const selectedPlayer = players.find((player) => player.id === selectedPlayerId)
-  const selectedTeam = selectedPlayer ? getTeam(selectedPlayer.teamId) : null
-  const standings = useMemo(() => buildStandings(matches), [matches])
+  const selectedTeam = selectedPlayer ? getTeam(teams, selectedPlayer.teamId) : null
+  const standings = useMemo(() => buildStandings(matches, teams), [matches, teams])
 
   function log(action, details) {
     setAudit((items) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, details }, ...items])
@@ -154,6 +191,8 @@ function App() {
       id: crypto.randomUUID(),
       at: new Date().toISOString(),
       matches,
+      teams,
+      players,
       standings,
       auditCount: audit.length,
     }
@@ -163,8 +202,8 @@ function App() {
 
   function importSchedule(rows) {
     const importedMatches = rows.map((row, index) => {
-      const teamA = teamByNumber(row.teamANumber)
-      const teamB = teamByNumber(row.teamBNumber)
+      const teamA = teamByNumber(teams, row.teamANumber)
+      const teamB = teamByNumber(teams, row.teamBNumber)
       return {
         id: `import-${Date.now()}-${index}`,
         week: row.week,
@@ -180,6 +219,24 @@ function App() {
     setMatches(importedMatches)
     log('schedule_imported', { matches: importedMatches.length })
     setPage('schedule')
+  }
+
+  function updateTeam(teamId, patch) {
+    setTeams((items) => items.map((team) => (team.id === teamId ? { ...team, ...patch } : team)))
+  }
+
+  function updatePlayer(playerId, patch) {
+    setPlayers((items) => items.map((player) => (player.id === playerId ? { ...player, ...patch } : player)))
+  }
+
+  function updateMatch(matchId, patch) {
+    setMatches((items) => items.map((match) => (match.id === matchId ? { ...match, ...patch } : match)))
+  }
+
+  function regenerateSchedule() {
+    const generated = createSeasonSchedule(teams)
+    setMatches(generated)
+    log('schedule_generated', { matches: generated.length, startDate: '2026-06-22' })
   }
 
   return (
@@ -200,6 +257,8 @@ function App() {
         {page === 'my' && (
           <MyMatches
             matches={matches}
+            teams={teams}
+            players={players}
             selectedPlayer={selectedPlayer}
             selectedTeam={selectedTeam}
             selectedPlayerId={selectedPlayerId}
@@ -211,7 +270,7 @@ function App() {
           />
         )}
         {page === 'standings' && <Standings standings={standings} />}
-        {page === 'schedule' && <Schedule matches={matches} />}
+        {page === 'schedule' && <Schedule matches={matches} teams={teams} />}
         {page === 'trophy' && <TrophyRoom />}
         {page === 'submitted' && (
           <ScoreSubmitted
@@ -224,12 +283,18 @@ function App() {
             adminUnlocked={adminUnlocked}
             setAdminUnlocked={setAdminUnlocked}
             matches={matches}
+            teams={teams}
+            players={players}
             audit={audit}
             snapshots={snapshots}
             approveScore={approveScore}
             rejectScore={rejectScore}
             createSnapshot={createSnapshot}
             importSchedule={importSchedule}
+            updateTeam={updateTeam}
+            updatePlayer={updatePlayer}
+            updateMatch={updateMatch}
+            regenerateSchedule={regenerateSchedule}
           />
         )}
       </main>
@@ -272,7 +337,7 @@ function Home({ standings, setPage }) {
   )
 }
 
-function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, markRescheduled }) {
+function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, markRescheduled }) {
   if (!selectedPlayer || !selectedTeam) {
     return (
       <section className="stack">
@@ -282,7 +347,7 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
             Player
             <select value={selectedPlayerId} onChange={(event) => setSelectedPlayerId(event.target.value)}>
               <option value="">Choose player</option>
-              {[...players].sort((a, b) => a.last.localeCompare(b.last)).map((player) => (
+              {players.filter(hasPlayerName).sort((a, b) => a.last.localeCompare(b.last)).map((player) => (
                 <option key={player.id} value={player.id}>
                   {player.last}, {player.first}
                 </option>
@@ -335,6 +400,8 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
           <p className="eyebrow">Next match</p>
           <MatchCard
             match={nextMatch}
+            teams={teams}
+            players={players}
             viewerTeam={selectedTeam}
             selectedPlayer={selectedPlayer}
             submitScore={submitScore}
@@ -351,6 +418,8 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
             <MatchCard
               key={match.id}
               match={match}
+              teams={teams}
+              players={players}
               viewerTeam={selectedTeam}
               selectedPlayer={selectedPlayer}
               submitScore={submitScore}
@@ -364,7 +433,7 @@ function MyMatches({ matches, selectedPlayer, selectedTeam, selectedPlayerId, se
         <summary>Played matches ({playedMatches.length})</summary>
         <div className="card-list">
           {playedMatches.map((match) => (
-            <MatchCard key={match.id} match={match} viewerTeam={selectedTeam} />
+            <MatchCard key={match.id} match={match} teams={teams} players={players} viewerTeam={selectedTeam} />
           ))}
         </div>
       </details>
@@ -402,7 +471,7 @@ function Standings({ standings }) {
   )
 }
 
-function Schedule({ matches }) {
+function Schedule({ matches, teams }) {
   const [flight, setFlight] = useState('All')
   const [week, setWeek] = useState('All')
   const weeks = [...new Set(matches.map((match) => match.week))]
@@ -416,7 +485,7 @@ function Schedule({ matches }) {
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
       </div>
       <div className="card-list">
-        {filtered.map((match) => <MatchCard key={match.id} match={match} />)}
+        {filtered.map((match) => <MatchCard key={match.id} match={match} teams={teams} />)}
       </div>
     </section>
   )
@@ -455,7 +524,23 @@ function ScoreSubmitted({ confirmation, setPage }) {
   )
 }
 
-function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, approveScore, rejectScore, createSnapshot, importSchedule }) {
+function Admin({
+  adminUnlocked,
+  setAdminUnlocked,
+  matches,
+  teams,
+  players,
+  audit,
+  snapshots,
+  approveScore,
+  rejectScore,
+  createSnapshot,
+  importSchedule,
+  updateTeam,
+  updatePlayer,
+  updateMatch,
+  regenerateSchedule,
+}) {
   const [password, setPassword] = useState('')
   const [tab, setTab] = useState('Scores')
 
@@ -493,16 +578,16 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
           Sign out
         </button>
       </div>
-      <Segmented options={['Scores', 'Import', 'Schedule', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
+      <Segmented options={['Scores', 'Roster', 'Schedule', 'Import', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
       {tab === 'Scores' && (
         <Card title="Pending Scores">
           {pending.length === 0 && <p className="empty">No pending scores.</p>}
           <div className="card-list">
             {pending.map((match) => (
               <article className="simple-card" key={match.id}>
-                <p>Week {match.week} · {matchTitle(match)}</p>
+                <p>Week {match.week} · {matchTitle(match, teams)}</p>
                 <h2>{formatScore(match.score)}</h2>
-                <p>Submitted by {playerName(match.submittedBy)}</p>
+                <p>Submitted by {playerName(players, match.submittedBy)}</p>
                 <div className="button-row">
                   <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
                   <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>
@@ -512,14 +597,13 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
           </div>
         </Card>
       )}
-      {tab === 'Import' && <ScheduleImport importSchedule={importSchedule} />}
-      {tab === 'Schedule' && (
-        <Card title="Current Schedule">
-          <div className="card-list">
-            {matches.map((match) => <MatchCard key={match.id} match={match} />)}
-          </div>
-        </Card>
+      {tab === 'Roster' && (
+        <RosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
       )}
+      {tab === 'Schedule' && (
+        <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
+      )}
+      {tab === 'Import' && <ScheduleImport importSchedule={importSchedule} teams={teams} />}
       {tab === 'Snapshots' && (
         <Card title="Daily Snapshots">
           <button type="button" onClick={createSnapshot}>Create Snapshot Now</button>
@@ -532,7 +616,7 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
         <Card title="Audit Log">
           <div className="card-list">
             {audit.length === 0 && <p className="empty">No audit entries yet.</p>}
-            {audit.map((item) => <AuditEntry key={item.id} item={item} matches={matches} />)}
+            {audit.map((item) => <AuditEntry key={item.id} item={item} matches={matches} teams={teams} players={players} />)}
           </div>
         </Card>
       )}
@@ -540,21 +624,116 @@ function Admin({ adminUnlocked, setAdminUnlocked, matches, audit, snapshots, app
   )
 }
 
-function AuditEntry({ item, matches }) {
+function RosterEditor({ teams, players, updateTeam, updatePlayer }) {
+  return (
+    <Card title="Teams, Players, Phones, and Admin Emails">
+      <p className="empty">Emails are stored here for admin use only. Player pages only use phone numbers for texting.</p>
+      <div className="card-list">
+        {[...teams].sort((a, b) => a.number - b.number).map((team) => {
+          const teamPlayers = players.filter((player) => player.teamId === team.id)
+          return (
+            <article className="simple-card admin-team-card" key={team.id}>
+              <div className="admin-team-head">
+                <label className="field">
+                  Team #
+                  <input
+                    type="number"
+                    min="1"
+                    value={team.number}
+                    onChange={(event) => updateTeam(team.id, { number: Number(event.target.value) })}
+                  />
+                </label>
+                <label className="field">
+                  Band
+                  <select value={team.flight} onChange={(event) => updateTeam(team.id, { flight: event.target.value })}>
+                    {flights.map((flight) => <option key={flight}>{flight}</option>)}
+                  </select>
+                </label>
+                <label className="field team-name-field">
+                  Team Name
+                  <input value={team.name} onChange={(event) => updateTeam(team.id, { name: event.target.value })} />
+                </label>
+              </div>
+              <div className="admin-player-grid">
+                {teamPlayers.map((player) => (
+                  <div className="admin-player-card" key={player.id}>
+                    <label className="field">First<input value={player.first} onChange={(event) => updatePlayer(player.id, { first: event.target.value })} /></label>
+                    <label className="field">Last<input value={player.last} onChange={(event) => updatePlayer(player.id, { last: event.target.value })} /></label>
+                    <label className="field">Phone<input value={player.phone} onChange={(event) => updatePlayer(player.id, { phone: event.target.value })} /></label>
+                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updatePlayer(player.id, { email: event.target.value })} /></label>
+                  </div>
+                ))}
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </Card>
+  )
+}
+
+function ScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
+  const [flight, setFlight] = useState('All')
+  const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
+  const filtered = matches
+    .filter((match) => flight === 'All' || match.flight === flight)
+    .sort(bySchedule)
+
+  return (
+    <Card title="Editable Schedule">
+      <p className="empty">The generator starts Monday, June 22, 2026 and rotates band times each week: 6:00 PM, 6:45 PM, and 7:30 PM.</p>
+      <button type="button" onClick={regenerateSchedule}>Generate June 22 Round Robin</button>
+      <label className="field">
+        Band
+        <select value={flight} onChange={(event) => setFlight(event.target.value)}>
+          <option>All</option>
+          {flights.map((item) => <option key={item}>{item}</option>)}
+        </select>
+      </label>
+      <div className="card-list">
+        {weeks.map((week) => {
+          const weekMatches = filtered.filter((match) => match.week === week)
+          if (!weekMatches.length) return null
+          return (
+            <section className="schedule-week" key={week}>
+              <h3>Week {week}</h3>
+              <div className="card-list">
+                {weekMatches.map((match) => (
+                  <article className="simple-card admin-match-card" key={match.id}>
+                    <div className="admin-match-grid">
+                      <label className="field">Date<input type="date" value={match.date} onChange={(event) => updateMatch(match.id, { date: event.target.value })} /></label>
+                      <label className="field">Time<input value={match.time} onChange={(event) => updateMatch(match.id, { time: event.target.value })} /></label>
+                      <label className="field">Band<select value={match.flight} onChange={(event) => updateMatch(match.id, { flight: event.target.value })}>{flights.map((item) => <option key={item}>{item}</option>)}</select></label>
+                      <label className="field">Status<select value={match.status} onChange={(event) => updateMatch(match.id, { status: event.target.value })}>{['scheduled', 'rescheduled', 'pending', 'final'].map((item) => <option key={item}>{item}</option>)}</select></label>
+                      <label className="field">Team A<select value={match.teamA} onChange={(event) => updateMatch(match.id, { teamA: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
+                      <label className="field">Team B<select value={match.teamB} onChange={(event) => updateMatch(match.id, { teamB: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )
+        })}
+      </div>
+    </Card>
+  )
+}
+
+function AuditEntry({ item, matches, teams, players }) {
   const match = item.details?.matchId ? matches.find((candidate) => candidate.id === item.details.matchId) : null
-  const actor = item.details?.submittedBy ? playerName(item.details.submittedBy) : 'Admin'
+  const actor = item.details?.submittedBy ? playerName(players, item.details.submittedBy) : 'Admin'
 
   if (item.action === 'score_submitted' && match) {
-    const teamA = getTeam(match.teamA)
-    const teamB = getTeam(match.teamB)
+    const teamA = getTeam(teams, match.teamA)
+    const teamB = getTeam(teams, match.teamB)
     const score = item.details.score
     return (
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} submitted a score</h2>
-        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
-        <p>{teamA.name}: {score[0][0]} + {score[1][0]} = {score[0][0] + score[1][0]} points</p>
-        <p>{teamB.name}: {score[0][1]} + {score[1][1]} = {score[0][1] + score[1][1]} points</p>
+        <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
+        <p>{teamA?.name || 'Team A'}: {score[0][0]} + {score[1][0]} = {score[0][0] + score[1][0]} points</p>
+        <p>{teamB?.name || 'Team B'}: {score[0][1]} + {score[1][1]} = {score[0][1] + score[1][1]} points</p>
       </article>
     )
   }
@@ -564,7 +743,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} marked a match rescheduled</h2>
-        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
+        <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
         <p>{item.details.note || 'No note provided.'}</p>
       </article>
     )
@@ -575,7 +754,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>Admin approved a score</h2>
-        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
+        <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -585,7 +764,7 @@ function AuditEntry({ item, matches }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>Admin rejected a score</h2>
-        <p>{matchTitle(match)} · {gameDateLabel(match)}</p>
+        <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -599,7 +778,7 @@ function AuditEntry({ item, matches }) {
   )
 }
 
-function ScheduleImport({ importSchedule }) {
+function ScheduleImport({ importSchedule, teams }) {
   const [fileName, setFileName] = useState('')
   const [rows, setRows] = useState([])
   const [warnings, setWarnings] = useState([])
@@ -611,7 +790,7 @@ function ScheduleImport({ importSchedule }) {
     setMessage('')
     const text = await file.text()
     const parsed = parseScheduleCsv(text)
-    const validation = validateScheduleRows(parsed)
+    const validation = validateScheduleRows(parsed, teams)
     setRows(validation.rows)
     setWarnings(validation.warnings)
     setErrors(validation.errors)
@@ -647,7 +826,7 @@ function ScheduleImport({ importSchedule }) {
         <div className="preview-table">
           {rows.slice(0, 8).map((row, index) => (
             <p key={`${row.week}-${row.teamANumber}-${row.teamBNumber}-${index}`}>
-              Week {row.week}: {teamByNumber(row.teamANumber)?.name || `Team ${row.teamANumber}`} vs {teamByNumber(row.teamBNumber)?.name || `Team ${row.teamBNumber}`} - {row.date} {row.time}
+              Week {row.week}: {teamByNumber(teams, row.teamANumber)?.name || `Team ${row.teamANumber}`} vs {teamByNumber(teams, row.teamBNumber)?.name || `Team ${row.teamBNumber}`} - {row.date} {row.time}
             </p>
           ))}
           {rows.length > 8 && <p>And {rows.length - 8} more matches...</p>}
@@ -672,10 +851,10 @@ function ValidationList({ title, items, tone }) {
   )
 }
 
-function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled }) {
-  const teamA = getTeam(match.teamA)
-  const teamB = getTeam(match.teamB)
-  const opponent = viewerTeam ? getTeam(viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
+function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled }) {
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+  const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
   const status = publicStatus(match)
 
   return (
@@ -683,26 +862,26 @@ function MatchCard({ match, viewerTeam, selectedPlayer, showContacts = false, su
       <div className="match-head">
         <div>
           <p>Week {match.week} · {formatDate(match.date)} at {match.time}</p>
-          <h2>{viewerTeam ? `vs ${opponent.name}` : `${teamA.name} vs ${teamB.name}`}</h2>
+          <h2>{viewerTeam ? `vs ${opponent?.name || 'TBD'}` : `${teamA?.name || 'TBD'} vs ${teamB?.name || 'TBD'}`}</h2>
           <span>{match.flight} Band</span>
         </div>
         <StatusBadge status={status} />
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
       {showContacts && match.status !== 'final' && (
-        <MatchActions match={match} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
+        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
       )}
       {showContacts && selectedPlayer && (
-        <ContactTools match={match} selectedPlayer={selectedPlayer} />
+        <ContactTools match={match} players={players} selectedPlayer={selectedPlayer} />
       )}
     </article>
   )
 }
 
-function ContactTools({ match, selectedPlayer }) {
+function ContactTools({ match, players, selectedPlayer }) {
   const [copied, setCopied] = useState('')
-  const matchPlayers = [...teamPlayers(match.teamA), ...teamPlayers(match.teamB)]
-  const numbers = matchPlayers.map((player) => player.phone)
+  const matchPlayers = [...teamPlayers(players, match.teamA), ...teamPlayers(players, match.teamB)].filter(hasPlayerName)
+  const numbers = matchPlayers.map((player) => player.phone).filter(Boolean)
 
   async function copyText(text, label) {
     await navigator.clipboard.writeText(text)
@@ -714,7 +893,9 @@ function ContactTools({ match, selectedPlayer }) {
       <p className="helper-text">Tap any player to begin a text message</p>
       <div className="text-grid">
         {matchPlayers.map((player) => (
-          <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+          cleanPhone(player.phone)
+            ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+            : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
         ))}
       </div>
       <div className="single-button-row">
@@ -725,9 +906,9 @@ function ContactTools({ match, selectedPlayer }) {
   )
 }
 
-function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
-  const teamA = getTeam(match.teamA)
-  const teamB = getTeam(match.teamB)
+function MatchActions({ match, teams, selectedPlayer, submitScore, markRescheduled }) {
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
   const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
   const [game1A, setGame1A] = useState(21)
@@ -756,10 +937,10 @@ function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
         }}>
           <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
           <div className="score-grid">
-            <label>Game 1 {teamA.name}<input type="number" min="0" max="21" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
-            <label>Game 1 {teamB.name}<input type="number" min="0" max="21" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
-            <label>Game 2 {teamA.name}<input type="number" min="0" max="21" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
-            <label>Game 2 {teamB.name}<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
+            <label>Game 1 {teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
+            <label>Game 1 {teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
+            <label>Game 2 {teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
+            <label>Game 2 {teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
           </div>
           {errors.map((error) => <p className="error" key={error}>{error}</p>)}
           {!pinIsValid() && pin && <p className="error">PIN should be Glen.</p>}
@@ -783,7 +964,70 @@ function MatchActions({ match, selectedPlayer, submitScore, markRescheduled }) {
   )
 }
 
-function buildStandings(matches) {
+function createSeasonSchedule(teams) {
+  const start = new Date('2026-06-22T12:00:00')
+  const times = ['6:00 PM', '6:45 PM', '7:30 PM']
+  const matches = []
+
+  flights.forEach((flight, flightIndex) => {
+    const flightTeams = teams
+      .filter((team) => team.flight === flight)
+      .sort((a, b) => a.number - b.number)
+    const rounds = buildRoundRobinRounds(flightTeams)
+
+    rounds.forEach((round, roundIndex) => {
+      const date = addDays(start, roundIndex * 7)
+      const time = times[(flightIndex + roundIndex) % times.length]
+
+      round.forEach(([teamA, teamB], matchIndex) => {
+        matches.push({
+          id: `${flight.toLowerCase()}-${roundIndex + 1}-${matchIndex + 1}`,
+          week: roundIndex + 1,
+          date: ymd(date),
+          time,
+          flight,
+          teamA: teamA.id,
+          teamB: teamB.id,
+          status: 'scheduled',
+        })
+      })
+    })
+  })
+
+  return matches.sort(bySchedule)
+}
+
+function buildRoundRobinRounds(teams) {
+  if (teams.length < 2) return []
+
+  const pool = teams.length % 2 === 0 ? [...teams] : [...teams, { id: 'bye' }]
+  const rounds = []
+
+  for (let roundIndex = 0; roundIndex < pool.length - 1; roundIndex += 1) {
+    const round = []
+    for (let index = 0; index < pool.length / 2; index += 1) {
+      const teamA = pool[index]
+      const teamB = pool[pool.length - 1 - index]
+      if (teamA.id !== 'bye' && teamB.id !== 'bye') round.push([teamA, teamB])
+    }
+    rounds.push(round)
+    pool.splice(1, 0, pool.pop())
+  }
+
+  return rounds
+}
+
+function addDays(date, days) {
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function ymd(date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function buildStandings(matches, teams) {
   const result = Object.fromEntries(flights.map((flight) => [flight, []]))
   teams.forEach((team) => {
     result[team.flight].push({ team, points: 0, matchWins: 0, matchLosses: 0, gameWins: 0, gameLosses: 0, diff: 0, played: 0 })
@@ -792,6 +1036,7 @@ function buildStandings(matches) {
   matches.filter((match) => match.status === 'final' && match.score).forEach((match) => {
     const a = result[match.flight].find((row) => row.team.id === match.teamA)
     const b = result[match.flight].find((row) => row.team.id === match.teamB)
+    if (!a || !b) return
     const aPoints = match.score[0][0] + match.score[1][0]
     const bPoints = match.score[0][1] + match.score[1][1]
     const aGames = match.score.filter((game) => game[0] > game[1]).length
@@ -857,25 +1102,31 @@ function publicStatus(match) {
   return 'Scheduled'
 }
 
-function getTeam(id) {
+function getTeam(teams, id) {
   return teams.find((team) => team.id === id)
 }
 
-function teamByNumber(number) {
+function teamByNumber(teams, number) {
   return teams.find((team) => team.number === Number(number))
 }
 
-function teamPlayers(teamId) {
+function teamPlayers(players, teamId) {
   return players.filter((player) => player.teamId === teamId)
 }
 
-function playerName(playerId) {
+function playerName(players, playerId) {
   const player = players.find((item) => item.id === playerId)
   return player ? `${player.first} ${player.last}` : 'Unknown'
 }
 
-function matchTitle(match) {
-  return `${getTeam(match.teamA).name} vs ${getTeam(match.teamB).name}`
+function hasPlayerName(player) {
+  return `${player.first || ''}${player.last || ''}`.trim()
+}
+
+function matchTitle(match, teams) {
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+  return `${teamA?.name || 'TBD'} vs ${teamB?.name || 'TBD'}`
 }
 
 function formatDate(date) {
@@ -912,7 +1163,7 @@ function parseScheduleCsv(text) {
   }))
 }
 
-function validateScheduleRows(inputRows) {
+function validateScheduleRows(inputRows, teams) {
   const warnings = []
   const errors = []
   const matchKeys = new Set()
