@@ -497,7 +497,7 @@ function TrophyRoom() {
       <PageTitle eyebrow="Past champions" title="Trophy Room" />
       <div className="card-list">
         {trophyEntries.map((entry) => (
-          <article className={`simple-card ${entry.year === 2024 && entry.flight === 'White' ? 'inaugural-trophy' : ''}`} key={`${entry.year}-${entry.flight}`}>
+          <article className={`simple-card ${entry.year === 2024 ? 'inaugural-trophy' : ''}`} key={`${entry.year}-${entry.flight}`}>
             <p>{entry.year} · {entry.flight} Band</p>
             <h2>{entry.winners}</h2>
           </article>
