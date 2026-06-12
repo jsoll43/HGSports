@@ -384,7 +384,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
       <div className="stat-grid">
         <Stat label="Record" value={`${row?.matchWins || 0}-${row?.matchLosses || 0}`} />
         <Stat label="Points" value={row?.points || 0} />
-        <Stat label="Rank" value={row ? `#${row.rank}` : '-'} />
+        <Stat label="Rank" value={row ? row.rankLabel : '-'} />
       </div>
       {nextMatch && (
         <button
@@ -458,7 +458,7 @@ function Standings({ standings }) {
         </div>
         {standings[flight].map((row) => (
           <article className="standing-row" key={row.team.id}>
-            <strong>{row.rank}</strong>
+            <strong>{row.rankLabel}</strong>
             <span className="team-name">{row.team.name}</span>
             <span className="points">{row.points}</span>
             <span>{row.matchWins}-{row.matchLosses}</span>
@@ -1105,11 +1105,19 @@ function buildStandings(matches, teams) {
   })
 
   Object.keys(result).forEach((flight) => {
-    result[flight] = result[flight]
+    const sortedRows = result[flight]
       .sort((a, b) => b.points - a.points || b.matchWins - a.matchWins || b.gameWins - a.gameWins || b.diff - a.diff)
-      .map((row, index) => ({ ...row, rank: index + 1 }))
+    result[flight] = withRankLabels(sortedRows)
   })
   return result
+}
+
+function withRankLabels(rows) {
+  return rows.map((row, index) => {
+    const rank = rows.findIndex((item) => item.points === row.points) + 1
+    const isTied = rows.filter((item) => item.points === row.points).length > 1
+    return { ...row, rank, rankLabel: isTied ? `T-${rank}` : String(rank) }
+  })
 }
 
 function validateScore(score) {
