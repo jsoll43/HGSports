@@ -828,7 +828,7 @@ textarea {
 .standings-header,
 .standing-row {
   display: grid;
-  grid-template-columns: 38px minmax(92px, 1fr) 48px 54px 54px 44px;
+  grid-template-columns: 38px minmax(92px, 1fr) 48px 54px 44px;
   align-items: center;
   gap: 4px;
 }

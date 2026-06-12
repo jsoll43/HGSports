@@ -452,7 +452,6 @@ function Standings({ standings }) {
           <span>Rank</span>
           <span>Team</span>
           <span>Pts</span>
-          <span>Match</span>
           <span>Game</span>
           <span>Diff</span>
         </div>
@@ -461,7 +460,6 @@ function Standings({ standings }) {
             <strong>{row.rankLabel}</strong>
             <span className="team-name">{row.team.name}</span>
             <span className="points">{row.points}</span>
-            <span>{row.matchWins}-{row.matchLosses}</span>
             <span>{row.gameWins}-{row.gameLosses}</span>
             <span>{row.diff}</span>
           </article>
