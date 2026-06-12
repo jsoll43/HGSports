@@ -987,7 +987,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, markReschedul
             <label>Game 2 {teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
           </div>
           {errors.map((error) => <p className="error" key={error}>{error}</p>)}
-          {!pinIsValid() && pin && <p className="error">PIN should be Glen.</p>}
+          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
           <button type="submit">Submit for Approval</button>
         </form>
       )}
@@ -1000,7 +1000,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, markReschedul
         }}>
           <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
           <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Optional note or proposed makeup date" />
-          {!pinIsValid() && pin && <p className="error">PIN should be Glen.</p>}
+          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
           <button type="submit">Save Reschedule</button>
         </form>
       )}
