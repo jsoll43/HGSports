@@ -334,6 +334,10 @@ a {
   font-weight: 700;
 }
 
+.inaugural-trophy p:first-child::after {
+  content: " (Inaugural Season)";
+}
+
 .audit-entry h2 {
   font-size: 1.05rem;
 }
