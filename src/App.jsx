@@ -105,7 +105,7 @@ function readStored(key, fallback) {
 }
 
 function App() {
-  const [page, setPage] = useState('home')
+  const [page, setPage] = useState('hub')
   const [selectedPlayerId, setSelectedPlayerId] = useState(() => localStorage.getItem(`${STORAGE_PREFIX}-player`) || '')
   const [teams, setTeams] = useState(() => readStored(`${STORAGE_PREFIX}-teams`, initialTeams))
   const [players, setPlayers] = useState(() => readStored(`${STORAGE_PREFIX}-players`, initialPlayers))
@@ -139,6 +139,7 @@ function App() {
   const selectedPlayer = players.find((player) => player.id === selectedPlayerId)
   const selectedTeam = selectedPlayer ? getTeam(teams, selectedPlayer.teamId) : null
   const standings = useMemo(() => buildStandings(matches, teams), [matches, teams])
+  const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'trophy', 'submitted'].includes(page)
 
   function log(action, details) {
     setAudit((items) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, details }, ...items])
@@ -244,15 +245,17 @@ function App() {
       <header className={`site-header ${headerHidden ? 'hidden' : ''}`}>
         <div className="club-bar">
           <span></span>
-          <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>
+          {page !== 'hub' && page !== 'bocce' && <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>}
         </div>
-        <button className="club-logo" type="button" onClick={() => setPage('home')}>
+        <button className="club-logo" type="button" onClick={() => setPage('hub')}>
           <strong>HADDON GLEN</strong>
           <span>SWIM CLUB</span>
         </button>
       </header>
 
       <main className="content">
+        {page === 'hub' && <LeagueHub setPage={setPage} />}
+        {page === 'bocce' && <BoccePlaceholder setPage={setPage} />}
         {page === 'home' && <Home standings={standings} setPage={setPage} />}
         {page === 'my' && (
           <MyMatches
@@ -299,7 +302,7 @@ function App() {
         )}
       </main>
 
-      {page !== 'admin' && (
+      {showCornholeNav && (
         <nav className="bottom-nav" aria-label="Main navigation">
           <button type="button" onClick={() => setPage('home')}>Home</button>
           <button type="button" onClick={() => setPage('my')}>My Matches</button>
@@ -309,6 +312,40 @@ function App() {
         </nav>
       )}
     </div>
+  )
+}
+
+function LeagueHub({ setPage }) {
+  return (
+    <section className="stack">
+      <div className="hero-card">
+        <p className="eyebrow">Haddon Glen</p>
+        <h1>Sports Leagues</h1>
+        <p>Choose a league to view schedules, standings, and season tools.</p>
+      </div>
+      <div className="league-grid">
+        <button className="league-button cornhole" type="button" onClick={() => setPage('home')}>
+          <span>Cornhole</span>
+          <strong>Summer 2026 League</strong>
+        </button>
+        <button className="league-button bocce" type="button" onClick={() => setPage('bocce')}>
+          <span>Bocce</span>
+          <strong>Coming soon</strong>
+        </button>
+      </div>
+    </section>
+  )
+}
+
+function BoccePlaceholder({ setPage }) {
+  return (
+    <section className="stack">
+      <PageTitle eyebrow="Bocce" title="Under Construction" />
+      <Card title="Bocce Site">
+        <p className="empty">Bocce site is under construction while the league format is being finalized.</p>
+        <button type="button" onClick={() => setPage('hub')}>Back to Sports Leagues</button>
+      </Card>
+    </section>
   )
 }
 

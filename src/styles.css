@@ -91,6 +91,7 @@ a {
 
 .admin-link,
 .big-button,
+.league-button,
 .form button,
 .inline-form button,
 .actions button,
@@ -242,6 +243,39 @@ a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+.league-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.league-button {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-height: 116px;
+  padding: 18px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 12px 34px rgba(11, 37, 69, 0.14);
+}
+
+.league-button span {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.league-button strong {
+  font-size: 0.9rem;
+}
+
+.league-button.cornhole {
+  background: #0b2545;
+}
+
+.league-button.bocce {
+  background: #13785d;
 }
 
 .stat-grid {
@@ -947,6 +981,10 @@ textarea {
 
   .quick-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .league-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
 }
