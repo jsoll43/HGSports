@@ -104,8 +104,20 @@ function readStored(key, fallback) {
   }
 }
 
+function pageFromPath(pathname) {
+  if (pathname === '/cornhole') return 'home'
+  if (pathname === '/bocce') return 'bocce'
+  return 'hub'
+}
+
+function pathForPage(page) {
+  if (page === 'hub') return '/'
+  if (page === 'bocce') return '/bocce'
+  return '/cornhole'
+}
+
 function App() {
-  const [page, setPage] = useState('hub')
+  const [page, setCurrentPage] = useState(() => pageFromPath(window.location.pathname))
   const [selectedPlayerId, setSelectedPlayerId] = useState(() => localStorage.getItem(`${STORAGE_PREFIX}-player`) || '')
   const [teams, setTeams] = useState(() => readStored(`${STORAGE_PREFIX}-teams`, initialTeams))
   const [players, setPlayers] = useState(() => readStored(`${STORAGE_PREFIX}-players`, initialPlayers))
@@ -122,6 +134,14 @@ function App() {
   useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-matches`, JSON.stringify(matches)), [matches])
   useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-audit`, JSON.stringify(audit)), [audit])
   useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-snapshots`, JSON.stringify(snapshots)), [snapshots])
+  useEffect(() => {
+    function handlePopState() {
+      setCurrentPage(pageFromPath(window.location.pathname))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
   useEffect(() => {
     let lastScrollY = window.scrollY
 
@@ -140,6 +160,14 @@ function App() {
   const selectedTeam = selectedPlayer ? getTeam(teams, selectedPlayer.teamId) : null
   const standings = useMemo(() => buildStandings(matches, teams), [matches, teams])
   const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'trophy', 'submitted'].includes(page)
+
+  function setPage(nextPage) {
+    const nextPath = pathForPage(nextPage)
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath)
+    }
+    setCurrentPage(nextPage)
+  }
 
   function log(action, details) {
     setAudit((items) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, details }, ...items])
