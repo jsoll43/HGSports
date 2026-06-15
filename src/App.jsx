@@ -519,7 +519,10 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
           <p>Continue as {selectedPlayer.first} {selectedPlayer.last}</p>
           <button type="button" onClick={() => setSelectedPlayerId('')}>Change player</button>
         </div>
-        <h1>Team: {selectedTeam.name}</h1>
+        <div className="profile-team-name">
+          <h1>Team: {selectedTeam.name}</h1>
+          {!selectedTeam.paid && <PaymentWarning />}
+        </div>
         <span>{selectedTeam.flight} Band</span>
       </div>
       <div className="stat-grid">
@@ -599,7 +602,7 @@ function Standings({ standings }) {
         {standings[flight].map((row) => (
           <article className="standing-row" key={row.team.id}>
             <strong>{row.rankLabel}</strong>
-            <span className="team-name">{row.team.name}</span>
+            <span className="team-name"><TeamName team={row.team} /></span>
             <span className="points">{row.points}</span>
             <span>{row.gameWins}-{row.gameLosses}</span>
             <span>{row.diff}</span>
@@ -1034,6 +1037,21 @@ function ValidationList({ title, items, tone }) {
   )
 }
 
+function PaymentWarning() {
+  return <span className="payment-warning">Payment due</span>
+}
+
+function TeamName({ team, fallback = 'TBD' }) {
+  if (!team) return <span>{fallback}</span>
+
+  return (
+    <span className="team-name-with-warning">
+      <span className="team-name-text">{team.name}</span>
+      {!team.paid && <PaymentWarning />}
+    </span>
+  )
+}
+
 function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
@@ -1045,7 +1063,20 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
       <div className="match-head">
         <div>
           <p>Week {match.week} · {formatDate(match.date)} at {match.time}</p>
-          <h2>{viewerTeam ? `vs ${opponent?.name || 'TBD'}` : `${teamA?.name || 'TBD'} vs ${teamB?.name || 'TBD'}`}</h2>
+          <h2 className="match-title">
+            {viewerTeam ? (
+              <>
+                <span>vs</span>
+                <TeamName team={opponent} />
+              </>
+            ) : (
+              <>
+                <TeamName team={teamA} />
+                <span>vs</span>
+                <TeamName team={teamB} />
+              </>
+            )}
+          </h2>
           <span>{match.flight} Band</span>
         </div>
         <StatusBadge status={status} />

@@ -148,6 +148,12 @@ a {
   padding: 14px 16px;
 }
 
+.profile-team-name {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
 .profile-top {
   display: flex;
   align-items: center;
@@ -182,6 +188,12 @@ a {
   color: #dff8fb;
   font-size: 0.86rem;
   font-weight: 800;
+}
+
+.profile-card .payment-warning {
+  display: inline-flex;
+  color: #fff;
+  font-size: 0.68rem;
 }
 
 .profile-card button {
@@ -512,10 +524,52 @@ textarea {
   gap: 12px;
 }
 
-.match-head span:not(.status) {
+.match-head > div > span:not(.status) {
   color: #007c89;
   font-size: 0.85rem;
   font-weight: 900;
+}
+
+.match-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-name-with-warning {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.team-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-warning {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 20px;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.match-head .payment-warning {
+  color: #fff;
 }
 
 .status {
@@ -886,9 +940,20 @@ textarea {
 }
 
 .standing-row .team-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.standing-row .team-name-with-warning {
+  width: 100%;
+}
+
+.standing-row .payment-warning {
+  min-height: 16px;
+  padding: 2px 5px;
+  font-size: 0.55rem;
 }
 
 .standing-row .points {
