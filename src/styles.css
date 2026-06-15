@@ -916,7 +916,7 @@ textarea {
 .standings-header,
 .standing-row {
   display: grid;
-  grid-template-columns: 38px minmax(92px, 1fr) 48px 54px 44px;
+  grid-template-columns: 34px minmax(0, 1fr) 40px 48px 32px 58px;
   align-items: center;
   gap: 4px;
 }
@@ -929,10 +929,14 @@ textarea {
   text-transform: uppercase;
 }
 
+.standings-header span:last-child {
+  justify-self: end;
+}
+
 .standing-row {
   min-height: 42px;
   border-radius: 8px;
-  padding: 7px 8px;
+  padding: 7px 6px;
   background: #effbff;
   color: #0b2545;
   font-size: 0.82rem;
@@ -950,10 +954,20 @@ textarea {
   width: 100%;
 }
 
+.standing-row .team-name-text {
+  flex: 1 1 auto;
+}
+
 .standing-row .payment-warning {
   min-height: 16px;
   padding: 2px 5px;
   font-size: 0.55rem;
+}
+
+.standing-row .payment-status {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .standing-row .points {
