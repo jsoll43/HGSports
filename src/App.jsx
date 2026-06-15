@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
-const STORAGE_PREFIX = 'hg-2026-v4'
+const SPORTS_STORAGE_KEY = 'hg-sports-data'
+const CORNHOLE_STORAGE_KEY = 'cornhole'
+const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
+const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
 
 const flights = ['Green', 'Red', 'White']
 
@@ -84,8 +87,6 @@ const initialPlayers = [
   { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
 ]
 
-const initialMatches = createSeasonSchedule(initialTeams)
-
 const trophyEntries = [
   { year: 2025, flight: 'Green', winners: 'Jonathan Soll and Matt Tronco' },
   { year: 2025, flight: 'Red', winners: 'Brian Kemner and Tom Polizzi' },
@@ -95,13 +96,77 @@ const trophyEntries = [
   { year: 2024, flight: 'White', winners: 'Jonathan Soll and Matt Tronco' },
 ]
 
-function readStored(key, fallback) {
+function readStored(key) {
   try {
     const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : fallback
+    return raw ? JSON.parse(raw) : undefined
   } catch {
-    return fallback
+    return undefined
   }
+}
+
+function readAppData() {
+  const sportsData = readStored(SPORTS_STORAGE_KEY)
+  if (sportsData?.[CORNHOLE_STORAGE_KEY]) return normalizeAppData(sportsData[CORNHOLE_STORAGE_KEY])
+
+  for (const key of LEGACY_STORAGE_KEYS) {
+    const data = readStored(key)
+    if (data) return normalizeAppData(data)
+  }
+
+  return normalizeAppData(readLegacyAppData())
+}
+
+function readLegacyAppData() {
+  for (const prefix of LEGACY_STORAGE_PREFIXES) {
+    const data = {
+      selectedPlayerId: localStorage.getItem(`${prefix}-player`) || '',
+      teams: readStored(`${prefix}-teams`),
+      players: readStored(`${prefix}-players`),
+      matches: readStored(`${prefix}-matches`),
+      audit: readStored(`${prefix}-audit`),
+      snapshots: readStored(`${prefix}-snapshots`),
+    }
+
+    if (data.selectedPlayerId || data.teams || data.players || data.matches || data.audit || data.snapshots) {
+      return data
+    }
+  }
+
+  return {}
+}
+
+function normalizeAppData(data = {}) {
+  const teams = migrateRosterTeams(Array.isArray(data.teams) ? data.teams : initialTeams)
+  const players = migrateRosterPlayers(Array.isArray(data.players) ? data.players : initialPlayers)
+
+  return {
+    selectedPlayerId: typeof data.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
+    teams,
+    players,
+    matches: Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
+    audit: Array.isArray(data.audit) ? data.audit : [],
+    snapshots: Array.isArray(data.snapshots) ? data.snapshots : [],
+  }
+}
+
+function migrateRosterTeams(teams) {
+  return teams.map((team) => {
+    if (team.id !== 'team-19' || team.name !== 'Hourani / Hourani') return team
+    return { ...team, flight: 'White', number: 19, name: 'Frett / Massa' }
+  })
+}
+
+function migrateRosterPlayers(players) {
+  return players.map((player) => {
+    if (player.id === 'player-19a' && player.last === 'Hourani') {
+      return { ...player, first: 'Mike', last: 'Frett', phone: '8569045539', email: 'Michaelfrett@yahoo.com', teamId: 'team-19' }
+    }
+    if (player.id === 'player-19b' && player.last === 'Hourani') {
+      return { ...player, first: 'Alex', last: 'Massa', phone: '8566859758', email: 'alexandermassllc@gmail.com', teamId: 'team-19' }
+    }
+    return player
+  })
 }
 
 function pageFromPath(pathname) {
@@ -117,23 +182,34 @@ function pathForPage(page) {
 }
 
 function App() {
+  const storedData = useMemo(readAppData, [])
   const [page, setCurrentPage] = useState(() => pageFromPath(window.location.pathname))
-  const [selectedPlayerId, setSelectedPlayerId] = useState(() => localStorage.getItem(`${STORAGE_PREFIX}-player`) || '')
-  const [teams, setTeams] = useState(() => readStored(`${STORAGE_PREFIX}-teams`, initialTeams))
-  const [players, setPlayers] = useState(() => readStored(`${STORAGE_PREFIX}-players`, initialPlayers))
-  const [matches, setMatches] = useState(() => readStored(`${STORAGE_PREFIX}-matches`, initialMatches))
-  const [audit, setAudit] = useState(() => readStored(`${STORAGE_PREFIX}-audit`, []))
-  const [snapshots, setSnapshots] = useState(() => readStored(`${STORAGE_PREFIX}-snapshots`, []))
+  const [selectedPlayerId, setSelectedPlayerId] = useState(storedData.selectedPlayerId)
+  const [teams, setTeams] = useState(storedData.teams)
+  const [players, setPlayers] = useState(storedData.players)
+  const [matches, setMatches] = useState(storedData.matches)
+  const [audit, setAudit] = useState(storedData.audit)
+  const [snapshots, setSnapshots] = useState(storedData.snapshots)
   const [adminUnlocked, setAdminUnlocked] = useState(false)
   const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
   const [headerHidden, setHeaderHidden] = useState(false)
 
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-player`, selectedPlayerId), [selectedPlayerId])
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-teams`, JSON.stringify(teams)), [teams])
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-players`, JSON.stringify(players)), [players])
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-matches`, JSON.stringify(matches)), [matches])
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-audit`, JSON.stringify(audit)), [audit])
-  useEffect(() => localStorage.setItem(`${STORAGE_PREFIX}-snapshots`, JSON.stringify(snapshots)), [snapshots])
+  useEffect(() => {
+    const appData = {
+      selectedPlayerId,
+      teams,
+      players,
+      matches,
+      audit,
+      snapshots,
+    }
+    const sportsData = readStored(SPORTS_STORAGE_KEY)
+    const nextSportsData = {
+      ...(sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}),
+      [CORNHOLE_STORAGE_KEY]: appData,
+    }
+    localStorage.setItem(SPORTS_STORAGE_KEY, JSON.stringify(nextSportsData))
+  }, [selectedPlayerId, teams, players, matches, audit, snapshots])
   useEffect(() => {
     function handlePopState() {
       setCurrentPage(pageFromPath(window.location.pathname))
