@@ -600,16 +600,14 @@ function Standings({ standings }) {
           <span>Pts</span>
           <span>Game</span>
           <span>Diff</span>
-          <span>Status</span>
         </div>
         {standings[flight].map((row) => (
           <article className="standing-row" key={row.team.id}>
             <strong>{row.rankLabel}</strong>
-            <span className="team-name"><TeamName team={row.team} showPaymentWarning={false} /></span>
+            <span className="team-name"><TeamName team={row.team} /></span>
             <span className="points">{row.points}</span>
             <span>{row.gameWins}-{row.gameLosses}</span>
             <span>{row.diff}</span>
-            <span className="payment-status">{!row.team.paid && <PaymentWarning />}</span>
           </article>
         ))}
       </section>
