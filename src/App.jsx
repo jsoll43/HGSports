@@ -551,6 +551,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
             submitScore={submitScore}
             markRescheduled={markRescheduled}
             showContacts
+            showPaymentWarnings={false}
           />
         </section>
       ) : (
@@ -569,6 +570,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
               submitScore={submitScore}
               markRescheduled={markRescheduled}
               showContacts
+              showPaymentWarnings={false}
             />
           ))}
         </div>
@@ -577,7 +579,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
         <summary>Played matches ({playedMatches.length})</summary>
         <div className="card-list">
           {playedMatches.map((match) => (
-            <MatchCard key={match.id} match={match} teams={teams} players={players} viewerTeam={selectedTeam} />
+            <MatchCard key={match.id} match={match} teams={teams} players={players} viewerTeam={selectedTeam} showPaymentWarnings={false} />
           ))}
         </div>
       </details>
@@ -1038,21 +1040,21 @@ function ValidationList({ title, items, tone }) {
 }
 
 function PaymentWarning() {
-  return <span className="payment-warning">Payment due</span>
+  return <span className="payment-warning">Unpaid</span>
 }
 
-function TeamName({ team, fallback = 'TBD' }) {
+function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
   if (!team) return <span>{fallback}</span>
 
   return (
     <span className="team-name-with-warning">
       <span className="team-name-text">{team.name}</span>
-      {!team.paid && <PaymentWarning />}
+      {showPaymentWarning && !team.paid && <PaymentWarning />}
     </span>
   )
 }
 
-function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled }) {
+function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, markRescheduled }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
@@ -1067,13 +1069,13 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
             {viewerTeam ? (
               <>
                 <span>vs</span>
-                <TeamName team={opponent} />
+                <TeamName team={opponent} showPaymentWarning={showPaymentWarnings} />
               </>
             ) : (
               <>
-                <TeamName team={teamA} />
+                <TeamName team={teamA} showPaymentWarning={showPaymentWarnings} />
                 <span>vs</span>
-                <TeamName team={teamB} />
+                <TeamName team={teamB} showPaymentWarning={showPaymentWarnings} />
               </>
             )}
           </h2>
