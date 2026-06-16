@@ -101,6 +101,7 @@ a {
 .bottom-nav button,
 .segmented button,
 .profile-card button,
+.payment-callout a,
 .card > button {
   min-height: 46px;
   border: 0;
@@ -211,6 +212,48 @@ a {
   margin-top: 0;
   padding: 0 12px;
   font-size: 0.82rem;
+}
+
+.payment-callout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #b7e8f2;
+  border-radius: 8px;
+  padding: 14px;
+  background: #effbff;
+}
+
+.payment-callout h2,
+.payment-callout p {
+  margin: 0;
+}
+
+.payment-callout h2 {
+  color: #0b2545;
+  font-size: 1.1rem;
+  line-height: 1.1;
+}
+
+.payment-callout p:not(.eyebrow) {
+  margin-top: 4px;
+  color: #617181;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.payment-callout a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 142px;
+  padding: 0 16px;
+  background: #00899a;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .eyebrow {
@@ -1018,8 +1061,13 @@ textarea {
   .admin-player-grid,
   .admin-player-card,
   .payment-row,
+  .payment-callout,
   .admin-match-grid {
     grid-template-columns: 1fr;
+  }
+
+  .payment-callout a {
+    width: 100%;
   }
 
   .team-name-field,

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
+const PAYMENT_LINK = 'https://square.link/u/6oHmgu9w'
 const SPORTS_STORAGE_KEY = 'hg-sports-data'
 const CORNHOLE_STORAGE_KEY = 'cornhole'
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
@@ -525,6 +526,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
         </div>
         <span>{selectedTeam.flight} Band</span>
       </div>
+      {!selectedTeam.paid && <PaymentCallout />}
       <div className="stat-grid">
         <Stat label="Record" value={`${row?.matchWins || 0}-${row?.matchLosses || 0}`} />
         <Stat label="Points" value={row?.points || 0} />
@@ -777,6 +779,7 @@ function PaymentTracker({ teams, updateTeam }) {
 
   return (
     <Card title="Registration Payments">
+      <p className="helper-text">Players use the Square payment link from My Matches. After the payment appears, mark the team as paid here.</p>
       <div className="payment-summary">
         <Stat label="Paid" value={paidCount} />
         <Stat label="Unpaid" value={sortedTeams.length - paidCount} />
@@ -809,6 +812,19 @@ function PaymentTracker({ teams, updateTeam }) {
         ))}
       </div>
     </Card>
+  )
+}
+
+function PaymentCallout() {
+  return (
+    <section className="payment-callout" aria-label="League payment">
+      <div>
+        <p className="eyebrow">Payment needed</p>
+        <h2>Submit your league payment</h2>
+        <p>The commissioner will mark your team paid after the Square payment comes through.</p>
+      </div>
+      <a href={PAYMENT_LINK} target="_blank" rel="noreferrer">Pay with Square</a>
+    </section>
   )
 }
 
