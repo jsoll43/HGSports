@@ -593,7 +593,7 @@ function Standings({ standings }) {
   const [flight, setFlight] = useState('Green')
   return (
     <section className="stack">
-      <PageTitle eyebrow="Public scoreboard" title="Standings" />
+      <PageTitle title="Standings" />
       <Segmented options={flights} value={flight} onChange={setFlight} />
       <section className="standings-grid" aria-label={`${flight} standings`}>
         <div className="standings-header">
@@ -1499,7 +1499,7 @@ function Card({ title, children }) {
 }
 
 function PageTitle({ eyebrow, title }) {
-  return <div><p className="eyebrow">{eyebrow}</p><h1 className="page-title">{title}</h1></div>
+  return <div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1 className="page-title">{title}</h1></div>
 }
 
 function Segmented({ options, value, onChange }) {
