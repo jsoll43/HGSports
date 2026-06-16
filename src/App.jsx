@@ -5,10 +5,12 @@ const ADMIN_PASSWORD = 'glenadmin'
 const PAYMENT_LINK = 'https://square.link/u/6oHmgu9w'
 const SPORTS_STORAGE_KEY = 'hg-sports-data'
 const CORNHOLE_STORAGE_KEY = 'cornhole'
+const BOCCE_STORAGE_KEY = 'bocce'
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
 
 const flights = ['Green', 'Red', 'White']
+const bocceTimes = ['6:00 PM', '7:00 PM', '8:00 PM']
 
 const initialTeams = [
   { id: 'team-1', flight: 'Green', number: 1, name: 'Tronco / Soll', paid: false, paymentNote: '' },
@@ -88,6 +90,64 @@ const initialPlayers = [
   { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
 ]
 
+const initialBocceTeams = [
+  { id: 'bocce-team-1', number: 1, name: 'The God Fa Bids' },
+  { id: 'bocce-team-2', number: 2, name: 'Bocce Balboa' },
+  { id: 'bocce-team-3', number: 3, name: 'Holy Rollers' },
+  { id: 'bocce-team-4', number: 4, name: 'We Thought You Meant Basketball' },
+  { id: 'bocce-team-5', number: 5, name: 'Ball Busters' },
+  { id: 'bocce-team-6', number: 6, name: 'Bocce takes Balls' },
+]
+
+const initialBoccePlayers = [
+  { id: 'bocce-player-1a', first: 'Brian', last: 'Babcock', phone: '609-513-1312', email: 'brianbabcock383@hotmail.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-1b', first: 'Mary', last: 'Babcock', phone: '215-817-3666', email: 'maryalice911@gmail.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-1c', first: 'Cory', last: 'Mueller', phone: '973-224-0276', email: 'coryrmueller@gmail.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-1d', first: 'Janelle', last: 'Mueller', phone: '201-723-1615', email: 'janellesavin@yahoo.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-1e', first: 'Kevin', last: 'Gleason', phone: '718-986-4964', email: 'kgleason122@gmail.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-1f', first: 'Teresa', last: 'Gleason', phone: '856-693-0680', email: 'teresagleason555@gmail.com', teamId: 'bocce-team-1' },
+  { id: 'bocce-player-2a', first: 'Stacey', last: 'Augustine', phone: '609-405-0164', email: 'stacey12682@gmail.com', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-2b', first: 'Chris', last: 'Augustine', phone: '609-707-0953', email: 'augie615@gmail.com', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-2c', first: 'Mary Stewart', last: 'Vena', phone: '215-684-9303', email: 'mstewartvena@gmail.com', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-2d', first: 'Dan', last: 'Vena', phone: '856-465-6218', email: 'dvena@johnvenaproduce.com', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-2e', first: 'Chris', last: 'DiPiazza', phone: '', email: '', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-2f', first: 'Heather', last: 'DiPiazza', phone: '', email: '', teamId: 'bocce-team-2' },
+  { id: 'bocce-player-3a', first: 'Stefanie', last: 'Maro', phone: '856-287-2408', email: 'stefanie.maro@gmail.com', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-3b', first: 'Alex', last: 'Maro', phone: '856-524-5335', email: 'alexander.maro@gmail.com', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-3c', first: 'Eric', last: 'Cangalosi', phone: '856-655-8901', email: 'eric.cangelosi2@gmail.com', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-3d', first: 'Frank', last: 'Coppola', phone: '215-990-5858', email: 'Fracoppola@msn.com', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-3e', first: 'Chris', last: 'Angalone', phone: '856-266-2803', email: 'chrisang26@comcast.net', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-3f', first: 'Pete', last: 'Pryzbylkowski', phone: '856-979-6049', email: 'petepryz@gmail.com', teamId: 'bocce-team-3' },
+  { id: 'bocce-player-4a', first: 'Tom', last: 'Schrank', phone: '215-206-6730', email: 'tomschrank@gmail.com', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-4b', first: 'Dan', last: 'Luciano', phone: '856-341-0187', email: 'Daniel.Luciano@blackrock.com', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-4c', first: 'Eric', last: 'Dougherty', phone: '856-676-2141', email: 'emdoc84@yahoo.com', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-4d', first: 'Maria', last: 'Dougherty', phone: '', email: '', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-4e', first: 'Additional', last: 'Contact 1', phone: '856-831-5557', email: '', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-4f', first: 'Additional', last: 'Contact 2', phone: '267-971-1270', email: '', teamId: 'bocce-team-4' },
+  { id: 'bocce-player-5a', first: 'Matt', last: 'McCall', phone: '609-440-8585', email: '', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-5b', first: 'Lauren', last: 'McCall', phone: '856-669-7084', email: 'lmccall819@gmail.com', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-5c', first: 'Kevin', last: 'Hein', phone: '973-945-4480', email: 'hein.kev@icloud.com', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-5d', first: 'Rikki', last: 'Hein', phone: '', email: 'rikki.hein@gmail.com', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-5e', first: 'Dave', last: 'Perrin', phone: '', email: 'Davidcperrin@gmail.com', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-5f', first: 'Michele', last: 'Perrin', phone: '', email: 'Michelebperrin@gmail.com', teamId: 'bocce-team-5' },
+  { id: 'bocce-player-6a', first: 'Chris', last: 'Pfieffer', phone: '856-448-3529', email: 'pfeiffer_chris@yahoo.com', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6b', first: 'Lauren', last: 'Pfeiffer', phone: '301-758-8879', email: 'laurenmpfeiffer@gmail.com', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6c', first: 'Robin', last: 'Baker', phone: '856-308-6796', email: 'robinlbaker@gmail.com', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6d', first: 'Chris', last: 'Baker', phone: '856-534-0931', email: 'Cltbaker@gmail.com', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6e', first: 'Danielle', last: 'Danenza', phone: '609-410-5067', email: 'Danielledanenza@gmail.com', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6f', first: 'Warren', last: 'Danenza', phone: '484-571-2035', email: '', teamId: 'bocce-team-6' },
+  { id: 'bocce-player-6g', first: 'Marlies', last: 'Jecman', phone: '856-304-3735', email: '', teamId: 'bocce-team-6' },
+]
+
+const bocceRuleCards = [
+  { title: 'League Setup', text: 'Teams are Haddon Glen members over 21, approved by the committee, with a maximum of 12 teams for the 2026 season.' },
+  { title: 'Schedule', text: 'League night is Wednesday. Teams coordinate with opponents if a matchup needs to move.' },
+  { title: 'Reschedules', text: 'Rescheduled matches must be played at Haddon Glen and recorded before the committee deadline.' },
+  { title: 'Valid Rolls', text: 'Feet stay behind the fault line, throws are underhand, balls cross half court, and balls cannot hit the back wall first.' },
+  { title: 'Gameplay', text: 'The team that is out throws until it is in or out of balls. All bocce balls are thrown to complete each frame.' },
+  { title: 'Scoring', text: 'Only the closest team scores in a frame. Kisses count as two points. Games go to 11 and must be won by 2; a match is 3 games.' },
+]
+
 const trophyEntries = [
   { year: 2025, flight: 'Green', winners: 'Jonathan Soll and Matt Tronco' },
   { year: 2025, flight: 'Red', winners: 'Brian Kemner and Tom Polizzi' },
@@ -116,6 +176,11 @@ function readAppData() {
   }
 
   return normalizeAppData(readLegacyAppData())
+}
+
+function readBocceData() {
+  const sportsData = readStored(SPORTS_STORAGE_KEY)
+  return normalizeBocceData(sportsData?.[BOCCE_STORAGE_KEY])
 }
 
 function readLegacyAppData() {
@@ -151,6 +216,20 @@ function normalizeAppData(data = {}) {
   }
 }
 
+function normalizeBocceData(data = {}) {
+  const teams = Array.isArray(data?.teams) ? data.teams : initialBocceTeams
+  const players = Array.isArray(data?.players) ? data.players : initialBoccePlayers
+
+  return {
+    selectedPlayerId: typeof data?.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
+    teams,
+    players,
+    matches: Array.isArray(data?.matches) ? data.matches : createBocceSchedule(teams),
+    audit: Array.isArray(data?.audit) ? data.audit : [],
+    snapshots: Array.isArray(data?.snapshots) ? data.snapshots : [],
+  }
+}
+
 function migrateRosterTeams(teams) {
   return teams.map((team) => {
     if (team.id !== 'team-19' || team.name !== 'Hourani / Hourani') return team
@@ -172,18 +251,19 @@ function migrateRosterPlayers(players) {
 
 function pageFromPath(pathname) {
   if (pathname === '/cornhole') return 'home'
-  if (pathname === '/bocce') return 'bocce'
+  if (pathname === '/bocce') return 'bocce-home'
   return 'hub'
 }
 
 function pathForPage(page) {
   if (page === 'hub') return '/'
-  if (page === 'bocce') return '/bocce'
+  if (page.startsWith('bocce')) return '/bocce'
   return '/cornhole'
 }
 
 function App() {
   const storedData = useMemo(readAppData, [])
+  const storedBocceData = useMemo(readBocceData, [])
   const [page, setCurrentPage] = useState(() => pageFromPath(window.location.pathname))
   const [selectedPlayerId, setSelectedPlayerId] = useState(storedData.selectedPlayerId)
   const [teams, setTeams] = useState(storedData.teams)
@@ -191,8 +271,15 @@ function App() {
   const [matches, setMatches] = useState(storedData.matches)
   const [audit, setAudit] = useState(storedData.audit)
   const [snapshots, setSnapshots] = useState(storedData.snapshots)
+  const [selectedBoccePlayerId, setSelectedBoccePlayerId] = useState(storedBocceData.selectedPlayerId)
+  const [bocceTeams, setBocceTeams] = useState(storedBocceData.teams)
+  const [boccePlayers, setBoccePlayers] = useState(storedBocceData.players)
+  const [bocceMatches, setBocceMatches] = useState(storedBocceData.matches)
+  const [bocceAudit, setBocceAudit] = useState(storedBocceData.audit)
+  const [bocceSnapshots, setBocceSnapshots] = useState(storedBocceData.snapshots)
   const [adminUnlocked, setAdminUnlocked] = useState(false)
   const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
+  const [bocceSubmissionConfirmation, setBocceSubmissionConfirmation] = useState(null)
   const [headerHidden, setHeaderHidden] = useState(false)
 
   useEffect(() => {
@@ -211,6 +298,22 @@ function App() {
     }
     localStorage.setItem(SPORTS_STORAGE_KEY, JSON.stringify(nextSportsData))
   }, [selectedPlayerId, teams, players, matches, audit, snapshots])
+  useEffect(() => {
+    const appData = {
+      selectedPlayerId: selectedBoccePlayerId,
+      teams: bocceTeams,
+      players: boccePlayers,
+      matches: bocceMatches,
+      audit: bocceAudit,
+      snapshots: bocceSnapshots,
+    }
+    const sportsData = readStored(SPORTS_STORAGE_KEY)
+    const nextSportsData = {
+      ...(sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}),
+      [BOCCE_STORAGE_KEY]: appData,
+    }
+    localStorage.setItem(SPORTS_STORAGE_KEY, JSON.stringify(nextSportsData))
+  }, [selectedBoccePlayerId, bocceTeams, boccePlayers, bocceMatches, bocceAudit, bocceSnapshots])
   useEffect(() => {
     function handlePopState() {
       setCurrentPage(pageFromPath(window.location.pathname))
@@ -235,8 +338,12 @@ function App() {
 
   const selectedPlayer = players.find((player) => player.id === selectedPlayerId)
   const selectedTeam = selectedPlayer ? getTeam(teams, selectedPlayer.teamId) : null
+  const selectedBoccePlayer = boccePlayers.find((player) => player.id === selectedBoccePlayerId)
+  const selectedBocceTeam = selectedBoccePlayer ? getTeam(bocceTeams, selectedBoccePlayer.teamId) : null
   const standings = useMemo(() => buildStandings(matches, teams), [matches, teams])
+  const bocceStandings = useMemo(() => buildBocceStandings(bocceMatches, bocceTeams), [bocceMatches, bocceTeams])
   const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'trophy', 'submitted'].includes(page)
+  const showBocceNav = ['bocce-home', 'bocce-my', 'bocce-standings', 'bocce-schedule', 'bocce-rules', 'bocce-submitted'].includes(page)
 
   function setPage(nextPage) {
     const nextPath = pathForPage(nextPage)
@@ -248,6 +355,10 @@ function App() {
 
   function log(action, details) {
     setAudit((items) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, details }, ...items])
+  }
+
+  function logBocce(action, details) {
+    setBocceAudit((items) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, details }, ...items])
   }
 
   function submitScore(matchId, score, submittedBy) {
@@ -345,12 +456,88 @@ function App() {
     log('schedule_generated', { matches: generated.length, startDate: '2026-06-22' })
   }
 
+  function submitBocceScore(matchId, score, submittedBy) {
+    setBocceMatches((items) =>
+      items.map((match) =>
+        match.id === matchId
+          ? { ...match, status: 'pending', score, submittedBy, submittedAt: new Date().toISOString() }
+          : match,
+      ),
+    )
+    logBocce('score_submitted', { matchId, submittedBy, score })
+    setBocceSubmissionConfirmation({ matchId, at: new Date().toISOString() })
+    setPage('bocce-submitted')
+  }
+
+  function markBocceRescheduled(matchId, note, submittedBy) {
+    setBocceMatches((items) =>
+      items.map((match) =>
+        match.id === matchId
+          ? { ...match, status: 'rescheduled', rescheduleNote: note || 'Makeup needed', rescheduledBy: submittedBy, rescheduledAt: new Date().toISOString() }
+          : match,
+      ),
+    )
+    logBocce('match_rescheduled', { matchId, submittedBy, note })
+  }
+
+  function approveBocceScore(matchId) {
+    setBocceMatches((items) =>
+      items.map((match) =>
+        match.id === matchId ? { ...match, status: 'final', approvedAt: new Date().toISOString() } : match,
+      ),
+    )
+    logBocce('score_approved', { matchId })
+  }
+
+  function rejectBocceScore(matchId) {
+    setBocceMatches((items) =>
+      items.map((match) =>
+        match.id === matchId ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined } : match,
+      ),
+    )
+    logBocce('score_rejected', { matchId })
+  }
+
+  function createBocceSnapshot() {
+    const snapshot = {
+      id: crypto.randomUUID(),
+      at: new Date().toISOString(),
+      matches: bocceMatches,
+      teams: bocceTeams,
+      players: boccePlayers,
+      standings: bocceStandings,
+      auditCount: bocceAudit.length,
+    }
+    setBocceSnapshots((items) => [snapshot, ...items])
+    logBocce('snapshot_created', { snapshotId: snapshot.id })
+  }
+
+  function updateBocceTeam(teamId, patch) {
+    setBocceTeams((items) => items.map((team) => (team.id === teamId ? { ...team, ...patch } : team)))
+  }
+
+  function updateBoccePlayer(playerId, patch) {
+    setBoccePlayers((items) => items.map((player) => (player.id === playerId ? { ...player, ...patch } : player)))
+  }
+
+  function updateBocceMatch(matchId, patch) {
+    setBocceMatches((items) => items.map((match) => (match.id === matchId ? { ...match, ...patch } : match)))
+  }
+
+  function regenerateBocceSchedule() {
+    const generated = createBocceSchedule(bocceTeams)
+    setBocceMatches(generated)
+    logBocce('schedule_generated', { matches: generated.length, startDate: '2026-06-24' })
+  }
+
   return (
     <div className="app-shell">
       <header className={`site-header ${headerHidden ? 'hidden' : ''}`}>
         <div className="club-bar">
           <span></span>
-          {page !== 'hub' && page !== 'bocce' && <button className="admin-link" type="button" onClick={() => setPage('admin')}>Admin</button>}
+          {page !== 'hub' && (
+            <button className="admin-link" type="button" onClick={() => setPage(page.startsWith('bocce') ? 'bocce-admin' : 'admin')}>Admin</button>
+          )}
         </div>
         <button className="club-logo" type="button" onClick={() => setPage('hub')}>
           <strong>HADDON GLEN</strong>
@@ -360,7 +547,43 @@ function App() {
 
       <main className="content">
         {page === 'hub' && <LeagueHub setPage={setPage} />}
-        {page === 'bocce' && <BoccePlaceholder setPage={setPage} />}
+        {page === 'bocce-home' && <BocceHome matches={bocceMatches} teams={bocceTeams} standings={bocceStandings} setPage={setPage} />}
+        {page === 'bocce-my' && (
+          <BocceMyMatches
+            matches={bocceMatches}
+            teams={bocceTeams}
+            players={boccePlayers}
+            selectedPlayer={selectedBoccePlayer}
+            selectedTeam={selectedBocceTeam}
+            selectedPlayerId={selectedBoccePlayerId}
+            setSelectedPlayerId={setSelectedBoccePlayerId}
+            standings={bocceStandings}
+            submitScore={submitBocceScore}
+            markRescheduled={markBocceRescheduled}
+          />
+        )}
+        {page === 'bocce-standings' && <BocceStandings standings={bocceStandings} />}
+        {page === 'bocce-schedule' && <BocceSchedule matches={bocceMatches} teams={bocceTeams} players={boccePlayers} />}
+        {page === 'bocce-rules' && <BocceRules />}
+        {page === 'bocce-submitted' && <ScoreSubmitted confirmation={bocceSubmissionConfirmation} setPage={setPage} homePage="bocce-home" myPage="bocce-my" />}
+        {page === 'bocce-admin' && (
+          <BocceAdmin
+            adminUnlocked={adminUnlocked}
+            setAdminUnlocked={setAdminUnlocked}
+            matches={bocceMatches}
+            teams={bocceTeams}
+            players={boccePlayers}
+            audit={bocceAudit}
+            snapshots={bocceSnapshots}
+            approveScore={approveBocceScore}
+            rejectScore={rejectBocceScore}
+            createSnapshot={createBocceSnapshot}
+            updateTeam={updateBocceTeam}
+            updatePlayer={updateBoccePlayer}
+            updateMatch={updateBocceMatch}
+            regenerateSchedule={regenerateBocceSchedule}
+          />
+        )}
         {page === 'home' && <Home standings={standings} setPage={setPage} />}
         {page === 'my' && (
           <MyMatches
@@ -416,6 +639,15 @@ function App() {
           <button type="button" onClick={() => setPage('trophy')}>Trophy Room</button>
         </nav>
       )}
+      {showBocceNav && (
+        <nav className="bottom-nav" aria-label="Bocce navigation">
+          <button type="button" onClick={() => setPage('bocce-home')}>Home</button>
+          <button type="button" onClick={() => setPage('bocce-my')}>My Matches</button>
+          <button type="button" onClick={() => setPage('bocce-standings')}>Standings</button>
+          <button type="button" onClick={() => setPage('bocce-schedule')}>Schedule</button>
+          <button type="button" onClick={() => setPage('bocce-rules')}>Rules</button>
+        </nav>
+      )}
     </div>
   )
 }
@@ -433,24 +665,362 @@ function LeagueHub({ setPage }) {
           <span>Cornhole</span>
           <strong>Summer 2026 League</strong>
         </button>
-        <button className="league-button bocce" type="button" onClick={() => setPage('bocce')}>
+        <button className="league-button bocce" type="button" onClick={() => setPage('bocce-home')}>
           <span>Bocce</span>
-          <strong>Coming soon</strong>
+          <strong>2026 League</strong>
         </button>
       </div>
     </section>
   )
 }
 
-function BoccePlaceholder({ setPage }) {
+function BocceHome({ matches, teams, standings, setPage }) {
+  const nextMatches = matches.filter((match) => match.status !== 'final').sort(bySchedule).slice(0, 3)
+  const completedMatches = matches.filter((match) => match.status === 'final').length
+  const leader = standings[0]
+
   return (
-    <section className="stack">
-      <PageTitle eyebrow="Bocce" title="Under Construction" />
-      <Card title="Bocce Site">
-        <p className="empty">Bocce site is under construction while the league format is being finalized.</p>
-        <button type="button" onClick={() => setPage('hub')}>Back to Sports Leagues</button>
+    <section className="stack bocce-page">
+      <div className="bocce-hero">
+        <div>
+          <p className="eyebrow">HGBBL</p>
+          <h1>2026 Bocce Ball League</h1>
+          <p>Wednesday night matchups, team contacts, standings, and score approval.</p>
+        </div>
+        <BocceCourtGraphic />
+      </div>
+      <div className="quick-grid">
+        <BigButton label="My Matches" onClick={() => setPage('bocce-my')} />
+        <BigButton label="Standings" onClick={() => setPage('bocce-standings')} />
+        <BigButton label="Schedule" onClick={() => setPage('bocce-schedule')} />
+        <BigButton label="Rules" onClick={() => setPage('bocce-rules')} />
+      </div>
+      <div className="stat-grid">
+        <Stat label="Teams" value={teams.length} />
+        <Stat label="Matches" value={matches.length} />
+        <Stat label="Final" value={completedMatches} />
+      </div>
+      <Card title="League Leader">
+        <div className="mini-list">
+          <p><strong>{leader?.team.name || 'No scores yet'}</strong><span>{leader?.gameWins || 0} game wins</span></p>
+        </div>
+      </Card>
+      <Card title="Next Matches">
+        <div className="card-list">
+          {nextMatches.map((match) => <BocceMatchCard key={match.id} match={match} teams={teams} compact />)}
+          {!nextMatches.length && <p className="empty">No upcoming bocce matches right now.</p>}
+        </div>
       </Card>
     </section>
+  )
+}
+
+function BocceCourtGraphic() {
+  return (
+    <div className="bocce-court" aria-hidden="true">
+      <span className="pallino"></span>
+      <span className="bocce-ball red one"></span>
+      <span className="bocce-ball red two"></span>
+      <span className="bocce-ball green one"></span>
+      <span className="bocce-ball green two"></span>
+    </div>
+  )
+}
+
+function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, markRescheduled }) {
+  if (!selectedPlayer || !selectedTeam) {
+    return (
+      <section className="stack">
+        <PageTitle eyebrow="No login needed" title="My Bocce Matches" />
+        <Card title="Select your name">
+          <label className="field">
+            Player
+            <select value={selectedPlayerId} onChange={(event) => setSelectedPlayerId(event.target.value)}>
+              <option value="">Choose player</option>
+              {players.filter(hasPlayerName).sort((a, b) => a.last.localeCompare(b.last)).map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.last}, {player.first}
+                </option>
+              ))}
+            </select>
+          </label>
+        </Card>
+      </section>
+    )
+  }
+
+  const row = standings.find((item) => item.team.id === selectedTeam.id)
+  const allMyMatches = matches
+    .filter((match) => match.teamA === selectedTeam.id || match.teamB === selectedTeam.id)
+    .sort(bySchedule)
+  const openMatches = allMyMatches.filter((match) => !isPlayedForPlayer(match))
+  const playedMatches = allMyMatches.filter(isPlayedForPlayer).reverse()
+  const nextMatch = openMatches[0]
+  const otherOpenMatches = openMatches.slice(1)
+
+  return (
+    <section className="stack">
+      <div className="profile-card bocce-profile-card">
+        <div className="profile-top">
+          <p>Continue as {selectedPlayer.first} {selectedPlayer.last}</p>
+          <button type="button" onClick={() => setSelectedPlayerId('')}>Change player</button>
+        </div>
+        <h1>Team: {selectedTeam.name}</h1>
+        <span>Wednesday Bocce League</span>
+      </div>
+      <div className="stat-grid">
+        <Stat label="Record" value={`${row?.matchWins || 0}-${row?.matchLosses || 0}`} />
+        <Stat label="Game Wins" value={row?.gameWins || 0} />
+        <Stat label="Rank" value={row ? row.rankLabel : '-'} />
+      </div>
+      {nextMatch && (
+        <button
+          className="jump-button"
+          type="button"
+          onClick={() => document.getElementById('next-bocce-match')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        >
+          Go to Next Match
+        </button>
+      )}
+      {nextMatch ? (
+        <section className="priority-match" id="next-bocce-match">
+          <p className="eyebrow">Next match</p>
+          <BocceMatchCard
+            match={nextMatch}
+            teams={teams}
+            players={players}
+            viewerTeam={selectedTeam}
+            selectedPlayer={selectedPlayer}
+            submitScore={submitScore}
+            markRescheduled={markRescheduled}
+            showContacts
+          />
+        </section>
+      ) : (
+        <p className="empty">No upcoming matches need attention right now.</p>
+      )}
+      {otherOpenMatches.length > 0 && (
+        <div className="card-list">
+          {otherOpenMatches.map((match) => (
+            <BocceMatchCard
+              key={match.id}
+              match={match}
+              teams={teams}
+              players={players}
+              viewerTeam={selectedTeam}
+              selectedPlayer={selectedPlayer}
+              submitScore={submitScore}
+              markRescheduled={markRescheduled}
+              showContacts
+            />
+          ))}
+        </div>
+      )}
+      <details className="history-panel">
+        <summary>Played matches ({playedMatches.length})</summary>
+        <div className="card-list">
+          {playedMatches.map((match) => (
+            <BocceMatchCard key={match.id} match={match} teams={teams} players={players} viewerTeam={selectedTeam} />
+          ))}
+        </div>
+      </details>
+    </section>
+  )
+}
+
+function BocceStandings({ standings }) {
+  return (
+    <section className="stack">
+      <PageTitle title="Bocce Standings" />
+      <section className="standings-grid bocce-standings-grid" aria-label="Bocce standings">
+        <div className="standings-header">
+          <span>Rank</span>
+          <span>Team</span>
+          <span>GW</span>
+          <span>Match</span>
+          <span>Pts</span>
+        </div>
+        {standings.map((row) => (
+          <article className="standing-row" key={row.team.id}>
+            <strong>{row.rankLabel}</strong>
+            <span className="team-name">{row.team.name}</span>
+            <span className="points">{row.gameWins}</span>
+            <span>{row.matchWins}-{row.matchLosses}</span>
+            <span>{row.points}</span>
+          </article>
+        ))}
+      </section>
+    </section>
+  )
+}
+
+function BocceSchedule({ matches, teams, players }) {
+  const [week, setWeek] = useState('All')
+  const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
+  const filtered = matches.filter((match) => week === 'All' || match.week === Number(week))
+
+  return (
+    <section className="stack">
+      <PageTitle eyebrow="Wednesday nights" title="Bocce Schedule" />
+      <div className="filters one-filter">
+        <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
+      </div>
+      <div className="card-list">
+        {filtered.map((match) => <BocceMatchCard key={match.id} match={match} teams={teams} players={players} showContacts />)}
+      </div>
+    </section>
+  )
+}
+
+function BocceRules() {
+  return (
+    <section className="stack">
+      <PageTitle eyebrow="HGBBL" title="Bocce Rules" />
+      <div className="rules-grid">
+        {bocceRuleCards.map((rule) => (
+          <article className="simple-card rule-card" key={rule.title}>
+            <h2>{rule.title}</h2>
+            <p>{rule.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled, compact = false }) {
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+  const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
+  const status = boccePublicStatus(match)
+
+  return (
+    <article className="match-card bocce-match-card">
+      <div className="match-head">
+        <div>
+          <p>Week {match.week} - {formatDate(match.date)} at {match.time}</p>
+          <h2 className="match-title">
+            {viewerTeam ? (
+              <>
+                <span>vs</span>
+                <span>{opponent?.name || 'TBD'}</span>
+              </>
+            ) : (
+              <>
+                <span>{teamA?.name || 'TBD'}</span>
+                <span>vs</span>
+                <span>{teamB?.name || 'TBD'}</span>
+              </>
+            )}
+          </h2>
+          <span>Bocce court</span>
+        </div>
+        <StatusBadge status={status} />
+      </div>
+      {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
+      {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
+        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
+      )}
+      {!compact && showContacts && (
+        <BocceContactTools match={match} players={players} />
+      )}
+    </article>
+  )
+}
+
+function BocceContactTools({ match, players }) {
+  const [copied, setCopied] = useState('')
+  const matchPlayers = [...teamPlayers(players, match.teamA), ...teamPlayers(players, match.teamB)].filter(hasPlayerName)
+  const contacts = matchPlayers.filter((player) => player.phone || player.email)
+
+  async function copyText(text, label) {
+    await navigator.clipboard.writeText(text)
+    setCopied(label)
+  }
+
+  return (
+    <div className="contacts bocce-contacts">
+      <p className="helper-text">Public team contacts</p>
+      <div className="bocce-contact-grid">
+        {matchPlayers.map((player) => (
+          <div className="bocce-contact-card" key={player.id}>
+            <strong>{player.first} {player.last}</strong>
+            {cleanPhone(player.phone)
+              ? <a href={`sms:${cleanPhone(player.phone)}`}>{player.phone}</a>
+              : <span className="text-disabled">No phone listed</span>}
+            {player.email
+              ? <a href={`mailto:${player.email}`}>{player.email}</a>
+              : <span className="text-disabled">No email listed</span>}
+          </div>
+        ))}
+      </div>
+      <div className="single-button-row">
+        <button type="button" onClick={() => copyText(contacts.map((player) => `${player.first} ${player.last}: ${player.phone || 'No phone'} ${player.email || 'No email'}`).join('\n'), 'Copied contacts.')}>Copy All Contacts</button>
+      </div>
+      {copied && <p className="helper-text">{copied}</p>}
+    </div>
+  )
+}
+
+function BocceMatchActions({ match, teams, selectedPlayer, submitScore, markRescheduled }) {
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+  const [open, setOpen] = useState('')
+  const [pin, setPin] = useState('')
+  const [game1A, setGame1A] = useState(11)
+  const [game1B, setGame1B] = useState(8)
+  const [game2A, setGame2A] = useState(8)
+  const [game2B, setGame2B] = useState(11)
+  const [game3A, setGame3A] = useState(11)
+  const [game3B, setGame3B] = useState(9)
+  const [note, setNote] = useState('')
+  const score = [[Number(game1A), Number(game1B)], [Number(game2A), Number(game2B)], [Number(game3A), Number(game3B)]]
+  const errors = validateBocceScore(score)
+
+  function pinIsValid() {
+    return pin.trim().toLowerCase() === PIN
+  }
+
+  return (
+    <div className="actions">
+      <div className="match-action-buttons">
+        <button type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>Submit Score</button>
+        <button type="button" className="secondary" onClick={() => setOpen(open === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+      </div>
+      {open === 'score' && (
+        <form className="inline-form" onSubmit={(event) => {
+          event.preventDefault()
+          if (!pinIsValid() || errors.length) return
+          submitScore(match.id, score, selectedPlayer.id)
+        }}>
+          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
+          <div className="score-grid bocce-score-grid">
+            <label>Game 1 {teamA?.name || 'Team A'}<input type="number" min="0" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
+            <label>Game 1 {teamB?.name || 'Team B'}<input type="number" min="0" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
+            <label>Game 2 {teamA?.name || 'Team A'}<input type="number" min="0" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
+            <label>Game 2 {teamB?.name || 'Team B'}<input type="number" min="0" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
+            <label>Game 3 {teamA?.name || 'Team A'}<input type="number" min="0" value={game3A} onChange={(event) => setGame3A(event.target.value)} /></label>
+            <label>Game 3 {teamB?.name || 'Team B'}<input type="number" min="0" value={game3B} onChange={(event) => setGame3B(event.target.value)} /></label>
+          </div>
+          {errors.map((error) => <p className="error" key={error}>{error}</p>)}
+          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
+          <button type="submit">Submit for Approval</button>
+        </form>
+      )}
+      {open === 'reschedule' && (
+        <form className="inline-form" onSubmit={(event) => {
+          event.preventDefault()
+          if (!pinIsValid()) return
+          markRescheduled(match.id, note, selectedPlayer.id)
+          setOpen('')
+        }}>
+          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Optional note or proposed makeup date" />
+          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
+          <button type="submit">Save Reschedule</button>
+        </form>
+      )}
+    </div>
   )
 }
 
@@ -653,7 +1223,7 @@ function TrophyRoom() {
   )
 }
 
-function ScoreSubmitted({ confirmation, setPage }) {
+function ScoreSubmitted({ confirmation, setPage, homePage = 'home', myPage = 'my' }) {
   return (
     <section className="submitted-screen">
       <div className="submitted-card">
@@ -662,8 +1232,8 @@ function ScoreSubmitted({ confirmation, setPage }) {
         <p>Your score was saved and sent to the admin queue. Standings will update after approval.</p>
         {confirmation?.at && <span>Submitted {new Date(confirmation.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>}
         <div className="submitted-actions">
-          <button type="button" onClick={() => setPage('my')}>Back to My Matches</button>
-          <button type="button" className="secondary" onClick={() => setPage('home')}>Back to Home</button>
+          <button type="button" onClick={() => setPage(myPage)}>Back to My Matches</button>
+          <button type="button" className="secondary" onClick={() => setPage(homePage)}>Back to Home</button>
         </div>
       </div>
     </section>
@@ -770,6 +1340,209 @@ function Admin({
         </Card>
       )}
     </section>
+  )
+}
+
+function BocceAdmin({
+  adminUnlocked,
+  setAdminUnlocked,
+  matches,
+  teams,
+  players,
+  audit,
+  snapshots,
+  approveScore,
+  rejectScore,
+  createSnapshot,
+  updateTeam,
+  updatePlayer,
+  updateMatch,
+  regenerateSchedule,
+}) {
+  const [password, setPassword] = useState('')
+  const [tab, setTab] = useState('Scores')
+
+  if (!adminUnlocked) {
+    return (
+      <section className="stack">
+        <PageTitle eyebrow="Bocce commissioner tools" title="Admin" />
+        <Card title="Enter admin password">
+          <form className="form" onSubmit={(event) => {
+            event.preventDefault()
+            if (password.trim().toLowerCase() === ADMIN_PASSWORD) setAdminUnlocked(true)
+          }}>
+            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Admin password" />
+            <button type="submit">Unlock Admin</button>
+          </form>
+        </Card>
+      </section>
+    )
+  }
+
+  const pending = matches.filter((match) => match.status === 'pending')
+
+  return (
+    <section className="stack">
+      <div className="admin-heading">
+        <PageTitle eyebrow="Bocce commissioner tools" title="Admin" />
+        <button
+          className="sign-out-button"
+          type="button"
+          onClick={() => {
+            setAdminUnlocked(false)
+            setPassword('')
+          }}
+        >
+          Sign out
+        </button>
+      </div>
+      <Segmented options={['Scores', 'Roster', 'Schedule', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
+      {tab === 'Scores' && (
+        <Card title="Pending Bocce Scores">
+          {pending.length === 0 && <p className="empty">No pending bocce scores.</p>}
+          <div className="card-list">
+            {pending.map((match) => (
+              <article className="simple-card" key={match.id}>
+                <p>Week {match.week} - {matchTitle(match, teams)}</p>
+                <h2>{formatBocceScore(match.score)}</h2>
+                <p>Submitted by {playerName(players, match.submittedBy)}</p>
+                <div className="button-row">
+                  <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
+                  <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Card>
+      )}
+      {tab === 'Roster' && (
+        <BocceRosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
+      )}
+      {tab === 'Schedule' && (
+        <BocceScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
+      )}
+      {tab === 'Snapshots' && (
+        <Card title="Daily Snapshots">
+          <button type="button" onClick={createSnapshot}>Create Snapshot Now</button>
+          <div className="card-list">
+            {snapshots.map((snapshot) => <article className="simple-card" key={snapshot.id}><p>{new Date(snapshot.at).toLocaleString()}</p><h2>{snapshot.matches.length} matches saved</h2></article>)}
+          </div>
+        </Card>
+      )}
+      {tab === 'Audit' && (
+        <Card title="Audit Log">
+          <div className="card-list">
+            {audit.length === 0 && <p className="empty">No audit entries yet.</p>}
+            {audit.map((item) => <BocceAuditEntry key={item.id} item={item} matches={matches} teams={teams} players={players} />)}
+          </div>
+        </Card>
+      )}
+    </section>
+  )
+}
+
+function BocceRosterEditor({ teams, players, updateTeam, updatePlayer }) {
+  return (
+    <Card title="Bocce Teams and Public Contacts">
+      <p className="empty">Phone numbers and emails appear on public bocce match pages.</p>
+      <div className="card-list">
+        {[...teams].sort((a, b) => a.number - b.number).map((team) => {
+          const teamPlayers = players.filter((player) => player.teamId === team.id)
+          return (
+            <article className="simple-card admin-team-card" key={team.id}>
+              <div className="admin-team-head bocce-admin-team-head">
+                <label className="field">
+                  Team #
+                  <input
+                    type="number"
+                    min="1"
+                    value={team.number}
+                    onChange={(event) => updateTeam(team.id, { number: Number(event.target.value) })}
+                  />
+                </label>
+                <label className="field team-name-field">
+                  Team Name
+                  <input value={team.name} onChange={(event) => updateTeam(team.id, { name: event.target.value })} />
+                </label>
+              </div>
+              <div className="admin-player-grid">
+                {teamPlayers.map((player) => (
+                  <div className="admin-player-card" key={player.id}>
+                    <label className="field">First<input value={player.first} onChange={(event) => updatePlayer(player.id, { first: event.target.value })} /></label>
+                    <label className="field">Last<input value={player.last} onChange={(event) => updatePlayer(player.id, { last: event.target.value })} /></label>
+                    <label className="field">Phone<input value={player.phone || ''} onChange={(event) => updatePlayer(player.id, { phone: event.target.value })} /></label>
+                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updatePlayer(player.id, { email: event.target.value })} /></label>
+                  </div>
+                ))}
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </Card>
+  )
+}
+
+function BocceScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
+  const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
+  return (
+    <Card title="Bocce Schedule Editor">
+      <button type="button" onClick={regenerateSchedule}>Regenerate Round Robin</button>
+      <p className="helper-text">Regenerating replaces bocce matches with a five-week Wednesday round robin.</p>
+      <div className="card-list">
+        {weeks.map((week) => (
+          <section className="schedule-week" key={week}>
+            <h3>Week {week}</h3>
+            {matches.filter((match) => match.week === week).sort(bySchedule).map((match) => (
+              <article className="simple-card admin-match-card" key={match.id}>
+                <div className="admin-match-grid">
+                  <label className="field">Date<input value={match.date} onChange={(event) => updateMatch(match.id, { date: event.target.value })} /></label>
+                  <label className="field">Time<input value={match.time} onChange={(event) => updateMatch(match.id, { time: event.target.value })} /></label>
+                  <label className="field">Status<select value={match.status} onChange={(event) => updateMatch(match.id, { status: event.target.value })}>{['scheduled', 'rescheduled', 'pending', 'final'].map((item) => <option key={item}>{item}</option>)}</select></label>
+                  <label className="field">Team A<select value={match.teamA} onChange={(event) => updateMatch(match.id, { teamA: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
+                  <label className="field">Team B<select value={match.teamB} onChange={(event) => updateMatch(match.id, { teamB: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
+                </div>
+              </article>
+            ))}
+          </section>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+function BocceAuditEntry({ item, matches, teams, players }) {
+  const match = matches.find((entry) => entry.id === item.details?.matchId)
+  const actor = item.details?.submittedBy ? playerName(players, item.details.submittedBy) : 'Commissioner'
+
+  if (item.action === 'score_submitted' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} submitted a bocce score</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        <p>{formatBocceScore(item.details.score)}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'match_rescheduled' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} marked a bocce match rescheduled</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        <p>{item.details.note || 'No note provided.'}</p>
+      </article>
+    )
+  }
+
+  return (
+    <article className="simple-card audit-entry">
+      <p>{new Date(item.at).toLocaleString()}</p>
+      <h2>{item.action.replaceAll('_', ' ')}</h2>
+      {match && <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>}
+    </article>
   )
 }
 
@@ -1229,6 +2002,30 @@ function createSeasonSchedule(teams) {
   return matches.sort(bySchedule)
 }
 
+function createBocceSchedule(teams) {
+  const start = new Date('2026-06-24T12:00:00')
+  const matches = []
+  const rounds = buildRoundRobinRounds([...teams].sort((a, b) => a.number - b.number))
+
+  rounds.forEach((round, roundIndex) => {
+    const date = addDays(start, roundIndex * 7)
+
+    round.forEach(([teamA, teamB], matchIndex) => {
+      matches.push({
+        id: `bocce-${roundIndex + 1}-${matchIndex + 1}`,
+        week: roundIndex + 1,
+        date: ymd(date),
+        time: bocceTimes[matchIndex % bocceTimes.length],
+        teamA: teamA.id,
+        teamB: teamB.id,
+        status: 'scheduled',
+      })
+    })
+  })
+
+  return matches.sort(bySchedule)
+}
+
 function buildRoundRobinRounds(teams) {
   if (teams.length < 2) return []
 
@@ -1300,10 +2097,72 @@ function buildStandings(matches, teams) {
   return result
 }
 
+function buildBocceStandings(matches, teams) {
+  const rows = teams.map((team) => ({ team, points: 0, matchWins: 0, matchLosses: 0, gameWins: 0, gameLosses: 0, diff: 0, played: 0 }))
+
+  matches.filter((match) => match.status === 'final' && match.score).forEach((match) => {
+    const a = rows.find((row) => row.team.id === match.teamA)
+    const b = rows.find((row) => row.team.id === match.teamB)
+    if (!a || !b) return
+
+    const aPoints = match.score.reduce((total, game) => total + Number(game[0] || 0), 0)
+    const bPoints = match.score.reduce((total, game) => total + Number(game[1] || 0), 0)
+    const aGames = match.score.filter((game) => Number(game[0]) > Number(game[1])).length
+    const bGames = match.score.length - aGames
+
+    a.points += aPoints
+    b.points += bPoints
+    a.diff += aPoints - bPoints
+    b.diff += bPoints - aPoints
+    a.gameWins += aGames
+    a.gameLosses += bGames
+    b.gameWins += bGames
+    b.gameLosses += aGames
+    a.played += 1
+    b.played += 1
+
+    if (aGames > bGames) {
+      a.matchWins += 1
+      b.matchLosses += 1
+    } else {
+      b.matchWins += 1
+      a.matchLosses += 1
+    }
+  })
+
+  const sortedRows = rows.sort((a, b) =>
+    b.gameWins - a.gameWins ||
+    b.matchWins - a.matchWins ||
+    b.points - a.points ||
+    b.diff - a.diff ||
+    a.team.name.localeCompare(b.team.name),
+  )
+
+  return withBocceRankLabels(sortedRows)
+}
+
 function withRankLabels(rows) {
   return rows.map((row, index) => {
     const rank = rows.findIndex((item) => item.points === row.points) + 1
     const isTied = rows.filter((item) => item.points === row.points).length > 1
+    return { ...row, rank, rankLabel: isTied ? `T-${rank}` : String(rank) }
+  })
+}
+
+function withBocceRankLabels(rows) {
+  return rows.map((row) => {
+    const rank = rows.findIndex((item) =>
+      item.gameWins === row.gameWins &&
+      item.matchWins === row.matchWins &&
+      item.points === row.points &&
+      item.diff === row.diff,
+    ) + 1
+    const isTied = rows.filter((item) =>
+      item.gameWins === row.gameWins &&
+      item.matchWins === row.matchWins &&
+      item.points === row.points &&
+      item.diff === row.diff,
+    ).length > 1
     return { ...row, rank, rankLabel: isTied ? `T-${rank}` : String(rank) }
   })
 }
@@ -1314,6 +2173,24 @@ function validateScore(score) {
     if (game[0] === game[1]) return `Game ${index + 1}: no ties.`
     if (game[0] !== 21 && game[1] !== 21) return `Game ${index + 1}: one team must have 21.`
     if (game[0] === 21 && game[1] === 21) return `Game ${index + 1}: only one team can have 21.`
+    return ''
+  }).filter(Boolean)
+}
+
+function validateBocceScore(score) {
+  if (score.length !== 3) return ['Bocce matches must include exactly 3 game scores.']
+
+  return score.map((game, index) => {
+    const a = Number(game[0])
+    const b = Number(game[1])
+    const winner = Math.max(a, b)
+    const margin = Math.abs(a - b)
+
+    if (Number.isNaN(a) || Number.isNaN(b)) return `Game ${index + 1}: both scores are required.`
+    if (a < 0 || b < 0) return `Game ${index + 1}: scores cannot be negative.`
+    if (a === b) return `Game ${index + 1}: each game must have a winner.`
+    if (winner < 11) return `Game ${index + 1}: winner must score at least 11.`
+    if (margin < 2) return `Game ${index + 1}: winner must win by at least 2.`
     return ''
   }).filter(Boolean)
 }
@@ -1339,6 +2216,14 @@ function publicStatus(match) {
   if (isOverdue(match)) return 'Score needed or makeup required'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
+  return 'Scheduled'
+}
+
+function boccePublicStatus(match) {
+  if (match.status === 'rescheduled') return 'Pending reschedule'
+  if (match.status === 'pending') return 'Pending commissioner approval'
+  if (match.status === 'final') return 'Final'
+  if (new Date(`${match.date}T23:59:59`) < new Date()) return 'Score needed or makeup required'
   return 'Scheduled'
 }
 
@@ -1379,6 +2264,10 @@ function gameDateLabel(match) {
 
 function formatScore(score) {
   return score ? `${score[0][0]}-${score[0][1]}, ${score[1][0]}-${score[1][1]}` : ''
+}
+
+function formatBocceScore(score) {
+  return score ? score.map((game) => `${game[0]}-${game[1]}`).join(', ') : ''
 }
 
 function sampleScheduleCsv() {
@@ -1487,7 +2376,7 @@ function looksLikeTime(value) {
 }
 
 function cleanPhone(phone) {
-  return phone.replace(/\D/g, '')
+  return String(phone || '').replace(/\D/g, '')
 }
 
 function BigButton({ label, onClick }) {

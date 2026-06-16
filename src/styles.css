@@ -98,6 +98,7 @@ a {
 .match-action-buttons button,
 .button-row button,
 .contacts .primary-link,
+.contacts button,
 .bottom-nav button,
 .segmented button,
 .profile-card button,
@@ -212,6 +213,166 @@ a {
   margin-top: 0;
   padding: 0 12px;
   font-size: 0.82rem;
+}
+
+.bocce-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 18px;
+  background: #125c45;
+  color: #fff;
+  box-shadow: 0 18px 50px rgba(18, 92, 69, 0.2);
+}
+
+.bocce-hero h1,
+.bocce-hero p {
+  margin: 0;
+}
+
+.bocce-hero h1 {
+  max-width: 20rem;
+  font-size: clamp(1.75rem, 7vw, 2.75rem);
+  line-height: 0.98;
+}
+
+.bocce-hero p:not(.eyebrow) {
+  max-width: 32rem;
+  color: #d8f7e8;
+  font-weight: 800;
+}
+
+.bocce-hero .eyebrow {
+  color: #a7f3d0;
+}
+
+.bocce-court {
+  position: relative;
+  min-height: 170px;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: 10px;
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.4) 51%, transparent 51%),
+    repeating-linear-gradient(0deg, rgba(246, 219, 161, 0.2), rgba(246, 219, 161, 0.2) 12px, rgba(246, 219, 161, 0.28) 12px, rgba(246, 219, 161, 0.28) 24px),
+    #c79b5d;
+}
+
+.pallino,
+.bocce-ball {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  box-shadow: inset -5px -6px 10px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.22);
+}
+
+.pallino {
+  top: 45%;
+  left: 61%;
+  width: 14px;
+  height: 14px;
+  background: #fff7d6;
+}
+
+.bocce-ball {
+  width: 31px;
+  height: 31px;
+}
+
+.bocce-ball.red {
+  background: #ba2f32;
+}
+
+.bocce-ball.green {
+  background: #176d3a;
+}
+
+.bocce-ball.red.one {
+  top: 54%;
+  left: 50%;
+}
+
+.bocce-ball.red.two {
+  top: 29%;
+  left: 68%;
+}
+
+.bocce-ball.green.one {
+  top: 63%;
+  left: 69%;
+}
+
+.bocce-ball.green.two {
+  top: 37%;
+  left: 42%;
+}
+
+.bocce-profile-card {
+  background: #125c45;
+}
+
+.rules-grid,
+.bocce-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rule-card {
+  border-color: #cdebd7;
+  background: #f3fbf6;
+}
+
+.rule-card h2 {
+  font-size: 1.03rem;
+}
+
+.bocce-match-card .match-head > div > span:not(.status) {
+  color: #13785d;
+}
+
+.bocce-contact-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f3fbf6;
+}
+
+.bocce-contact-card strong {
+  color: #0b2545;
+}
+
+.bocce-contact-card a,
+.bocce-contact-card .text-disabled {
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 34px;
+  overflow: hidden;
+  padding: 7px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bocce-contact-card a {
+  background: #ddf7e7;
+}
+
+.contacts button {
+  padding: 0 14px;
+  background: #0b2545;
+  color: #fff;
+}
+
+.one-filter {
+  grid-template-columns: 1fr;
+}
+
+.bocce-admin-team-head {
+  grid-template-columns: 92px minmax(0, 1fr);
 }
 
 .payment-callout {
@@ -1061,6 +1222,9 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .bocce-hero,
+  .rules-grid,
+  .bocce-contact-grid,
   .admin-team-head,
   .admin-player-grid,
   .admin-player-card,
@@ -1072,6 +1236,10 @@ textarea {
 
   .payment-callout a {
     width: 100%;
+  }
+
+  .bocce-court {
+    min-height: 150px;
   }
 
   .team-name-field,
