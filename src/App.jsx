@@ -866,7 +866,7 @@ function BocceSchedule({ matches, teams, players }) {
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
       </div>
       <div className="card-list">
-        {filtered.map((match) => <BocceMatchCard key={match.id} match={match} teams={teams} players={players} showContacts />)}
+        {filtered.map((match) => <BocceMatchCard key={match.id} match={match} teams={teams} players={players} />)}
       </div>
     </section>
   )
