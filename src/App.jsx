@@ -662,12 +662,27 @@ function LeagueHub({ setPage }) {
       </div>
       <div className="league-grid">
         <button className="league-button cornhole" type="button" onClick={() => setPage('home')}>
-          <span>Cornhole</span>
-          <strong>Summer 2026 League</strong>
+          <span className="league-copy">
+            <span>Cornhole</span>
+            <strong>Summer 2026 League</strong>
+          </span>
+          <span className="league-art cornhole-art" aria-hidden="true">
+            <span className="cornhole-board"></span>
+            <span className="cornhole-bag one"></span>
+            <span className="cornhole-bag two"></span>
+          </span>
         </button>
         <button className="league-button bocce" type="button" onClick={() => setPage('bocce-home')}>
-          <span>Bocce</span>
-          <strong>2026 League</strong>
+          <span className="league-copy">
+            <span>Bocce</span>
+            <strong>2026 League</strong>
+          </span>
+          <span className="league-art bocce-art" aria-hidden="true">
+            <span className="league-pallino"></span>
+            <span className="league-bocce-ball red"></span>
+            <span className="league-bocce-ball green"></span>
+            <span className="league-bocce-ball gold"></span>
+          </span>
         </button>
       </div>
     </section>
