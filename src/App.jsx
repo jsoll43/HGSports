@@ -922,13 +922,13 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
         <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
       )}
       {!compact && showContacts && (
-        <BocceContactTools match={match} players={players} />
+        <BocceContactTools match={match} players={players} textOnly={Boolean(selectedPlayer)} />
       )}
     </article>
   )
 }
 
-function BocceContactTools({ match, players }) {
+function BocceContactTools({ match, players, textOnly = false }) {
   const [copied, setCopied] = useState('')
   const matchPlayers = [...teamPlayers(players, match.teamA), ...teamPlayers(players, match.teamB)].filter(hasPlayerName)
   const contacts = matchPlayers.filter((player) => player.phone || player.email)
@@ -936,6 +936,21 @@ function BocceContactTools({ match, players }) {
   async function copyText(text, label) {
     await navigator.clipboard.writeText(text)
     setCopied(label)
+  }
+
+  if (textOnly) {
+    return (
+      <div className="contacts">
+        <p className="helper-text">Tap any player to begin a text message</p>
+        <div className="text-grid">
+          {matchPlayers.map((player) => (
+            cleanPhone(player.phone)
+              ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+              : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
