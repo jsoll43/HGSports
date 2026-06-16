@@ -236,6 +236,10 @@ a {
   line-height: 1.1;
 }
 
+.payment-callout .payment-needed-label {
+  color: #dc2626;
+}
+
 .payment-callout p:not(.eyebrow) {
   margin-top: 4px;
   color: #617181;

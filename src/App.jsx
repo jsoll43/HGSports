@@ -819,9 +819,9 @@ function PaymentCallout() {
   return (
     <section className="payment-callout" aria-label="League payment">
       <div>
-        <p className="eyebrow">Payment needed</p>
+        <p className="eyebrow payment-needed-label">Payment needed</p>
         <h2>Submit your league payment</h2>
-        <p>The commissioner will mark your team paid after the Square payment comes through.</p>
+        <p>League dues are $10 per team. The commissioner will mark your team paid after the Square payment comes through.</p>
       </div>
       <a href={PAYMENT_LINK} target="_blank" rel="noreferrer">Pay with Square</a>
     </section>
