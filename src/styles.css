@@ -361,6 +361,33 @@ a {
   background: #ddf7e7;
 }
 
+.bocce-text-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bocce-text-team {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f3fbf6;
+}
+
+.bocce-text-team h3 {
+  margin: 0;
+  color: #0b2545;
+  font-size: 0.95rem;
+  line-height: 1.15;
+}
+
+.text-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
 .contacts button {
   padding: 0 14px;
   background: #0b2545;
@@ -1225,6 +1252,7 @@ textarea {
   .bocce-hero,
   .rules-grid,
   .bocce-contact-grid,
+  .bocce-text-team-grid,
   .admin-team-head,
   .admin-player-grid,
   .admin-player-card,

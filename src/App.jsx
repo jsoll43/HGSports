@@ -140,12 +140,12 @@ const initialBoccePlayers = [
 ]
 
 const bocceRuleCards = [
-  { title: 'League Setup', text: 'Teams are Haddon Glen members over 21, approved by the committee, with a maximum of 12 teams for the 2026 season.' },
-  { title: 'Schedule', text: 'League night is Wednesday. Teams coordinate with opponents if a matchup needs to move.' },
   { title: 'Reschedules', text: 'Rescheduled matches must be played at Haddon Glen and recorded before the committee deadline.' },
   { title: 'Valid Rolls', text: 'Feet stay behind the fault line, throws are underhand, balls cross half court, and balls cannot hit the back wall first.' },
   { title: 'Gameplay', text: 'The team that is out throws until it is in or out of balls. All bocce balls are thrown to complete each frame.' },
   { title: 'Scoring', text: 'Only the closest team scores in a frame. Kisses count as two points. Games go to 11 and must be won by 2; a match is 3 games.' },
+  { title: 'Throwing Rotation', text: 'Each team needs at least 2 players for a match. Four-player teams throw one ball per player; two-player teams throw two balls per player.' },
+  { title: 'Pallino Toss', text: 'The pallino must cross half court and stay off the side and back walls. An invalid toss turns the start of the frame over to the other team.' },
 ]
 
 const trophyEntries = [
@@ -922,13 +922,13 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
         <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
       )}
       {!compact && showContacts && (
-        <BocceContactTools match={match} players={players} textOnly={Boolean(selectedPlayer)} />
+        <BocceContactTools match={match} teams={teams} players={players} textOnly={Boolean(selectedPlayer)} />
       )}
     </article>
   )
 }
 
-function BocceContactTools({ match, players, textOnly = false }) {
+function BocceContactTools({ match, teams = [], players, textOnly = false }) {
   const [copied, setCopied] = useState('')
   const matchPlayers = [...teamPlayers(players, match.teamA), ...teamPlayers(players, match.teamB)].filter(hasPlayerName)
   const contacts = matchPlayers.filter((player) => player.phone || player.email)
@@ -939,14 +939,26 @@ function BocceContactTools({ match, players, textOnly = false }) {
   }
 
   if (textOnly) {
+    const teamA = getTeam(teams, match.teamA) || { name: 'Team A' }
+    const teamB = getTeam(teams, match.teamB) || { name: 'Team B' }
+    const teamAPlayers = teamPlayers(players, match.teamA).filter(hasPlayerName)
+    const teamBPlayers = teamPlayers(players, match.teamB).filter(hasPlayerName)
+
     return (
       <div className="contacts">
         <p className="helper-text">Tap any player to begin a text message</p>
-        <div className="text-grid">
-          {matchPlayers.map((player) => (
-            cleanPhone(player.phone)
-              ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
-              : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
+        <div className="bocce-text-team-grid">
+          {[{ team: teamA, players: teamAPlayers }, { team: teamB, players: teamBPlayers }].map((group) => (
+            <div className="bocce-text-team" key={group.team.id || group.team.name}>
+              <h3>{group.team.name}</h3>
+              <div className="text-grid single-column">
+                {group.players.map((player) => (
+                  cleanPhone(player.phone)
+                    ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+                    : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
