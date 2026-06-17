@@ -229,7 +229,7 @@ function normalizeAppData(data = {}) {
 }
 
 function normalizeBocceData(data = {}) {
-  const teams = Array.isArray(data?.teams) ? data.teams : initialBocceTeams
+  const teams = migrateBocceTeams(Array.isArray(data?.teams) ? data.teams : initialBocceTeams)
   const players = Array.isArray(data?.players) ? data.players : initialBoccePlayers
 
   return {
@@ -240,6 +240,13 @@ function normalizeBocceData(data = {}) {
     audit: Array.isArray(data?.audit) ? data.audit : [],
     snapshots: Array.isArray(data?.snapshots) ? data.snapshots : [],
   }
+}
+
+function migrateBocceTeams(teams) {
+  return teams.map((team) => {
+    if (team.id !== 'bocce-team-1') return team
+    return { ...team, name: 'God Fa Bid' }
+  })
 }
 
 function migrateRosterTeams(teams) {
