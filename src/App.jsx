@@ -1848,11 +1848,12 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
-function PaymentTracker({ teams, audit, updateTeam, updatePaymentStatus }) {
+function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
-  const sortedTeams = [...teams].sort((a, b) => a.number - b.number)
+  const sortedTeams = (Array.isArray(teams) ? [...teams] : []).sort((a, b) => a.number - b.number)
+  const auditItems = Array.isArray(audit) ? audit : []
   const paidCount = sortedTeams.filter((team) => team.paid).length
-  const paymentAudit = audit.filter((item) => item.action === 'payment_marked_paid' || item.action === 'payment_unmarked_paid')
+  const paymentAudit = auditItems.filter((item) => item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid')
   const searchTerm = paymentSearch.trim().toLowerCase()
   const matchesSearch = (team) => {
     if (!searchTerm) return true
@@ -1877,7 +1878,13 @@ function PaymentTracker({ teams, audit, updateTeam, updatePaymentStatus }) {
         <input
           type="checkbox"
           checked={Boolean(team.paid)}
-          onChange={(event) => updatePaymentStatus(team.id, event.target.checked)}
+          onChange={(event) => {
+            if (updatePaymentStatus) {
+              updatePaymentStatus(team.id, event.target.checked)
+            } else {
+              updateTeam(team.id, { paid: event.target.checked })
+            }
+          }}
         />
         Paid
       </label>
