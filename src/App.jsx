@@ -804,6 +804,7 @@ function App() {
             createSnapshot={createSnapshot}
             importSchedule={importSchedule}
             updateTeam={updateTeam}
+            updateTeamPaymentStatus={updateTeamPaymentStatus}
             updatePlayer={updatePlayer}
             updateMatch={updateMatch}
             regenerateSchedule={regenerateSchedule}
@@ -1550,6 +1551,7 @@ function Admin({
   createSnapshot,
   importSchedule,
   updateTeam,
+  updateTeamPaymentStatus,
   updatePlayer,
   updateMatch,
   regenerateSchedule,
