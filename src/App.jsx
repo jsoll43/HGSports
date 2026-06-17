@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
@@ -7,6 +7,7 @@ const SPORTS_STORAGE_KEY = 'hg-sports-data'
 const CORNHOLE_STORAGE_KEY = 'cornhole'
 const BOCCE_STORAGE_KEY = 'bocce'
 const CORNHOLE_SCHEDULE_VERSION = '2026-27-team-v1'
+const CLOUD_POLL_MS = 8000
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
 
@@ -176,8 +177,44 @@ function readStored(key) {
   }
 }
 
-function readAppData() {
+function readSportsData() {
   const sportsData = readStored(SPORTS_STORAGE_KEY)
+  return sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}
+}
+
+function normalizeSportsData(data = {}) {
+  return {
+    [CORNHOLE_STORAGE_KEY]: normalizeAppData(data?.[CORNHOLE_STORAGE_KEY]),
+    [BOCCE_STORAGE_KEY]: normalizeBocceData(data?.[BOCCE_STORAGE_KEY]),
+  }
+}
+
+async function readCloudSportsData() {
+  const response = await fetch('/api/state', {
+    headers: { Accept: 'application/json' },
+  })
+
+  if (!response.ok) throw new Error(`Cloud read failed: ${response.status}`)
+  return response.json()
+}
+
+async function saveCloudSportsData(data) {
+  const response = await fetch('/api/state', {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data }),
+  })
+
+  if (!response.ok) throw new Error(`Cloud save failed: ${response.status}`)
+  const result = await response.json()
+  return result.updatedAt || ''
+}
+
+function readAppData() {
+  const sportsData = readSportsData()
   if (sportsData?.[CORNHOLE_STORAGE_KEY]) return normalizeAppData(sportsData[CORNHOLE_STORAGE_KEY])
 
   for (const key of LEGACY_STORAGE_KEYS) {
@@ -189,7 +226,7 @@ function readAppData() {
 }
 
 function readBocceData() {
-  const sportsData = readStored(SPORTS_STORAGE_KEY)
+  const sportsData = readSportsData()
   return normalizeBocceData(sportsData?.[BOCCE_STORAGE_KEY])
 }
 
@@ -298,9 +335,16 @@ function App() {
   const [submissionConfirmation, setSubmissionConfirmation] = useState(null)
   const [bocceSubmissionConfirmation, setBocceSubmissionConfirmation] = useState(null)
   const [headerHidden, setHeaderHidden] = useState(false)
+  const [cloudReady, setCloudReady] = useState(false)
+  const [cloudError, setCloudError] = useState('')
+  const latestSportsDataRef = useRef(null)
+  const cloudUpdatedAtRef = useRef('')
+  const cloudSavingRef = useRef(false)
+  const skipNextCloudSaveRef = useRef(false)
+  const saveTimerRef = useRef(null)
 
-  useEffect(() => {
-    const appData = {
+  const currentSportsData = useMemo(() => ({
+    [CORNHOLE_STORAGE_KEY]: {
       selectedPlayerId,
       teams,
       players,
@@ -308,30 +352,121 @@ function App() {
       audit,
       snapshots,
       scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
-    }
-    const sportsData = readStored(SPORTS_STORAGE_KEY)
-    const nextSportsData = {
-      ...(sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}),
-      [CORNHOLE_STORAGE_KEY]: appData,
-    }
-    localStorage.setItem(SPORTS_STORAGE_KEY, JSON.stringify(nextSportsData))
-  }, [selectedPlayerId, teams, players, matches, audit, snapshots])
-  useEffect(() => {
-    const appData = {
+    },
+    [BOCCE_STORAGE_KEY]: {
       selectedPlayerId: selectedBoccePlayerId,
       teams: bocceTeams,
       players: boccePlayers,
       matches: bocceMatches,
       audit: bocceAudit,
       snapshots: bocceSnapshots,
+    },
+  }), [selectedPlayerId, teams, players, matches, audit, snapshots, selectedBoccePlayerId, bocceTeams, boccePlayers, bocceMatches, bocceAudit, bocceSnapshots])
+
+  function applySportsData(sportsData) {
+    const normalized = normalizeSportsData(sportsData)
+    const cornhole = normalized[CORNHOLE_STORAGE_KEY]
+    const bocce = normalized[BOCCE_STORAGE_KEY]
+
+    setSelectedPlayerId(cornhole.selectedPlayerId)
+    setTeams(cornhole.teams)
+    setPlayers(cornhole.players)
+    setMatches(cornhole.matches)
+    setAudit(cornhole.audit)
+    setSnapshots(cornhole.snapshots)
+    setSelectedBoccePlayerId(bocce.selectedPlayerId)
+    setBocceTeams(bocce.teams)
+    setBoccePlayers(bocce.players)
+    setBocceMatches(bocce.matches)
+    setBocceAudit(bocce.audit)
+    setBocceSnapshots(bocce.snapshots)
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCloudData() {
+      let loaded = false
+      try {
+        const remote = await readCloudSportsData()
+        if (cancelled) return
+
+        const hasRemoteData = remote?.data && Object.keys(remote.data).length > 0
+        if (hasRemoteData) {
+          cloudUpdatedAtRef.current = remote.updatedAt || ''
+          skipNextCloudSaveRef.current = true
+          applySportsData(remote.data)
+        } else {
+          cloudUpdatedAtRef.current = await saveCloudSportsData(latestSportsDataRef.current || currentSportsData)
+          skipNextCloudSaveRef.current = true
+        }
+        loaded = true
+      } catch (error) {
+        console.warn(error)
+        if (!cancelled) setCloudError('Could not connect to the league database. Check the Cloudflare D1 binding named DB and redeploy.')
+      } finally {
+        if (!cancelled && loaded) setCloudReady(true)
+      }
     }
-    const sportsData = readStored(SPORTS_STORAGE_KEY)
-    const nextSportsData = {
-      ...(sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}),
-      [BOCCE_STORAGE_KEY]: appData,
+
+    loadCloudData()
+    return () => {
+      cancelled = true
     }
-    localStorage.setItem(SPORTS_STORAGE_KEY, JSON.stringify(nextSportsData))
-  }, [selectedBoccePlayerId, bocceTeams, boccePlayers, bocceMatches, bocceAudit, bocceSnapshots])
+  }, [])
+
+  useEffect(() => {
+    latestSportsDataRef.current = currentSportsData
+
+    if (!cloudReady) return undefined
+    if (skipNextCloudSaveRef.current) {
+      skipNextCloudSaveRef.current = false
+      return undefined
+    }
+
+    window.clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = window.setTimeout(async () => {
+      cloudSavingRef.current = true
+      try {
+        cloudUpdatedAtRef.current = await saveCloudSportsData(currentSportsData)
+        setCloudError('')
+      } catch (error) {
+        console.warn(error)
+        setCloudError('Could not save to the league database. Refresh before making more edits.')
+      } finally {
+        cloudSavingRef.current = false
+      }
+    }, 600)
+
+    return () => window.clearTimeout(saveTimerRef.current)
+  }, [currentSportsData, cloudReady])
+
+  useEffect(() => {
+    if (!cloudReady) return undefined
+
+    let cancelled = false
+
+    async function pollCloudData() {
+      if (cloudSavingRef.current) return
+
+      try {
+        const remote = await readCloudSportsData()
+        if (cancelled || !remote?.data || !remote.updatedAt || remote.updatedAt === cloudUpdatedAtRef.current) return
+
+        cloudUpdatedAtRef.current = remote.updatedAt
+        skipNextCloudSaveRef.current = true
+        applySportsData(remote.data)
+      } catch (error) {
+        console.warn(error)
+      }
+    }
+
+    const intervalId = window.setInterval(pollCloudData, CLOUD_POLL_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [cloudReady])
   useEffect(() => {
     function handlePopState() {
       setCurrentPage(pageFromPath(window.location.pathname))
@@ -362,6 +497,19 @@ function App() {
   const bocceStandings = useMemo(() => buildBocceStandings(bocceMatches, bocceTeams), [bocceMatches, bocceTeams])
   const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'trophy', 'submitted'].includes(page)
   const showBocceNav = ['bocce-home', 'bocce-my', 'bocce-standings', 'bocce-schedule', 'bocce-rules', 'bocce-submitted'].includes(page)
+
+  if (!cloudReady) {
+    return (
+      <div className="app-shell">
+        <main className="content">
+          <section className="card sync-state">
+            <h2>{cloudError ? 'Database unavailable' : 'Loading league data'}</h2>
+            <p>{cloudError || 'Connecting to Cloudflare D1.'}</p>
+          </section>
+        </main>
+      </div>
+    )
+  }
 
   function setPage(nextPage) {
     const nextPath = pathForPage(nextPage)
@@ -564,6 +712,7 @@ function App() {
       </header>
 
       <main className="content">
+        {cloudError && <p className="sync-warning">{cloudError}</p>}
         {page === 'hub' && <LeagueHub setPage={setPage} />}
         {page === 'bocce-home' && <BocceHome matches={bocceMatches} teams={bocceTeams} standings={bocceStandings} setPage={setPage} />}
         {page === 'bocce-my' && (

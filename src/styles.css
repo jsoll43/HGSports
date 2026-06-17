@@ -544,6 +544,27 @@ a {
   padding: 16px;
 }
 
+.sync-state {
+  max-width: 520px;
+  margin: 12vh auto 0;
+  text-align: center;
+}
+
+.sync-state p,
+.sync-warning {
+  margin: 0;
+  color: #516171;
+  font-weight: 800;
+}
+
+.sync-warning {
+  border: 1px solid #ffd1a8;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff7ed;
+  color: #8a3b00;
+}
+
 .card h2,
 .simple-card h2,
 .match-card h2,
