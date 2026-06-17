@@ -101,7 +101,7 @@ const initialPlayers = [
 ]
 
 const initialBocceTeams = [
-  { id: 'bocce-team-1', number: 1, name: 'The God Fa Bids' },
+  { id: 'bocce-team-1', number: 1, name: 'God Fa Bid' },
   { id: 'bocce-team-2', number: 2, name: 'Bocce Balboa' },
   { id: 'bocce-team-3', number: 3, name: 'Holy Rollers' },
   { id: 'bocce-team-4', number: 4, name: 'We Thought You Meant Basketball' },
