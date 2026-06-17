@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Component, useEffect, useMemo, useRef, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
@@ -1614,12 +1614,14 @@ function Admin({
         <RosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
       )}
       {tab === 'Payments' && (
-        <PaymentTracker
-          teams={teams}
-          audit={audit}
-          updateTeam={updateTeam}
-          updatePaymentStatus={updateTeamPaymentStatus}
-        />
+        <PaymentErrorBoundary>
+          <PaymentTracker
+            teams={teams}
+            audit={audit}
+            updateTeam={updateTeam}
+            updatePaymentStatus={updateTeamPaymentStatus}
+          />
+        </PaymentErrorBoundary>
       )}
       {tab === 'Schedule' && (
         <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
@@ -1848,9 +1850,47 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
+class PaymentErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+
+  componentDidCatch(error) {
+    console.error(error)
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <Card title="Registration Payments">
+          <p className="empty">Payments could not load. {this.state.error.message}</p>
+        </Card>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
 function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
-  const sortedTeams = (Array.isArray(teams) ? [...teams] : []).sort((a, b) => a.number - b.number)
+  const sortedTeams = (Array.isArray(teams) ? teams : [])
+    .filter((team) => team && typeof team === 'object')
+    .map((team, index) => ({
+      ...team,
+      id: String(team.id || `payment-team-${index}`),
+      name: String(team.name || 'Unnamed team'),
+      flight: String(team.flight || 'Unknown'),
+      number: Number.isFinite(Number(team.number)) ? Number(team.number) : 0,
+      paid: Boolean(team.paid),
+      paymentNote: String(team.paymentNote || ''),
+    }))
+    .sort((a, b) => a.number - b.number || a.name.localeCompare(b.name))
   const auditItems = Array.isArray(audit) ? audit : []
   const paidCount = sortedTeams.filter((team) => team.paid).length
   const paymentAudit = auditItems.filter((item) => item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid')
@@ -1881,7 +1921,7 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
           onChange={(event) => {
             if (updatePaymentStatus) {
               updatePaymentStatus(team.id, event.target.checked)
-            } else {
+            } else if (updateTeam) {
               updateTeam(team.id, { paid: event.target.checked })
             }
           }}
@@ -1893,7 +1933,7 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
         <input
           value={team.paymentNote || ''}
           placeholder="Check, Venmo, cash, etc."
-          onChange={(event) => updateTeam(team.id, { paymentNote: event.target.value })}
+          onChange={(event) => updateTeam?.(team.id, { paymentNote: event.target.value })}
         />
       </label>
     </article>
@@ -1946,10 +1986,11 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
 function PaymentAuditEntry({ item }) {
   const markedPaid = item.action === 'payment_marked_paid'
   const details = item.details || {}
-  const teamLabel = details.teamName || (details.teamNumber ? `Team ${details.teamNumber}` : 'Unknown team')
+  const teamNumber = details.teamNumber ? String(details.teamNumber) : ''
+  const teamLabel = details.teamName ? String(details.teamName) : (teamNumber ? `Team ${teamNumber}` : 'Unknown team')
   const teamMeta = [
-    details.teamNumber ? `Team ${details.teamNumber}` : '',
-    details.flight ? `${details.flight} Band` : '',
+    teamNumber ? `Team ${teamNumber}` : '',
+    details.flight ? `${String(details.flight)} Band` : '',
   ].filter(Boolean).join(' - ')
 
   return (
