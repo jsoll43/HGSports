@@ -217,7 +217,6 @@ a {
 
 .bocce-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 46%);
   gap: 18px;
   align-items: center;
   overflow: hidden;
@@ -247,21 +246,6 @@ a {
 
 .bocce-hero .eyebrow {
   color: #a7f3d0;
-}
-
-.bocce-court {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 10px;
-  background: #579143;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-}
-
-.bocce-court svg {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 .bocce-profile-card {
