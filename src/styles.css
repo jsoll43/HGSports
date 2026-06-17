@@ -989,8 +989,7 @@ textarea {
   margin-top: 2px;
 }
 
-.paid-section,
-.payment-audit-section {
+.paid-section {
   display: grid;
   gap: 10px;
   border: 1px solid #cfeff6;
@@ -999,8 +998,7 @@ textarea {
   background: #f8fcff;
 }
 
-.paid-section summary,
-.payment-audit-section summary {
+.paid-section summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1010,8 +1008,7 @@ textarea {
   font-weight: 900;
 }
 
-.paid-section summary strong,
-.payment-audit-section summary strong {
+.paid-section summary strong {
   display: inline-grid;
   place-items: center;
   min-width: 34px;
@@ -1023,13 +1020,8 @@ textarea {
   font-size: 0.85rem;
 }
 
-.paid-section .card-list,
-.payment-audit-section .card-list {
+.paid-section .card-list {
   margin-top: 12px;
-}
-
-.payment-audit-section {
-  background: #fff;
 }
 
 .payment-row {

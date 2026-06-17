@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const PIN = 'glen'
 const ADMIN_PASSWORD = 'glenadmin'
@@ -1614,14 +1614,11 @@ function Admin({
         <RosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
       )}
       {tab === 'Payments' && (
-        <PaymentErrorBoundary>
-          <PaymentTracker
-            teams={teams}
-            audit={audit}
-            updateTeam={updateTeam}
-            updatePaymentStatus={updateTeamPaymentStatus}
-          />
-        </PaymentErrorBoundary>
+        <PaymentTracker
+          teams={teams}
+          updateTeam={updateTeam}
+          updatePaymentStatus={updateTeamPaymentStatus}
+        />
       )}
       {tab === 'Schedule' && (
         <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
@@ -1850,34 +1847,7 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
-class PaymentErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { error: null }
-  }
-
-  static getDerivedStateFromError(error) {
-    return { error }
-  }
-
-  componentDidCatch(error) {
-    console.error(error)
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <Card title="Registration Payments">
-          <p className="empty">Payments could not load. {this.state.error.message}</p>
-        </Card>
-      )
-    }
-
-    return this.props.children
-  }
-}
-
-function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatus }) {
+function PaymentTracker({ teams = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
   const sortedTeams = (Array.isArray(teams) ? teams : [])
     .filter((team) => team && typeof team === 'object')
@@ -1891,9 +1861,7 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
       paymentNote: String(team.paymentNote || ''),
     }))
     .sort((a, b) => a.number - b.number || a.name.localeCompare(b.name))
-  const auditItems = Array.isArray(audit) ? audit : []
   const paidCount = sortedTeams.filter((team) => team.paid).length
-  const paymentAudit = auditItems.filter((item) => item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid')
   const searchTerm = paymentSearch.trim().toLowerCase()
   const matchesSearch = (team) => {
     if (!searchTerm) return true
@@ -1967,16 +1935,6 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
         <div className="card-list">
           {paidTeams.map(renderPaymentRow)}
           {!paidTeams.length && <p className="empty">{searchTerm ? 'No paid teams match that search.' : 'No teams have been marked paid yet.'}</p>}
-        </div>
-      </details>
-      <details className="payment-audit-section">
-        <summary>
-          <span>audit trail</span>
-          <strong>{paymentAudit.length}</strong>
-        </summary>
-        <div className="card-list">
-          {paymentAudit.length === 0 && <p className="empty">No payment changes recorded yet.</p>}
-          {paymentAudit.map((item) => <PaymentAuditEntry key={item.id} item={item} />)}
         </div>
       </details>
     </Card>
