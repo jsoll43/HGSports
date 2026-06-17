@@ -1618,6 +1618,7 @@ function Admin({
       {tab === 'Payments' && (
         <PaymentTracker
           teams={teams}
+          audit={audit}
           updateTeam={updateTeam}
           updatePaymentStatus={updateTeamPaymentStatus}
         />
@@ -1849,10 +1850,12 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
-function PaymentTracker({ teams = [], updateTeam, updatePaymentStatus }) {
+function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
   const safeTeams = Array.isArray(teams) ? teams.filter(Boolean) : []
   const sortedTeams = [...safeTeams].sort((a, b) => Number(a?.number || 0) - Number(b?.number || 0))
+  const auditItems = Array.isArray(audit) ? audit.filter(Boolean) : []
+  const paymentAudit = auditItems.filter((item) => item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid')
   const paidCount = sortedTeams.filter((team) => Boolean(team?.paid)).length
   const searchTerm = paymentSearch.trim().toLowerCase()
   const matchesSearch = (team) => {
@@ -1929,13 +1932,25 @@ function PaymentTracker({ teams = [], updateTeam, updatePaymentStatus }) {
           {!paidTeams.length && <p className="empty">{searchTerm ? 'No paid teams match that search.' : 'No teams have been marked paid yet.'}</p>}
         </div>
       </details>
+      <details className="payment-audit-section">
+        <summary>
+          <span>audit trail</span>
+          <strong>{paymentAudit.length}</strong>
+        </summary>
+        <div className="card-list">
+          {paymentAudit.length === 0 && <p className="empty">No payment changes recorded yet.</p>}
+          {paymentAudit.map((item, index) => (
+            <PaymentAuditEntry key={String(item?.id || `${item?.action || 'payment-audit'}-${index}`)} item={item} />
+          ))}
+        </div>
+      </details>
     </Card>
   )
 }
 
-function PaymentAuditEntry({ item }) {
-  const markedPaid = item.action === 'payment_marked_paid'
-  const details = item.details || {}
+function PaymentAuditEntry({ item = {} }) {
+  const markedPaid = item?.action === 'payment_marked_paid'
+  const details = item?.details && typeof item.details === 'object' ? item.details : {}
   const teamNumber = details.teamNumber ? String(details.teamNumber) : ''
   const teamLabel = details.teamName ? String(details.teamName) : (teamNumber ? `Team ${teamNumber}` : 'Unknown team')
   const teamMeta = [
@@ -1945,7 +1960,7 @@ function PaymentAuditEntry({ item }) {
 
   return (
     <article className="simple-card audit-entry payment-audit-entry">
-      <p>{new Date(item.at).toLocaleString()}</p>
+      <p>{item.at ? new Date(item.at).toLocaleString() : 'Unknown time'}</p>
       <h2>{markedPaid ? 'Marked paid' : 'Unmarked paid'}</h2>
       <p>{teamLabel}{teamMeta ? ` - ${teamMeta}` : ''}</p>
     </article>
