@@ -252,62 +252,16 @@ a {
 .bocce-court {
   position: relative;
   width: 100%;
-  min-height: 190px;
-  border: 2px solid rgba(255, 255, 255, 0.72);
+  overflow: hidden;
   border-radius: 10px;
-  background:
-    linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.4) 49%, rgba(255, 255, 255, 0.4) 51%, transparent 51%),
-    repeating-linear-gradient(0deg, rgba(246, 219, 161, 0.2), rgba(246, 219, 161, 0.2) 12px, rgba(246, 219, 161, 0.28) 12px, rgba(246, 219, 161, 0.28) 24px),
-    #c79b5d;
+  background: #579143;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
-.pallino,
-.bocce-ball {
-  position: absolute;
+.bocce-court svg {
   display: block;
-  border-radius: 50%;
-  box-shadow: inset -5px -6px 10px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.22);
-}
-
-.pallino {
-  top: 45%;
-  left: 61%;
-  width: 14px;
-  height: 14px;
-  background: #fff7d6;
-}
-
-.bocce-ball {
-  width: 31px;
-  height: 31px;
-}
-
-.bocce-ball.red {
-  background: #ba2f32;
-}
-
-.bocce-ball.green {
-  background: #176d3a;
-}
-
-.bocce-ball.red.one {
-  top: 54%;
-  left: 50%;
-}
-
-.bocce-ball.red.two {
-  top: 29%;
-  left: 68%;
-}
-
-.bocce-ball.green.one {
-  top: 63%;
-  left: 69%;
-}
-
-.bocce-ball.green.two {
-  top: 37%;
-  left: 42%;
+  width: 100%;
+  height: auto;
 }
 
 .bocce-profile-card {
@@ -529,6 +483,7 @@ a {
 }
 
 .league-button.cornhole {
+  grid-template-columns: minmax(0, 1fr) 150px;
   background: #0b2545;
 }
 
@@ -543,51 +498,16 @@ a {
   height: 78px;
 }
 
-.cornhole-board {
-  position: absolute;
-  right: 10px;
-  bottom: 3px;
-  width: 48px;
-  height: 70px;
-  border: 3px solid rgba(255, 255, 255, 0.72);
-  border-radius: 8px;
-  background: #d7a35c;
-  transform: rotate(10deg);
-  box-shadow: inset 0 -12px 0 rgba(102, 64, 32, 0.2), 0 8px 18px rgba(0, 0, 0, 0.18);
+.cornhole-art {
+  width: 150px;
+  height: 98px;
 }
 
-.cornhole-board::before {
-  content: "";
-  position: absolute;
-  top: 9px;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #0b2545;
-  transform: translateX(-50%);
-}
-
-.cornhole-bag {
-  position: absolute;
-  width: 22px;
-  height: 18px;
-  border-radius: 6px;
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
-}
-
-.cornhole-bag.one {
-  right: 48px;
-  bottom: 10px;
-  background: #ef4444;
-  transform: rotate(-14deg);
-}
-
-.cornhole-bag.two {
-  right: 61px;
-  bottom: 35px;
-  background: #22c55e;
-  transform: rotate(18deg);
+.cornhole-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: translateY(2px);
 }
 
 .bocce-art {
