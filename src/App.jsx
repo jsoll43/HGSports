@@ -6,6 +6,7 @@ const PAYMENT_LINK = 'https://square.link/u/6oHmgu9w'
 const SPORTS_STORAGE_KEY = 'hg-sports-data'
 const CORNHOLE_STORAGE_KEY = 'cornhole'
 const BOCCE_STORAGE_KEY = 'bocce'
+const CORNHOLE_SCHEDULE_VERSION = '2026-27-team-v1'
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
 
@@ -21,22 +22,25 @@ const initialTeams = [
   { id: 'team-6', flight: 'Green', number: 6, name: 'Merrill / Devino', paid: false, paymentNote: '' },
   { id: 'team-7', flight: 'Green', number: 7, name: 'Seaberger / Eckert', paid: false, paymentNote: '' },
   { id: 'team-8', flight: 'Green', number: 8, name: 'Sharkey / Wade', paid: false, paymentNote: '' },
-  { id: 'team-9', flight: 'Red', number: 9, name: 'Walter / Mueller', paid: false, paymentNote: '' },
-  { id: 'team-10', flight: 'Red', number: 10, name: 'Babcock / Babcock', paid: false, paymentNote: '' },
-  { id: 'team-11', flight: 'Red', number: 11, name: 'Stola / Murray', paid: false, paymentNote: '' },
-  { id: 'team-12', flight: 'Red', number: 12, name: 'Danenza / Jecmen', paid: false, paymentNote: '' },
-  { id: 'team-13', flight: 'Red', number: 13, name: 'Angelone / McDonald', paid: false, paymentNote: '' },
-  { id: 'team-14', flight: 'Red', number: 14, name: 'Franecki / Contino', paid: false, paymentNote: '' },
-  { id: 'team-15', flight: 'Red', number: 15, name: 'Mills / Carlin', paid: false, paymentNote: '' },
-  { id: 'team-16', flight: 'Red', number: 16, name: 'Gledhill / Lofink', paid: false, paymentNote: '' },
-  { id: 'team-17', flight: 'White', number: 17, name: 'Anderson / Anderson', paid: false, paymentNote: '' },
-  { id: 'team-18', flight: 'White', number: 18, name: 'Brumbach / Brumbach', paid: false, paymentNote: '' },
-  { id: 'team-19', flight: 'White', number: 19, name: 'Frett / Massa', paid: false, paymentNote: '' },
-  { id: 'team-20', flight: 'White', number: 20, name: 'Houck / McCarthy', paid: false, paymentNote: '' },
-  { id: 'team-21', flight: 'White', number: 21, name: 'Stola / Monschein', paid: false, paymentNote: '' },
-  { id: 'team-22', flight: 'White', number: 22, name: 'Moore / Moore', paid: false, paymentNote: '' },
-  { id: 'team-23', flight: 'White', number: 23, name: 'Monrondo / Whittle', paid: false, paymentNote: '' },
-  { id: 'team-24', flight: 'White', number: 24, name: 'Luciano / Luciano', paid: false, paymentNote: '' },
+  { id: 'team-25', flight: 'Green', number: 9, name: 'Shields / Dougherty', paid: false, paymentNote: '' },
+  { id: 'team-9', flight: 'Red', number: 10, name: 'Walter / Mueller', paid: false, paymentNote: '' },
+  { id: 'team-10', flight: 'Red', number: 11, name: 'Babcock / Babcock', paid: false, paymentNote: '' },
+  { id: 'team-11', flight: 'Red', number: 12, name: 'Stola / Murray', paid: false, paymentNote: '' },
+  { id: 'team-12', flight: 'Red', number: 13, name: 'Danenza / Jecmen', paid: false, paymentNote: '' },
+  { id: 'team-13', flight: 'Red', number: 14, name: 'Angelone / McDonald', paid: false, paymentNote: '' },
+  { id: 'team-14', flight: 'Red', number: 15, name: 'Franecki / Contino', paid: false, paymentNote: '' },
+  { id: 'team-15', flight: 'Red', number: 16, name: 'Mills / Carlin', paid: false, paymentNote: '' },
+  { id: 'team-16', flight: 'Red', number: 17, name: 'Gledhill / Lofink', paid: false, paymentNote: '' },
+  { id: 'team-26', flight: 'Red', number: 18, name: 'Schrank / Palmer', paid: false, paymentNote: '' },
+  { id: 'team-17', flight: 'White', number: 19, name: 'Anderson / Anderson', paid: false, paymentNote: '' },
+  { id: 'team-18', flight: 'White', number: 20, name: 'Brumbach / Brumbach', paid: false, paymentNote: '' },
+  { id: 'team-19', flight: 'White', number: 21, name: 'Frett / Massa', paid: false, paymentNote: '' },
+  { id: 'team-20', flight: 'White', number: 22, name: 'Houck / McCarthy', paid: false, paymentNote: '' },
+  { id: 'team-21', flight: 'White', number: 23, name: 'Stola / Monschein', paid: false, paymentNote: '' },
+  { id: 'team-22', flight: 'White', number: 24, name: 'Moore / Moore', paid: false, paymentNote: '' },
+  { id: 'team-23', flight: 'White', number: 25, name: 'Monrondo / Whittle', paid: false, paymentNote: '' },
+  { id: 'team-24', flight: 'White', number: 26, name: 'Luciano / Luciano', paid: false, paymentNote: '' },
+  { id: 'team-27', flight: 'White', number: 27, name: 'Mertz / Capperella', paid: false, paymentNote: '' },
 ]
 
 const initialPlayers = [
@@ -56,6 +60,8 @@ const initialPlayers = [
   { id: 'player-7b', first: 'Edward', last: 'Eckert', phone: '(856) 261-0648', email: 'Eeckert.jr@gmail.com', teamId: 'team-7' },
   { id: 'player-8a', first: 'Jim', last: 'Sharkey', phone: '609-923-7030', email: 'jshark1987@gmail.com', teamId: 'team-8' },
   { id: 'player-8b', first: 'John', last: 'Wade', phone: '609-792-5052', email: 'Jmwade87@gmail.com', teamId: 'team-8' },
+  { id: 'player-25a', first: 'Jim', last: 'Shields', phone: '856-889-9057', email: 'jshields1012@gmail.com', teamId: 'team-25' },
+  { id: 'player-25b', first: 'Sean', last: 'Dougherty', phone: '856-889-6979', email: 'SDoc135@gmail.com', teamId: 'team-25' },
   { id: 'player-9a', first: 'Chris', last: 'Walter', phone: '856-304-8263', email: 'chrisw427@mac.com', teamId: 'team-9' },
   { id: 'player-9b', first: 'Cory', last: 'Mueller', phone: '973- 224-0276', email: 'coryrmueller@gmail.com', teamId: 'team-9' },
   { id: 'player-10a', first: 'Brian', last: 'Babcock', phone: '6095131312', email: 'Brianbabcock383@hotmail.com', teamId: 'team-10' },
@@ -72,6 +78,8 @@ const initialPlayers = [
   { id: 'player-15b', first: 'Mark', last: 'Carlin', phone: '(609) 513-8782', email: 'markc1487@gmail.com', teamId: 'team-15' },
   { id: 'player-16a', first: 'Steve', last: 'Gledhill', phone: '856-979-3692', email: 'steve.gledhill@hotmail.com', teamId: 'team-16' },
   { id: 'player-16b', first: 'Cole', last: 'Lofink', phone: '(609) 458-6242', email: 'Colelofink@gmail.com', teamId: 'team-16' },
+  { id: 'player-26a', first: 'Tom', last: 'Schrank', phone: '215-206-6730', email: 'tomschrank@gmail.com', teamId: 'team-26' },
+  { id: 'player-26b', first: 'Evan', last: 'Palmer', phone: '856-425-1071', email: 'palmer.evanj@gmail.com', teamId: 'team-26' },
   { id: 'player-17a', first: 'Mary Ann', last: 'Anderson', phone: '8569525951', email: 'manderson616@gmail.com', teamId: 'team-17' },
   { id: 'player-17b', first: 'Todd', last: 'Anderson', phone: '8562780891', email: 'manderson616@gmail.com', teamId: 'team-17' },
   { id: 'player-18a', first: 'Joe', last: 'Brumbach', phone: '6092045246', email: 'Joe.brumbach@gmail.com', teamId: 'team-18' },
@@ -88,6 +96,8 @@ const initialPlayers = [
   { id: 'player-23b', first: 'Jackie', last: 'Whittle', phone: '201-486-8278', email: 'Lange.Jaclyn@gmail.com', teamId: 'team-23' },
   { id: 'player-24a', first: 'Alison', last: 'Luciano', phone: '8563131888', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
   { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
+  { id: 'player-27a', first: 'Shane', last: 'Mertz', phone: '609-868-1756', email: 'Shanem75@aol.com', teamId: 'team-27' },
+  { id: 'player-27b', first: 'Jay', last: 'Capperella', phone: '856-912-2804', email: 'Jay.Capperella@gmail.com', teamId: 'team-27' },
 ]
 
 const initialBocceTeams = [
@@ -205,14 +215,16 @@ function readLegacyAppData() {
 function normalizeAppData(data = {}) {
   const teams = migrateRosterTeams(Array.isArray(data.teams) ? data.teams : initialTeams)
   const players = migrateRosterPlayers(Array.isArray(data.players) ? data.players : initialPlayers)
+  const shouldRegenerateSchedule = data.scheduleVersion !== CORNHOLE_SCHEDULE_VERSION
 
   return {
     selectedPlayerId: typeof data.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
     teams,
     players,
-    matches: Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
+    matches: !shouldRegenerateSchedule && Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
     audit: Array.isArray(data.audit) ? data.audit : [],
     snapshots: Array.isArray(data.snapshots) ? data.snapshots : [],
+    scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
   }
 }
 
@@ -231,22 +243,20 @@ function normalizeBocceData(data = {}) {
 }
 
 function migrateRosterTeams(teams) {
-  return teams.map((team) => {
-    if (team.id !== 'team-19' || team.name !== 'Hourani / Hourani') return team
-    return { ...team, flight: 'White', number: 19, name: 'Frett / Massa' }
+  const existingById = new Map(teams.map((team) => [team.id, team]))
+
+  return initialTeams.map((team) => {
+    const existing = existingById.get(team.id)
+    return {
+      ...team,
+      paid: Boolean(existing?.paid ?? team.paid),
+      paymentNote: existing?.paymentNote || team.paymentNote,
+    }
   })
 }
 
 function migrateRosterPlayers(players) {
-  return players.map((player) => {
-    if (player.id === 'player-19a' && player.last === 'Hourani') {
-      return { ...player, first: 'Mike', last: 'Frett', phone: '8569045539', email: 'Michaelfrett@yahoo.com', teamId: 'team-19' }
-    }
-    if (player.id === 'player-19b' && player.last === 'Hourani') {
-      return { ...player, first: 'Alex', last: 'Massa', phone: '8566859758', email: 'alexandermassllc@gmail.com', teamId: 'team-19' }
-    }
-    return player
-  })
+  return initialPlayers
 }
 
 function pageFromPath(pathname) {
@@ -290,6 +300,7 @@ function App() {
       matches,
       audit,
       snapshots,
+      scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
     }
     const sportsData = readStored(SPORTS_STORAGE_KEY)
     const nextSportsData = {
@@ -2020,7 +2031,7 @@ function createSeasonSchedule(teams) {
     const flightTeams = teams
       .filter((team) => team.flight === flight)
       .sort((a, b) => a.number - b.number)
-    const rounds = buildRoundRobinRounds(flightTeams)
+    const rounds = flightTeams.length === 9 ? buildPreservedNineTeamRounds(flightTeams) : buildRoundRobinRounds(flightTeams)
 
     rounds.forEach((round, roundIndex) => {
       const date = addDays(start, roundIndex * 7)
@@ -2042,6 +2053,22 @@ function createSeasonSchedule(teams) {
   })
 
   return matches.sort(bySchedule)
+}
+
+function buildPreservedNineTeamRounds(teams) {
+  const pattern = [
+    [[0, 7], [1, 6], [2, 5], [3, 4]],
+    [[8, 0], [7, 5], [1, 4], [2, 3]],
+    [[8, 5], [6, 4], [7, 3], [1, 2]],
+    [[8, 3], [0, 4], [6, 2], [7, 1]],
+    [[8, 4], [0, 3], [5, 1], [6, 7]],
+    [[8, 1], [0, 2], [4, 7], [5, 6]],
+    [[8, 2], [0, 1], [3, 6], [4, 5]],
+    [[8, 6], [0, 5], [1, 3], [2, 7]],
+    [[8, 7], [0, 6], [5, 3], [4, 2]],
+  ]
+
+  return pattern.map((round) => round.map(([teamA, teamB]) => [teams[teamA], teams[teamB]]))
 }
 
 function createBocceSchedule(teams) {
