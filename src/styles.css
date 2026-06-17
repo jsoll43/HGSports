@@ -964,6 +964,45 @@ textarea {
   gap: 8px;
 }
 
+.payment-search {
+  margin-top: 2px;
+}
+
+.paid-section {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #cfeff6;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fcff;
+}
+
+.paid-section summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: #0b2545;
+  font-weight: 900;
+}
+
+.paid-section summary strong {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: #0b2545;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.paid-section .card-list {
+  margin-top: 12px;
+}
+
 .payment-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

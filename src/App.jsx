@@ -1674,43 +1674,78 @@ function BocceAuditEntry({ item, matches, teams, players }) {
 }
 
 function PaymentTracker({ teams, updateTeam }) {
+  const [paymentSearch, setPaymentSearch] = useState('')
   const sortedTeams = [...teams].sort((a, b) => a.number - b.number)
   const paidCount = sortedTeams.filter((team) => team.paid).length
+  const searchTerm = paymentSearch.trim().toLowerCase()
+  const matchesSearch = (team) => {
+    if (!searchTerm) return true
+    return [
+      team.name,
+      team.flight,
+      String(team.number),
+      team.paymentNote,
+    ].some((value) => String(value || '').toLowerCase().includes(searchTerm))
+  }
+  const unpaidTeams = sortedTeams.filter((team) => !team.paid && matchesSearch(team))
+  const paidTeams = sortedTeams.filter((team) => team.paid && matchesSearch(team))
+  const visibleCount = unpaidTeams.length + paidTeams.length
+
+  const renderPaymentRow = (team) => (
+    <article className={`payment-row ${team.paid ? 'paid' : ''}`} key={team.id}>
+      <div>
+        <p>Team {team.number} - {team.flight} Band</p>
+        <h2>{team.name}</h2>
+      </div>
+      <label className="payment-toggle">
+        <input
+          type="checkbox"
+          checked={Boolean(team.paid)}
+          onChange={(event) => updateTeam(team.id, { paid: event.target.checked })}
+        />
+        Paid
+      </label>
+      <label className="field payment-note">
+        Note
+        <input
+          value={team.paymentNote || ''}
+          placeholder="Check, Venmo, cash, etc."
+          onChange={(event) => updateTeam(team.id, { paymentNote: event.target.value })}
+        />
+      </label>
+    </article>
+  )
 
   return (
     <Card title="Registration Payments">
-      <p className="helper-text">Players use the Square payment link from My Matches. After the payment appears, mark the team as paid here.</p>
+      <p className="helper-text">Players use the Square payment link from My Matches. After the payment appears, mark the team as paid here. Already paid teams are placed in the paid section below.</p>
       <div className="payment-summary">
         <Stat label="Paid" value={paidCount} />
         <Stat label="Unpaid" value={sortedTeams.length - paidCount} />
         <Stat label="Teams" value={sortedTeams.length} />
       </div>
+      <label className="field payment-search">
+        Search payments
+        <input
+          value={paymentSearch}
+          placeholder="Team, flight, number, or note"
+          onChange={(event) => setPaymentSearch(event.target.value)}
+        />
+      </label>
       <div className="card-list">
-        {sortedTeams.map((team) => (
-          <article className={`payment-row ${team.paid ? 'paid' : ''}`} key={team.id}>
-            <div>
-              <p>Team {team.number} · {team.flight} Band</p>
-              <h2>{team.name}</h2>
-            </div>
-            <label className="payment-toggle">
-              <input
-                type="checkbox"
-                checked={Boolean(team.paid)}
-                onChange={(event) => updateTeam(team.id, { paid: event.target.checked })}
-              />
-              Paid
-            </label>
-            <label className="field payment-note">
-              Note
-              <input
-                value={team.paymentNote || ''}
-                placeholder="Check, Venmo, cash, etc."
-                onChange={(event) => updateTeam(team.id, { paymentNote: event.target.value })}
-              />
-            </label>
-          </article>
-        ))}
+        {unpaidTeams.map(renderPaymentRow)}
+        {!visibleCount && <p className="empty">No teams match that search.</p>}
       </div>
+      <details className="paid-section">
+        <summary>
+          <span>Already Paid</span>
+          <strong>{paidTeams.length}</strong>
+        </summary>
+        <div className="card-list">
+          {paidTeams.map(renderPaymentRow)}
+          {!paidTeams.length && <p className="empty">{searchTerm ? 'No paid teams match that search.' : 'No teams have been marked paid yet.'}</p>}
+        </div>
+      </details>
     </Card>
   )
 }
