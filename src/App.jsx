@@ -1961,16 +1961,19 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
         <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
       )}
       {showContacts && selectedPlayer && (
-        <ContactTools match={match} players={players} selectedPlayer={selectedPlayer} />
+        <ContactTools match={match} teams={teams} players={players} selectedPlayer={selectedPlayer} />
       )}
     </article>
   )
 }
 
-function ContactTools({ match, players, selectedPlayer }) {
+function ContactTools({ match, teams, players, selectedPlayer }) {
   const [copied, setCopied] = useState('')
-  const matchPlayers = [...teamPlayers(players, match.teamA), ...teamPlayers(players, match.teamB)].filter(hasPlayerName)
-  const numbers = matchPlayers.map((player) => player.phone).filter(Boolean)
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+  const teamAPlayers = teamPlayers(players, match.teamA).filter(hasPlayerName)
+  const teamBPlayers = teamPlayers(players, match.teamB).filter(hasPlayerName)
+  const numbers = [...teamAPlayers, ...teamBPlayers].map((player) => player.phone).filter(Boolean)
 
   async function copyText(text, label) {
     await navigator.clipboard.writeText(text)
@@ -1980,11 +1983,18 @@ function ContactTools({ match, players, selectedPlayer }) {
   return (
     <div className="contacts">
       <p className="helper-text">Tap any player to begin a text message</p>
-      <div className="text-grid">
-        {matchPlayers.map((player) => (
-          cleanPhone(player.phone)
-            ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
-            : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
+      <div className="team-text-grid">
+        {[{ team: teamA, players: teamAPlayers }, { team: teamB, players: teamBPlayers }].map((group) => (
+          <div className="team-text-column" key={group.team?.id || group.team?.name}>
+            <h3>{group.team?.name || 'Team'}</h3>
+            <div className="text-grid single-column">
+              {group.players.map((player) => (
+                cleanPhone(player.phone)
+                  ? <a key={player.id} href={`sms:${cleanPhone(player.phone)}`}>Text {player.first} {player.last}</a>
+                  : <span className="text-disabled" key={player.id}>Text {player.first} {player.last}</span>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
       <div className="single-button-row">

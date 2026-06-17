@@ -362,13 +362,15 @@ a {
   background: #ddf7e7;
 }
 
-.bocce-text-team-grid {
+.bocce-text-team-grid,
+.team-text-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.bocce-text-team {
+.bocce-text-team,
+.team-text-column {
   display: grid;
   align-content: start;
   gap: 8px;
@@ -378,7 +380,8 @@ a {
   background: #f3fbf6;
 }
 
-.bocce-text-team h3 {
+.bocce-text-team h3,
+.team-text-column h3 {
   margin: 0;
   color: #0b2545;
   font-size: 0.95rem;
@@ -1409,17 +1412,21 @@ textarea {
     min-height: 150px;
   }
 
-  .bocce-text-team-grid {
+  .bocce-text-team-grid,
+  .team-text-grid {
     gap: 8px;
   }
 
-  .bocce-text-team {
+  .bocce-text-team,
+  .team-text-column {
     padding: 8px;
   }
 
   .bocce-text-team .contacts a,
   .bocce-text-team .text-disabled,
-  .bocce-text-team a {
+  .bocce-text-team a,
+  .team-text-column .text-disabled,
+  .team-text-column a {
     min-height: 38px;
     padding: 8px 7px;
     font-size: 0.78rem;
