@@ -684,7 +684,7 @@ function LeagueHub({ setPage }) {
         <button className="league-button bocce" type="button" onClick={() => setPage('bocce-home')}>
           <span className="league-copy">
             <span>Bocce</span>
-            <strong>2026 League</strong>
+            <strong>Summer 2026 League</strong>
           </span>
           <span className="league-art bocce-art" aria-hidden="true">
             <BocceLeagueGraphic />
