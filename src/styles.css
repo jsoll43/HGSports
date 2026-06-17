@@ -472,6 +472,7 @@ a {
 }
 
 .league-button.bocce {
+  grid-template-columns: minmax(0, 1fr) 150px;
   background: #13785d;
 }
 
@@ -495,49 +496,19 @@ a {
 }
 
 .bocce-art {
+  width: 150px;
+  height: 86px;
+  overflow: hidden;
   border-radius: 10px;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.42) 48%, rgba(255, 255, 255, 0.42) 52%, transparent 52%),
-    #b5864e;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.64), 0 8px 18px rgba(0, 0, 0, 0.14);
+  background: #579143;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
-.league-pallino,
-.league-bocce-ball {
-  position: absolute;
-  border-radius: 50%;
-  box-shadow: inset -4px -5px 8px rgba(0, 0, 0, 0.24), 0 4px 9px rgba(0, 0, 0, 0.18);
-}
-
-.league-pallino {
-  top: 20px;
-  right: 20px;
-  width: 11px;
-  height: 11px;
-  background: #fff7d6;
-}
-
-.league-bocce-ball {
-  width: 27px;
-  height: 27px;
-}
-
-.league-bocce-ball.red {
-  right: 42px;
-  bottom: 13px;
-  background: #ba2f32;
-}
-
-.league-bocce-ball.green {
-  right: 16px;
-  bottom: 24px;
-  background: #124f31;
-}
-
-.league-bocce-ball.gold {
-  right: 43px;
-  top: 14px;
-  background: #e8b449;
+.bocce-art svg {
+  display: block;
+  width: 210px;
+  height: auto;
+  transform: translate(-38px, 0);
 }
 
 .stat-grid {

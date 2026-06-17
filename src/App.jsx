@@ -687,10 +687,7 @@ function LeagueHub({ setPage }) {
             <strong>2026 League</strong>
           </span>
           <span className="league-art bocce-art" aria-hidden="true">
-            <span className="league-pallino"></span>
-            <span className="league-bocce-ball red"></span>
-            <span className="league-bocce-ball green"></span>
-            <span className="league-bocce-ball gold"></span>
+            <BocceLeagueGraphic />
           </span>
         </button>
       </div>
@@ -722,14 +719,68 @@ function CornholeLeagueGraphic() {
       </g>
       <path d="M32 65 C54 66 74 72 94 83" fill="none" stroke="#243037" strokeWidth="6" strokeLinecap="round" opacity="0.85" />
       <path d="M24 85 C48 84 76 91 102 105" fill="none" stroke="#243037" strokeWidth="6" strokeLinecap="round" opacity="0.85" />
-      <g className="beer-can" transform="translate(250 130)">
-        <ellipse cx="18" cy="6" rx="15" ry="5" fill="#f8fafc" />
-        <rect x="3" y="6" width="30" height="58" rx="4" fill="#e5e7eb" />
-        <rect x="3" y="24" width="30" height="23" fill="#facc15" />
-        <path d="M10 33 H26" stroke="#0b2545" strokeWidth="4" strokeLinecap="round" />
-        <path d="M12 41 H24" stroke="#0b2545" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
-        <ellipse cx="18" cy="64" rx="15" ry="5" fill="#cbd5e1" />
-        <ellipse cx="18" cy="6" rx="9" ry="2.5" fill="#cbd5e1" />
+    </svg>
+  )
+}
+
+function BocceLeagueGraphic() {
+  return (
+    <svg viewBox="0 0 900 360" role="img">
+      <rect width="900" height="360" fill="#579143" />
+      <polygon points="0,118 576,0 900,0 900,276 0,276" fill="#e7b86f" />
+      <polygon points="80,110 592,18 900,46 900,195 32,205" fill="#f6eec8" />
+      <polygon points="80,110 592,18 900,46 888,66 118,152" fill="#6b4821" />
+      <polygon points="32,205 900,195 900,276 0,276 0,118" fill="#cda66c" />
+      <path d="M104 150 L594 45 L900 68" fill="none" stroke="#fff" strokeWidth="5" opacity="0.95" />
+      <g fill="#ded5a6" opacity="0.55">
+        <ellipse cx="678" cy="42" rx="45" ry="8" />
+        <ellipse cx="802" cy="72" rx="34" ry="7" />
+        <ellipse cx="731" cy="118" rx="52" ry="8" />
+        <ellipse cx="864" cy="121" rx="43" ry="8" />
+      </g>
+      <g>
+        <circle cx="500" cy="101" r="27" fill="#f4f5f4" />
+        <path d="M475 94 C493 111 512 113 527 96" fill="none" stroke="#d4d8d6" strokeWidth="6" />
+        <ellipse cx="500" cy="129" rx="30" ry="8" fill="#c8b987" opacity="0.36" />
+      </g>
+      <g transform="translate(650 58)">
+        <circle cx="0" cy="0" r="52" fill="#7775bd" />
+        <path d="M-43 -16 C-20 -5 17 3 44 4" fill="none" stroke="#f5e18b" strokeWidth="7" />
+        <path d="M-46 12 C-17 21 17 25 45 20" fill="none" stroke="#f5e18b" strokeWidth="7" />
+        <path d="M-10 -49 C9 -21 18 10 11 50" fill="none" stroke="#f5e18b" strokeWidth="7" />
+        <path d="M24 -45 C39 -18 43 10 30 42" fill="none" stroke="#f5e18b" strokeWidth="7" />
+        <path d="M-33 -36 C-5 -14 19 -3 48 -5" fill="none" stroke="#fff" strokeWidth="5" opacity="0.85" />
+      </g>
+      <g transform="translate(704 183)">
+        <circle cx="0" cy="0" r="80" fill="#d91b2b" />
+        <path d="M-69 -20 C-31 7 19 20 74 17" fill="none" stroke="#f4e48b" strokeWidth="9" />
+        <path d="M-53 -55 C-15 -18 22 15 54 53" fill="none" stroke="#f4e48b" strokeWidth="9" />
+        <path d="M-7 -78 C12 -34 15 14 1 78" fill="none" stroke="#f4e48b" strokeWidth="9" />
+        <path d="M-47 22 C-18 35 22 43 61 37" fill="none" stroke="#fff" strokeWidth="7" opacity="0.92" />
+      </g>
+      <g transform="translate(880 12)">
+        <circle cx="0" cy="0" r="55" fill="#d91b2b" />
+        <path d="M-48 -14 C-18 -4 17 3 49 0" fill="none" stroke="#f4e48b" strokeWidth="7" />
+        <path d="M-48 15 C-16 25 17 30 48 25" fill="none" stroke="#f4e48b" strokeWidth="7" />
+        <path d="M-17 -52 C-5 -19 -3 15 -15 51" fill="none" stroke="#f4e48b" strokeWidth="7" />
+        <path d="M18 -52 C29 -18 30 14 19 48" fill="none" stroke="#f4e48b" strokeWidth="7" />
+      </g>
+      <g fill="#6f9b35">
+        {Array.from({ length: 42 }, (_, index) => (
+          <path
+            d={`M${index * 22 - 8} 276 L${index * 22 - 2} ${245 + (index % 5) * 5} L${index * 22 + 4} 276 Z`}
+            key={index}
+          />
+        ))}
+      </g>
+      <g transform="translate(295 292)">
+        <circle cx="0" cy="0" r="103" fill="#d91b2b" />
+        <path d="M-86 -35 C-37 10 26 29 92 23" fill="none" stroke="#f4e48b" strokeWidth="12" />
+        <path d="M-68 -83 C-21 -32 28 22 62 87" fill="none" stroke="#f4e48b" strokeWidth="12" />
+        <path d="M-11 -101 C19 -43 26 22 8 103" fill="none" stroke="#f4e48b" strokeWidth="12" />
+        <path d="M-90 5 C-50 34 13 49 76 45" fill="none" stroke="#fff" strokeWidth="10" opacity="0.94" />
+        <path d="M-52 -91 C-6 -68 42 -56 88 -58" fill="none" stroke="#fff" strokeWidth="10" opacity="0.94" />
+        <ellipse cx="-31" cy="92" rx="82" ry="19" fill="#9f1220" opacity="0.4" />
       </g>
     </svg>
   )
