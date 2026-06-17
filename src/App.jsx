@@ -1849,43 +1849,33 @@ function BocceAuditEntry({ item, matches, teams, players }) {
 
 function PaymentTracker({ teams = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
-  const sortedTeams = (Array.isArray(teams) ? teams : [])
-    .filter((team) => team && typeof team === 'object')
-    .map((team, index) => ({
-      ...team,
-      id: String(team.id || `payment-team-${index}`),
-      name: String(team.name || 'Unnamed team'),
-      flight: String(team.flight || 'Unknown'),
-      number: Number.isFinite(Number(team.number)) ? Number(team.number) : 0,
-      paid: Boolean(team.paid),
-      paymentNote: String(team.paymentNote || ''),
-    }))
-    .sort((a, b) => a.number - b.number || a.name.localeCompare(b.name))
-  const paidCount = sortedTeams.filter((team) => team.paid).length
+  const safeTeams = Array.isArray(teams) ? teams.filter(Boolean) : []
+  const sortedTeams = [...safeTeams].sort((a, b) => Number(a?.number || 0) - Number(b?.number || 0))
+  const paidCount = sortedTeams.filter((team) => Boolean(team?.paid)).length
   const searchTerm = paymentSearch.trim().toLowerCase()
   const matchesSearch = (team) => {
     if (!searchTerm) return true
     return [
-      team.name,
-      team.flight,
-      String(team.number),
-      team.paymentNote,
+      team?.name,
+      team?.flight,
+      team?.number,
+      team?.paymentNote,
     ].some((value) => String(value || '').toLowerCase().includes(searchTerm))
   }
-  const unpaidTeams = sortedTeams.filter((team) => !team.paid && matchesSearch(team))
-  const paidTeams = sortedTeams.filter((team) => team.paid && matchesSearch(team))
+  const unpaidTeams = sortedTeams.filter((team) => !team?.paid && matchesSearch(team))
+  const paidTeams = sortedTeams.filter((team) => team?.paid && matchesSearch(team))
   const visibleCount = unpaidTeams.length + paidTeams.length
 
   const renderPaymentRow = (team) => (
-    <article className={`payment-row ${team.paid ? 'paid' : ''}`} key={team.id}>
+    <article className={`payment-row ${team?.paid ? 'paid' : ''}`} key={String(team?.id || team?.number || team?.name)}>
       <div>
-        <p>Team {team.number} - {team.flight} Band</p>
-        <h2>{team.name}</h2>
+        <p>Team {String(team?.number || '')} - {String(team?.flight || '')} Band</p>
+        <h2>{String(team?.name || 'Unnamed team')}</h2>
       </div>
       <label className="payment-toggle">
         <input
           type="checkbox"
-          checked={Boolean(team.paid)}
+          checked={Boolean(team?.paid)}
           onChange={(event) => {
             if (updatePaymentStatus) {
               updatePaymentStatus(team.id, event.target.checked)
@@ -1899,9 +1889,9 @@ function PaymentTracker({ teams = [], updateTeam, updatePaymentStatus }) {
       <label className="field payment-note">
         Note
         <input
-          value={team.paymentNote || ''}
+          value={String(team?.paymentNote || '')}
           placeholder="Check, Venmo, cash, etc."
-          onChange={(event) => updateTeam?.(team.id, { paymentNote: event.target.value })}
+          onChange={(event) => updateTeam?.(team?.id, { paymentNote: event.target.value })}
         />
       </label>
     </article>
