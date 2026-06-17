@@ -608,6 +608,20 @@ function App() {
     setTeams((items) => items.map((team) => (team.id === teamId ? { ...team, ...patch } : team)))
   }
 
+  function updateTeamPaymentStatus(teamId, paid) {
+    const team = teams.find((item) => item.id === teamId)
+    if (!team || Boolean(team.paid) === paid) return
+
+    setTeams((items) => items.map((item) => (item.id === teamId ? { ...item, paid } : item)))
+    log(paid ? 'payment_marked_paid' : 'payment_unmarked_paid', {
+      teamId,
+      teamName: team.name,
+      teamNumber: team.number,
+      flight: team.flight,
+      paid,
+    })
+  }
+
   function updatePlayer(playerId, patch) {
     setPlayers((items) => items.map((player) => (player.id === playerId ? { ...player, ...patch } : player)))
   }
@@ -1600,7 +1614,12 @@ function Admin({
         <RosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
       )}
       {tab === 'Payments' && (
-        <PaymentTracker teams={teams} updateTeam={updateTeam} />
+        <PaymentTracker
+          teams={teams}
+          audit={audit}
+          updateTeam={updateTeam}
+          updatePaymentStatus={updateTeamPaymentStatus}
+        />
       )}
       {tab === 'Schedule' && (
         <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
@@ -1829,10 +1848,11 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
-function PaymentTracker({ teams, updateTeam }) {
+function PaymentTracker({ teams, audit, updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
   const sortedTeams = [...teams].sort((a, b) => a.number - b.number)
   const paidCount = sortedTeams.filter((team) => team.paid).length
+  const paymentAudit = audit.filter((item) => item.action === 'payment_marked_paid' || item.action === 'payment_unmarked_paid')
   const searchTerm = paymentSearch.trim().toLowerCase()
   const matchesSearch = (team) => {
     if (!searchTerm) return true
@@ -1857,7 +1877,7 @@ function PaymentTracker({ teams, updateTeam }) {
         <input
           type="checkbox"
           checked={Boolean(team.paid)}
-          onChange={(event) => updateTeam(team.id, { paid: event.target.checked })}
+          onChange={(event) => updatePaymentStatus(team.id, event.target.checked)}
         />
         Paid
       </label>
@@ -1902,7 +1922,35 @@ function PaymentTracker({ teams, updateTeam }) {
           {!paidTeams.length && <p className="empty">{searchTerm ? 'No paid teams match that search.' : 'No teams have been marked paid yet.'}</p>}
         </div>
       </details>
+      <details className="payment-audit-section">
+        <summary>
+          <span>audit trail</span>
+          <strong>{paymentAudit.length}</strong>
+        </summary>
+        <div className="card-list">
+          {paymentAudit.length === 0 && <p className="empty">No payment changes recorded yet.</p>}
+          {paymentAudit.map((item) => <PaymentAuditEntry key={item.id} item={item} />)}
+        </div>
+      </details>
     </Card>
+  )
+}
+
+function PaymentAuditEntry({ item }) {
+  const markedPaid = item.action === 'payment_marked_paid'
+  const details = item.details || {}
+  const teamLabel = details.teamName || (details.teamNumber ? `Team ${details.teamNumber}` : 'Unknown team')
+  const teamMeta = [
+    details.teamNumber ? `Team ${details.teamNumber}` : '',
+    details.flight ? `${details.flight} Band` : '',
+  ].filter(Boolean).join(' - ')
+
+  return (
+    <article className="simple-card audit-entry payment-audit-entry">
+      <p>{new Date(item.at).toLocaleString()}</p>
+      <h2>{markedPaid ? 'Marked paid' : 'Unmarked paid'}</h2>
+      <p>{teamLabel}{teamMeta ? ` - ${teamMeta}` : ''}</p>
+    </article>
   )
 }
 
@@ -2062,6 +2110,10 @@ function AuditEntry({ item, matches, teams, players }) {
         <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
       </article>
     )
+  }
+
+  if (item.action === 'payment_marked_paid' || item.action === 'payment_unmarked_paid') {
+    return <PaymentAuditEntry item={item} />
   }
 
   return (
