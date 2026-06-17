@@ -859,6 +859,38 @@ textarea {
   padding: 14px;
 }
 
+.bye-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px dashed #9ecfd8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #f8fcff;
+}
+
+.bye-card p,
+.bye-card h2 {
+  margin: 0;
+}
+
+.bye-card p,
+.bye-card span {
+  color: #617181;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.bye-card h2 {
+  color: #0b2545;
+  font-size: 1.05rem;
+}
+
+.bye-card span {
+  text-align: right;
+}
+
 .match-head {
   display: flex;
   align-items: flex-start;
@@ -1375,6 +1407,14 @@ textarea {
 
   .bocce-court {
     min-height: 150px;
+  }
+
+  .bye-card {
+    display: grid;
+  }
+
+  .bye-card span {
+    text-align: left;
   }
 
   .team-name-field,

@@ -1128,13 +1128,14 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
   const allMyMatches = matches
     .filter((match) => match.teamA === selectedTeam.id || match.teamB === selectedTeam.id)
     .sort(bySchedule)
-  const openMatches = allMyMatches
-    .filter((match) => !isPlayedForPlayer(match))
+  const allMyItems = buildTeamScheduleItems(matches, selectedTeam)
+  const openItems = allMyItems
+    .filter((item) => !isPlayedScheduleItem(item))
   const playedMatches = allMyMatches
     .filter(isPlayedForPlayer)
     .reverse()
-  const nextMatch = openMatches[0]
-  const otherOpenMatches = openMatches.slice(1)
+  const nextItem = openItems[0]
+  const otherOpenItems = openItems.slice(1)
 
   return (
     <section className="stack">
@@ -1155,20 +1156,20 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
         <Stat label="Points" value={row?.points || 0} />
         <Stat label="Rank" value={row ? row.rankLabel : '-'} />
       </div>
-      {nextMatch && (
+      {nextItem && (
         <button
           className="jump-button"
           type="button"
           onClick={() => document.getElementById('next-match')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
         >
-          Go to Next Match
+          Go to Next Week
         </button>
       )}
-      {nextMatch ? (
+      {nextItem ? (
         <section className="priority-match" id="next-match">
-          <p className="eyebrow">Next match</p>
-          <MatchCard
-            match={nextMatch}
+          <p className="eyebrow">{nextItem.type === 'bye' ? 'Bye week' : 'Next match'}</p>
+          <MyScheduleItemCard
+            item={nextItem}
             teams={teams}
             players={players}
             viewerTeam={selectedTeam}
@@ -1182,12 +1183,12 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
       ) : (
         <p className="empty">No upcoming matches need attention right now.</p>
       )}
-      {otherOpenMatches.length > 0 && (
+      {otherOpenItems.length > 0 && (
         <div className="card-list">
-          {otherOpenMatches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
+          {otherOpenItems.map((item) => (
+            <MyScheduleItemCard
+              key={item.id}
+              item={item}
               teams={teams}
               players={players}
               viewerTeam={selectedTeam}
@@ -1885,6 +1886,36 @@ function PaymentWarning() {
   return <span className="payment-warning">Unpaid</span>
 }
 
+function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, submitScore, markRescheduled }) {
+  if (item.type === 'bye') return <ByeCard item={item} team={viewerTeam} />
+
+  return (
+    <MatchCard
+      match={item.match}
+      teams={teams}
+      players={players}
+      viewerTeam={viewerTeam}
+      selectedPlayer={selectedPlayer}
+      submitScore={submitScore}
+      markRescheduled={markRescheduled}
+      showContacts
+      showPaymentWarnings={false}
+    />
+  )
+}
+
+function ByeCard({ item, team }) {
+  return (
+    <article className="bye-card">
+      <div>
+        <p>Week {item.week} - {formatDate(item.date)}</p>
+        <h2>Bye Week</h2>
+      </div>
+      <span>{team?.name || 'Your team'} has no match scheduled.</span>
+    </article>
+  )
+}
+
 function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
   if (!team) return <span>{fallback}</span>
 
@@ -2272,12 +2303,45 @@ function isPlayedForPlayer(match) {
   return (match.status === 'final' || match.status === 'pending') && !isOverdue(match)
 }
 
+function buildTeamScheduleItems(matches, team) {
+  const flightMatches = matches.filter((match) => match.flight === team.flight)
+  const weeks = [...new Set(flightMatches.map((match) => match.week))].sort((a, b) => a - b)
+
+  return weeks.map((week) => {
+    const weekMatches = flightMatches.filter((match) => match.week === week)
+    const match = weekMatches.find((item) => item.teamA === team.id || item.teamB === team.id)
+    if (match) return { id: match.id, type: 'match', week, date: match.date, time: match.time, match }
+
+    const sample = weekMatches[0]
+    return {
+      id: `bye-${team.id}-${week}`,
+      type: 'bye',
+      week,
+      date: sample?.date || '',
+      time: '12:00 PM',
+    }
+  }).filter((item) => item.type === 'match' || item.date).sort(byScheduleItem)
+}
+
+function isPlayedScheduleItem(item) {
+  if (item.type === 'match') return isPlayedForPlayer(item.match)
+  return new Date(`${item.date}T23:59:59`) < new Date()
+}
+
 function bySchedule(a, b) {
   return scheduleTime(a) - scheduleTime(b)
 }
 
+function byScheduleItem(a, b) {
+  return scheduleItemTime(a) - scheduleItemTime(b)
+}
+
 function scheduleTime(match) {
   return new Date(`${match.date} ${match.time}`).getTime()
+}
+
+function scheduleItemTime(item) {
+  return new Date(`${item.date} ${item.time}`).getTime()
 }
 
 function publicStatus(match) {
