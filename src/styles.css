@@ -217,7 +217,7 @@ a {
 
 .bocce-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 46%);
   gap: 18px;
   align-items: center;
   overflow: hidden;
@@ -252,7 +252,7 @@ a {
 .bocce-court {
   position: relative;
   width: 100%;
-  min-height: 170px;
+  min-height: 190px;
   border: 2px solid rgba(255, 255, 255, 0.72);
   border-radius: 10px;
   background:
