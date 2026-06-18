@@ -159,6 +159,90 @@ const bocceRuleCards = [
   { title: 'Pallino Toss', text: 'The pallino must cross half court and stay off the side and back walls. An invalid toss turns the start of the frame over to the other team.' },
 ]
 
+const cornholeRuleSections = [
+  {
+    title: 'League Rules and Regulations',
+    items: [
+      'All league members will follow and be subject to the Haddon Glen Swim Club bylaws, rules, and regulations.',
+      'The league is managed by a committee approved by the Haddon Glen Board and must include a Haddon Glen executive board member.',
+      'The committee can make league determinations and may remove a team for inability to comply with club or league rules, non-participation, unsportsmanlike behavior, or related issues.',
+      'Children present while a guardian participates in a match must be supervised by their family according to Haddon Glen Swim Club bylaws and membership agreement.',
+      'Pool use can only occur during swim club hours.',
+    ],
+  },
+  {
+    title: 'Teams',
+    items: [
+      'Teams are two adult Haddon Glen members who register for the league and pay the season sign-up fee as determined by the board.',
+      'Team members cannot be interchanged or subbed out over the course of the season.',
+      'Registered teams continue to be invited to return the following season pending annual approval of the league committee and continued eligibility.',
+      'If one team member does not return, the returning player with a new partner is considered a new team. Original standings cannot be held, and a new spot cannot be guaranteed.',
+    ],
+  },
+  {
+    title: 'League Flights',
+    items: [
+      'Each season is divided into three flights: Green Band (top), Red Band (competitive), and White Band (co-ed for the 2026 season).',
+      'The following season, flights can be reconfigured for returning and new teams based on prior results, team requests, and board determination.',
+    ],
+  },
+  {
+    title: 'Match-Ups and Scheduling',
+    items: [
+      'A match consists of two games to 21 points.',
+      'After the match is concluded, teams report the score using the method announced for that season.',
+      'There are 5 courts: 1 cement court and 4 HG wooden board courts.',
+      'One set of boards is available per time slot for make-up matches.',
+      'Teams will use bags provided by the league.',
+      'Teams with the first match time are requested to help set up the playing areas.',
+      'Teams with the last match time are requested to help break down the playing areas.',
+    ],
+  },
+  {
+    title: 'Rescheduling',
+    items: [
+      'Teams will be provided with a league schedule and league member contact list.',
+      'If a team cannot make its weekly match-up, that team is responsible for communicating with its opponent and agreeing to a rescheduled date.',
+      'Rescheduled match-ups must take place at Haddon Glen for the results to be recorded.',
+    ],
+  },
+  {
+    title: 'Haddon Glen Board Spacing',
+    items: [
+      'Green and Red Band cornhole boards will be spaced 27 feet apart.',
+      'White Band cornhole boards will be spaced 24 feet apart.',
+    ],
+  },
+  {
+    title: 'Cornhole Rules',
+    items: [
+      'Cornhole is played with two teams of two players.',
+      'Players pitch bags underhand from the pitcher box next to each side of the board.',
+      'Players alternate turns tossing bags toward the opposite board.',
+      'After each team has pitched four bags, players take score and resume pitching to the opposite board.',
+      'First throw is determined by verbal agreement, rock/paper/scissors, or coin flip.',
+      'The team that scored points in the previous inning throws first in the next inning. If the inning was tied, the team that went first in the last inning goes first again.',
+    ],
+  },
+  {
+    title: 'Scoring and Winning',
+    items: [
+      'A bag through the hole is worth 3 points.',
+      'A bag that lands on the board and stays there is worth 1 point.',
+      'A bag that lands on the ground or bounces onto the board is worth 0 points.',
+      'Cancellation scoring applies: only one team can score points per inning. The higher score cancels out the opposing team in that inning.',
+      'The first player or team to reach 21 points at the conclusion of an inning wins the game.',
+    ],
+  },
+  {
+    title: 'Terminology',
+    items: [
+      'Foul bags are bags designated as foul due to a rules violation. They are worth 0 points.',
+      'Dead bags are bags that contact the court or ground before coming to rest on the board, or bags that strike a previously defined object such as a tree limb, wire, or indoor court ceiling. They are worth 0 points.',
+    ],
+  },
+]
+
 const trophyEntries = [
   { year: 2025, flight: 'Green', winners: 'Jonathan Soll and Matt Tronco' },
   { year: 2025, flight: 'Red', winners: 'Brian Kemner and Tom Polizzi' },
@@ -495,7 +579,7 @@ function App() {
   const selectedBocceTeam = selectedBoccePlayer ? getTeam(bocceTeams, selectedBoccePlayer.teamId) : null
   const standings = useMemo(() => buildStandings(matches, teams), [matches, teams])
   const bocceStandings = useMemo(() => buildBocceStandings(bocceMatches, bocceTeams), [bocceMatches, bocceTeams])
-  const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'trophy', 'submitted'].includes(page)
+  const showCornholeNav = ['home', 'my', 'standings', 'schedule', 'rules', 'trophy', 'submitted'].includes(page)
   const showBocceNav = ['bocce-home', 'bocce-my', 'bocce-standings', 'bocce-schedule', 'bocce-rules', 'bocce-submitted'].includes(page)
 
   if (!cloudReady) {
@@ -783,6 +867,7 @@ function App() {
         )}
         {page === 'standings' && <Standings standings={standings} />}
         {page === 'schedule' && <Schedule matches={matches} teams={teams} />}
+        {page === 'rules' && <CornholeRules />}
         {page === 'trophy' && <TrophyRoom />}
         {page === 'submitted' && (
           <ScoreSubmitted
@@ -818,6 +903,7 @@ function App() {
           <button type="button" onClick={() => setPage('my')}>My Matches</button>
           <button type="button" onClick={() => setPage('standings')}>Standings</button>
           <button type="button" onClick={() => setPage('schedule')}>Schedule</button>
+          <button type="button" onClick={() => setPage('rules')}>Rules</button>
           <button type="button" onClick={() => setPage('trophy')}>Trophy Room</button>
         </nav>
       )}
@@ -1332,6 +1418,7 @@ function Home({ standings, setPage }) {
         <BigButton label="My Matches" onClick={() => setPage('my')} />
         <BigButton label="Standings" onClick={() => setPage('standings')} />
         <BigButton label="Full Schedule" onClick={() => setPage('schedule')} />
+        <BigButton label="Rules" onClick={() => setPage('rules')} />
         <BigButton label="Trophy Room" onClick={() => setPage('trophy')} />
       </div>
       <Card title="Current Leaders">
@@ -1342,6 +1429,28 @@ function Home({ standings, setPage }) {
           })}
         </div>
       </Card>
+    </section>
+  )
+}
+
+function CornholeRules() {
+  return (
+    <section className="stack">
+      <PageTitle eyebrow="Adult Cornhole League" title="Rules and Regulations" />
+      <Card title="League Agreement">
+        <p className="helper-text">As a league participant, you agree to comply with the following league rules and regulations.</p>
+        <a className="download-link" href="https://www.playcornhole.org/pages/rules" target="_blank" rel="noreferrer">ACA rules reference</a>
+      </Card>
+      <div className="rules-grid cornhole-rules-grid">
+        {cornholeRuleSections.map((section) => (
+          <article className="simple-card rule-card cornhole-rule-card" key={section.title}>
+            <h2>{section.title}</h2>
+            <ul>
+              {section.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
     </section>
   )
 }
