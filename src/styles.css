@@ -443,9 +443,17 @@ a {
 }
 
 .quick-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+}
+
+.quick-grid .big-button {
+  flex: 0 1 auto;
+  min-height: 56px;
+  padding: 0 16px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .league-grid {
@@ -1417,10 +1425,6 @@ textarea {
     overflow: hidden;
     border: 1px solid #cfeff6;
     border-radius: 16px;
-  }
-
-  .quick-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 
   .league-grid {
