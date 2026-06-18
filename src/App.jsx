@@ -902,7 +902,6 @@ function App() {
           <button type="button" onClick={() => setPage('home')}>Home</button>
           <button type="button" onClick={() => setPage('my')}>My Matches</button>
           <button type="button" onClick={() => setPage('standings')}>Standings</button>
-          <button type="button" onClick={() => setPage('schedule')}>Schedule</button>
           <button type="button" onClick={() => setPage('rules')}>Rules</button>
           <button type="button" onClick={() => setPage('trophy')}>Trophy Room</button>
         </nav>
