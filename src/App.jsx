@@ -1416,9 +1416,9 @@ function Home({ standings, setPage }) {
       <div className="quick-grid">
         <BigButton label="My Matches" onClick={() => setPage('my')} />
         <BigButton label="Standings" onClick={() => setPage('standings')} />
-        <BigButton label="Full Schedule" onClick={() => setPage('schedule')} />
         <BigButton label="Rules" onClick={() => setPage('rules')} />
         <BigButton label="Trophy Room" onClick={() => setPage('trophy')} />
+        <BigButton label="Full Schedule" onClick={() => setPage('schedule')} />
       </div>
       <Card title="Current Leaders">
         <div className="mini-list">
