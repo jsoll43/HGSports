@@ -2779,11 +2779,29 @@ function isPlayedScheduleItem(item) {
 }
 
 function bySchedule(a, b) {
-  return scheduleTime(a) - scheduleTime(b)
+  return compareScheduleItems(a, b)
 }
 
 function byScheduleItem(a, b) {
-  return scheduleItemTime(a) - scheduleItemTime(b)
+  return compareScheduleItems(a, b)
+}
+
+function compareScheduleItems(a, b) {
+  const aTime = scheduleItemTime(a)
+  const bTime = scheduleItemTime(b)
+  const aIsFinite = Number.isFinite(aTime)
+  const bIsFinite = Number.isFinite(bTime)
+
+  if (aIsFinite && bIsFinite && aTime !== bTime) return aTime - bTime
+  if (aIsFinite !== bIsFinite) return aIsFinite ? -1 : 1
+
+  const weekDiff = Number(a.week || 0) - Number(b.week || 0)
+  if (weekDiff) return weekDiff
+
+  const timeDiff = parseScheduleTimeMinutes(a.time) - parseScheduleTimeMinutes(b.time)
+  if (Number.isFinite(timeDiff) && timeDiff) return timeDiff
+
+  return String(a.flight || '').localeCompare(String(b.flight || ''))
 }
 
 function getCurrentScheduleWeek(matches) {
@@ -2819,11 +2837,53 @@ function getCurrentScheduleWeek(matches) {
 }
 
 function scheduleTime(match) {
-  return new Date(`${match.date} ${match.time}`).getTime()
+  return parseScheduleDateTime(match.date, match.time)
 }
 
 function scheduleItemTime(item) {
-  return new Date(`${item.date} ${item.time}`).getTime()
+  return parseScheduleDateTime(item.date, item.time)
+}
+
+function parseScheduleDateTime(date, time = '') {
+  const parsedDate = parseScheduleDateParts(date)
+  if (!parsedDate) return NaN
+
+  const minutes = parseScheduleTimeMinutes(time)
+  if (!Number.isFinite(minutes)) return NaN
+
+  return new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day, Math.floor(minutes / 60), minutes % 60).getTime()
+}
+
+function parseScheduleDateParts(date) {
+  const value = String(date || '').trim()
+  const iso = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (iso) return { year: Number(iso[1]), month: Number(iso[2]), day: Number(iso[3]) }
+
+  const slash = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})/)
+  if (!slash) return null
+
+  const rawYear = Number(slash[3])
+  return {
+    year: rawYear < 100 ? 2000 + rawYear : rawYear,
+    month: Number(slash[1]),
+    day: Number(slash[2]),
+  }
+}
+
+function parseScheduleTimeMinutes(time) {
+  const value = String(time || '').trim()
+  const match = value.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i)
+  if (!match) return NaN
+
+  let hour = Number(match[1])
+  const minute = Number(match[2] || 0)
+  const period = match[3]?.toUpperCase()
+
+  if (period === 'PM' && hour < 12) hour += 12
+  if (period === 'AM' && hour === 12) hour = 0
+  if (hour > 23 || minute > 59) return NaN
+
+  return hour * 60 + minute
 }
 
 function publicStatus(match) {
