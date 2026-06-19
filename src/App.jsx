@@ -1595,14 +1595,17 @@ function Standings({ standings }) {
 
 function Schedule({ matches, teams }) {
   const [flight, setFlight] = useState('All')
-  const [week, setWeek] = useState('All')
-  const weeks = [...new Set(matches.map((match) => match.week))]
-  const filtered = matches.filter((match) => (flight === 'All' || match.flight === flight) && (week === 'All' || match.week === Number(week)))
+  const [week, setWeek] = useState(() => getCurrentScheduleWeek(matches))
+  const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
+  const filtered = matches
+    .filter((match) => (flight === 'All' || match.flight === flight) && (week === 'All' || match.week === Number(week)))
+    .sort(bySchedule)
 
   return (
     <section className="stack">
       <PageTitle eyebrow="Public schedule" title="Full Schedule" />
-      <div className="filters">
+      <div className="filters schedule-filters">
+        <strong>Full Schedule</strong>
         <label className="field">Band<select value={flight} onChange={(event) => setFlight(event.target.value)}><option>All</option>{flights.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
       </div>
@@ -2781,6 +2784,38 @@ function bySchedule(a, b) {
 
 function byScheduleItem(a, b) {
   return scheduleItemTime(a) - scheduleItemTime(b)
+}
+
+function getCurrentScheduleWeek(matches) {
+  const weekStarts = [...new Set(matches.map((match) => match.week))]
+    .map((week) => {
+      const weekMatches = matches.filter((match) => match.week === week)
+      const times = weekMatches.map((match) => scheduleTime(match)).filter(Number.isFinite)
+      return {
+        week,
+        start: Math.min(...times),
+      }
+    })
+    .filter((item) => Number.isFinite(item.start))
+    .sort((a, b) => a.start - b.start)
+
+  if (!weekStarts.length) return 'All'
+
+  const today = new Date()
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+  const currentIndex = weekStarts.findIndex((item, index) => {
+    const start = new Date(item.start)
+    const startOfWeek = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime()
+    const nextStart = weekStarts[index + 1]?.start
+    const nextStartDate = nextStart ? new Date(nextStart) : null
+    const nextStartOfWeek = nextStartDate ? new Date(nextStartDate.getFullYear(), nextStartDate.getMonth(), nextStartDate.getDate()).getTime() : null
+    return todayStart >= startOfWeek && (!nextStartOfWeek || todayStart < nextStartOfWeek)
+  })
+
+  if (currentIndex !== -1) return String(weekStarts[currentIndex].week)
+
+  const upcoming = weekStarts.find((item) => item.start >= todayStart)
+  return String((upcoming || weekStarts[weekStarts.length - 1]).week)
 }
 
 function scheduleTime(match) {

@@ -727,6 +727,28 @@ a {
   gap: 12px;
 }
 
+.schedule-filters {
+  position: sticky;
+  top: 10px;
+  z-index: 15;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  border: 1px solid #b7e8f2;
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(245, 251, 255, 0.96);
+  box-shadow: 0 10px 26px rgba(11, 37, 69, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.schedule-filters strong {
+  align-self: center;
+  color: #0b2545;
+  font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .field,
 .score-grid label {
   display: grid;
@@ -1403,6 +1425,14 @@ textarea {
 
   .bye-card span {
     text-align: left;
+  }
+
+  .schedule-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .schedule-filters strong {
+    grid-column: 1 / -1;
   }
 
   .team-name-field,
