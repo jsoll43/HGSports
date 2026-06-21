@@ -6,6 +6,8 @@ const PAYMENT_LINK = 'https://square.link/u/6oHmgu9w'
 const SPORTS_STORAGE_KEY = 'hg-sports-data'
 const CORNHOLE_STORAGE_KEY = 'cornhole'
 const BOCCE_STORAGE_KEY = 'bocce'
+const CORNHOLE_PLAYER_STORAGE_KEY = 'hg-cornhole-selected-player'
+const BOCCE_PLAYER_STORAGE_KEY = 'hg-bocce-selected-player'
 const CORNHOLE_SCHEDULE_VERSION = '2026-27-team-v1'
 const CLOUD_POLL_MS = 8000
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
@@ -266,6 +268,24 @@ function readSportsData() {
   return sportsData && typeof sportsData === 'object' && !Array.isArray(sportsData) ? sportsData : {}
 }
 
+function readLocalPlayerId(key, fallback = '') {
+  try {
+    const playerId = localStorage.getItem(key)
+    return playerId === null ? fallback : playerId
+  } catch {
+    return fallback
+  }
+}
+
+function saveLocalPlayerId(key, playerId) {
+  try {
+    if (playerId) localStorage.setItem(key, playerId)
+    else localStorage.removeItem(key)
+  } catch {
+    // The selection still works for this visit when browser storage is unavailable.
+  }
+}
+
 function normalizeSportsData(data = {}) {
   return {
     [CORNHOLE_STORAGE_KEY]: normalizeAppData(data?.[CORNHOLE_STORAGE_KEY]),
@@ -403,13 +423,13 @@ function App() {
   const storedData = useMemo(readAppData, [])
   const storedBocceData = useMemo(readBocceData, [])
   const [page, setCurrentPage] = useState(() => pageFromPath(window.location.pathname))
-  const [selectedPlayerId, setSelectedPlayerId] = useState(storedData.selectedPlayerId)
+  const [selectedPlayerId, setSelectedPlayerId] = useState(() => readLocalPlayerId(CORNHOLE_PLAYER_STORAGE_KEY, storedData.selectedPlayerId))
   const [teams, setTeams] = useState(storedData.teams)
   const [players, setPlayers] = useState(storedData.players)
   const [matches, setMatches] = useState(storedData.matches)
   const [audit, setAudit] = useState(storedData.audit)
   const [snapshots, setSnapshots] = useState(storedData.snapshots)
-  const [selectedBoccePlayerId, setSelectedBoccePlayerId] = useState(storedBocceData.selectedPlayerId)
+  const [selectedBoccePlayerId, setSelectedBoccePlayerId] = useState(() => readLocalPlayerId(BOCCE_PLAYER_STORAGE_KEY, storedBocceData.selectedPlayerId))
   const [bocceTeams, setBocceTeams] = useState(storedBocceData.teams)
   const [boccePlayers, setBoccePlayers] = useState(storedBocceData.players)
   const [bocceMatches, setBocceMatches] = useState(storedBocceData.matches)
@@ -429,7 +449,6 @@ function App() {
 
   const currentSportsData = useMemo(() => ({
     [CORNHOLE_STORAGE_KEY]: {
-      selectedPlayerId,
       teams,
       players,
       matches,
@@ -438,33 +457,38 @@ function App() {
       scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
     },
     [BOCCE_STORAGE_KEY]: {
-      selectedPlayerId: selectedBoccePlayerId,
       teams: bocceTeams,
       players: boccePlayers,
       matches: bocceMatches,
       audit: bocceAudit,
       snapshots: bocceSnapshots,
     },
-  }), [selectedPlayerId, teams, players, matches, audit, snapshots, selectedBoccePlayerId, bocceTeams, boccePlayers, bocceMatches, bocceAudit, bocceSnapshots])
+  }), [teams, players, matches, audit, snapshots, bocceTeams, boccePlayers, bocceMatches, bocceAudit, bocceSnapshots])
 
   function applySportsData(sportsData) {
     const normalized = normalizeSportsData(sportsData)
     const cornhole = normalized[CORNHOLE_STORAGE_KEY]
     const bocce = normalized[BOCCE_STORAGE_KEY]
 
-    setSelectedPlayerId(cornhole.selectedPlayerId)
     setTeams(cornhole.teams)
     setPlayers(cornhole.players)
     setMatches(cornhole.matches)
     setAudit(cornhole.audit)
     setSnapshots(cornhole.snapshots)
-    setSelectedBoccePlayerId(bocce.selectedPlayerId)
     setBocceTeams(bocce.teams)
     setBoccePlayers(bocce.players)
     setBocceMatches(bocce.matches)
     setBocceAudit(bocce.audit)
     setBocceSnapshots(bocce.snapshots)
   }
+
+  useEffect(() => {
+    saveLocalPlayerId(CORNHOLE_PLAYER_STORAGE_KEY, selectedPlayerId)
+  }, [selectedPlayerId])
+
+  useEffect(() => {
+    saveLocalPlayerId(BOCCE_PLAYER_STORAGE_KEY, selectedBoccePlayerId)
+  }, [selectedBoccePlayerId])
 
   useEffect(() => {
     let cancelled = false
