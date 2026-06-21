@@ -8,7 +8,7 @@ const CORNHOLE_STORAGE_KEY = 'cornhole'
 const BOCCE_STORAGE_KEY = 'bocce'
 const CORNHOLE_PLAYER_STORAGE_KEY = 'hg-cornhole-selected-player'
 const BOCCE_PLAYER_STORAGE_KEY = 'hg-bocce-selected-player'
-const CORNHOLE_SCHEDULE_VERSION = '2026-27-team-v1'
+const CORNHOLE_SCHEDULE_VERSION = '2026-28-team-v2'
 const CLOUD_POLL_MS = 8000
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
@@ -44,6 +44,7 @@ const initialTeams = [
   { id: 'team-23', flight: 'White', number: 25, name: 'Monrondo / Whittle', paid: false, paymentNote: '' },
   { id: 'team-24', flight: 'White', number: 26, name: 'Luciano / Luciano', paid: false, paymentNote: '' },
   { id: 'team-27', flight: 'White', number: 27, name: 'Mertz / Capperella', paid: false, paymentNote: '' },
+  { id: 'team-28', flight: 'White', number: 28, name: 'Dimeo / Haslam', paid: false, paymentNote: '' },
 ]
 
 const initialPlayers = [
@@ -101,6 +102,8 @@ const initialPlayers = [
   { id: 'player-24b', first: 'Daniel', last: 'Luciano', phone: '856341187', email: 'Tabytha25@yahoo.com', teamId: 'team-24' },
   { id: 'player-27a', first: 'Shane', last: 'Mertz', phone: '609-868-1756', email: 'Shanem75@aol.com', teamId: 'team-27' },
   { id: 'player-27b', first: 'Jay', last: 'Capperella', phone: '856-912-2804', email: 'Jay.Capperella@gmail.com', teamId: 'team-27' },
+  { id: 'player-28a', first: 'Michael', last: 'Dimeo', phone: '609-605-0278', email: 'Maddimeo@gmail.com', teamId: 'team-28' },
+  { id: 'player-28b', first: 'Brendan', last: 'Haslam', phone: '215-528-3555', email: 'Brendan.Haslam@gmail.com', teamId: 'team-28' },
 ]
 
 const initialBocceTeams = [
@@ -362,7 +365,9 @@ function normalizeAppData(data = {}) {
     selectedPlayerId: typeof data.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
     teams,
     players,
-    matches: !shouldRegenerateSchedule && Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
+    matches: shouldRegenerateSchedule
+      ? migrateSeasonSchedule(data.matches, teams)
+      : Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
     audit: Array.isArray(data.audit) ? data.audit : [],
     snapshots: Array.isArray(data.snapshots) ? data.snapshots : [],
     scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
@@ -405,6 +410,14 @@ function migrateRosterTeams(teams) {
 
 function migrateRosterPlayers(players) {
   return initialPlayers
+}
+
+function migrateSeasonSchedule(matches, teams) {
+  const generatedMatches = createSeasonSchedule(teams)
+  if (!Array.isArray(matches)) return generatedMatches
+
+  const existingById = new Map(matches.map((match) => [match.id, match]))
+  return generatedMatches.map((match) => existingById.get(match.id) || match).sort(bySchedule)
 }
 
 function pageFromPath(pathname) {
@@ -2536,7 +2549,11 @@ function createSeasonSchedule(teams) {
     const flightTeams = teams
       .filter((team) => team.flight === flight)
       .sort((a, b) => a.number - b.number)
-    const rounds = flightTeams.length === 9 ? buildPreservedNineTeamRounds(flightTeams) : buildRoundRobinRounds(flightTeams)
+    const rounds = flightTeams.length === 9
+      ? buildPreservedNineTeamRounds(flightTeams)
+      : flightTeams.length === 10
+        ? buildPreservedTenTeamRounds(flightTeams)
+        : buildRoundRobinRounds(flightTeams)
 
     rounds.forEach((round, roundIndex) => {
       const date = addDays(start, roundIndex * 7)
@@ -2574,6 +2591,18 @@ function buildPreservedNineTeamRounds(teams) {
   ]
 
   return pattern.map((round) => round.map(([teamA, teamB]) => [teams[teamA], teams[teamB]]))
+}
+
+function buildPreservedTenTeamRounds(teams) {
+  const originalTeams = teams.slice(0, 9)
+  const addedTeam = teams[9]
+  const originalRounds = buildPreservedNineTeamRounds(originalTeams)
+
+  return originalRounds.map((round) => {
+    const scheduledTeamIds = new Set(round.flatMap(([teamA, teamB]) => [teamA.id, teamB.id]))
+    const byeTeam = originalTeams.find((team) => !scheduledTeamIds.has(team.id))
+    return [...round, [byeTeam, addedTeam]]
+  })
 }
 
 function createBocceSchedule(teams) {
