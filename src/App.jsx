@@ -1378,7 +1378,7 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
   const status = boccePublicStatus(match)
 
   return (
-    <article className="match-card bocce-match-card">
+    <article className={`match-card bocce-match-card ${viewerTeam ? 'viewer-match-card' : ''}`}>
       <div className="match-head">
         <div>
           <p>Week {match.week} - {formatDate(match.date)} at {match.time}</p>
@@ -2592,7 +2592,7 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
   const status = publicStatus(match)
 
   return (
-    <article className="match-card">
+    <article className={`match-card ${viewerTeam ? 'viewer-match-card' : ''}`}>
       <div className="match-head">
         <div>
           <p>Week {match.week} · {formatDate(match.date)} at {match.time}</p>

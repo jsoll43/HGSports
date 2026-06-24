@@ -842,6 +842,26 @@ textarea {
   gap: 12px;
 }
 
+.match-head > div:first-child {
+  min-width: 0;
+}
+
+.viewer-match-card .match-head > div:first-child > p {
+  white-space: nowrap;
+  font-size: clamp(0.72rem, 3.1vw, 0.92rem);
+}
+
+.viewer-match-card .match-title {
+  flex-wrap: nowrap;
+}
+
+.viewer-match-card .match-title > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .match-head > div > span:not(.status) {
   color: #007c89;
   font-size: 0.85rem;
@@ -923,12 +943,12 @@ textarea {
   min-height: 28px;
   border: 0;
   border-radius: 6px;
-  padding: 5px 9px;
+  padding: 5px 6px;
   background: #0b2545;
   color: #fff;
   box-shadow: 0 3px 8px rgba(11, 37, 69, 0.18);
   cursor: pointer;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 900;
   line-height: 1.1;
   white-space: nowrap;
