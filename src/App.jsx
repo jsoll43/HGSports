@@ -1922,10 +1922,7 @@ function Admin({
       )}
       {tab === 'Audit' && (
         <Card title="Audit Log">
-          <div className="card-list">
-            {audit.length === 0 && <p className="empty">No audit entries yet.</p>}
-            {audit.map((item) => <AuditEntry key={item.id} item={item} matches={matches} teams={teams} players={players} />)}
-          </div>
+          <AuditLog audit={audit} matches={matches} teams={teams} players={players} EntryComponent={AuditEntry} />
         </Card>
       )}
     </section>
@@ -2020,10 +2017,7 @@ function BocceAdmin({
       )}
       {tab === 'Audit' && (
         <Card title="Audit Log">
-          <div className="card-list">
-            {audit.length === 0 && <p className="empty">No audit entries yet.</p>}
-            {audit.map((item) => <BocceAuditEntry key={item.id} item={item} matches={matches} teams={teams} players={players} />)}
-          </div>
+          <AuditLog audit={audit} matches={matches} teams={teams} players={players} EntryComponent={BocceAuditEntry} bocce />
         </Card>
       )}
     </section>
@@ -2156,6 +2150,134 @@ function BocceAuditEntry({ item, matches, teams, players }) {
   )
 }
 
+const AUDIT_BURST_WINDOW_MS = 15 * 60 * 1000
+
+function auditGroupKey(item) {
+  const details = item?.details || {}
+
+  if (item?.action === 'match_rescheduled' || item?.action === 'match_reschedule_undone') {
+    return details.matchId ? `schedule:${details.matchId}:${details.submittedBy || ''}` : null
+  }
+
+  if (item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid') {
+    return details.teamId ? `payment:${details.teamId}` : null
+  }
+
+  if (item?.action === 'score_game_saved') {
+    return details.matchId ? `score-draft:${details.matchId}:${details.savedBy || ''}` : null
+  }
+
+  return null
+}
+
+function auditGroupFamily(item) {
+  if (item?.action === 'match_rescheduled' || item?.action === 'match_reschedule_undone') return 'schedule'
+  if (item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid') return 'payment'
+  if (item?.action === 'score_game_saved') return 'score-draft'
+  return null
+}
+
+function consolidateAuditEntries(audit) {
+  const groups = []
+
+  for (const item of Array.isArray(audit) ? audit.filter(Boolean) : []) {
+    const key = auditGroupKey(item)
+    const previous = groups.at(-1)
+    const previousItem = previous?.items?.at(-1)
+    const elapsed = Math.abs(new Date(item.at).getTime() - new Date(previousItem?.at).getTime())
+    const belongsToBurst = key
+      && previous?.key === key
+      && Number.isFinite(elapsed)
+      && elapsed <= AUDIT_BURST_WINDOW_MS
+
+    if (belongsToBurst) {
+      previous.items.push(item)
+    } else {
+      groups.push({ key: key || `item:${item.id}`, family: auditGroupFamily(item), items: [item] })
+    }
+  }
+
+  return groups
+}
+
+function AuditLog({ audit, matches, teams, players, EntryComponent, bocce = false }) {
+  const groups = consolidateAuditEntries(audit)
+
+  return (
+    <div className="card-list">
+      {groups.length === 0 && <p className="empty">No audit entries yet.</p>}
+      {groups.map((group, index) => group.items.length === 1 ? (
+        <EntryComponent
+          key={group.items[0].id || `${group.key}-${index}`}
+          item={group.items[0]}
+          matches={matches}
+          teams={teams}
+          players={players}
+        />
+      ) : (
+        <ConsolidatedAuditEntry
+          key={`${group.key}:${group.items[0].id || index}`}
+          group={group}
+          matches={matches}
+          teams={teams}
+          players={players}
+          EntryComponent={EntryComponent}
+          bocce={bocce}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ConsolidatedAuditEntry({ group, matches, teams, players, EntryComponent, bocce }) {
+  const latest = group.items[0]
+  const details = latest.details || {}
+  const match = details.matchId ? matches.find((item) => item.id === details.matchId) : null
+  const actorId = details.submittedBy || details.savedBy
+  const actor = actorId ? playerName(players, actorId) : 'Admin'
+  const count = group.items.length
+  let title = `${count} similar actions`
+  let context = ''
+  let latestLabel = latest.action.replaceAll('_', ' ')
+
+  if (group.family === 'schedule') {
+    title = `${actor} changed ${bocce ? 'bocce ' : ''}schedule status ${count} times`
+    context = match ? `${matchTitle(match, teams)} - ${gameDateLabel(match)}` : ''
+    latestLabel = latest.action === 'match_rescheduled' ? 'Latest: marked rescheduled' : 'Latest: restored to scheduled'
+  } else if (group.family === 'payment') {
+    title = `Payment status changed ${count} times`
+    context = details.teamName || (details.teamNumber ? `Team ${details.teamNumber}` : '')
+    latestLabel = latest.action === 'payment_marked_paid' ? 'Latest: marked paid' : 'Latest: marked unpaid'
+  } else if (group.family === 'score-draft') {
+    title = `${actor} saved ${count} ${bocce ? 'bocce ' : ''}score updates`
+    context = match ? `${matchTitle(match, teams)} - ${gameDateLabel(match)}` : ''
+    latestLabel = `Latest: Game ${details.game}`
+  }
+
+  return (
+    <article className="simple-card audit-entry audit-entry-group">
+      <p>{new Date(latest.at).toLocaleString()}</p>
+      <h2>{title}</h2>
+      {context && <p>{context}</p>}
+      <p>{latestLabel}</p>
+      <details className="audit-group-details">
+        <summary>View {count} individual actions</summary>
+        <div className="card-list audit-group-list">
+          {group.items.map((item, index) => (
+            <EntryComponent
+              key={item.id || `${group.key}-detail-${index}`}
+              item={item}
+              matches={matches}
+              teams={teams}
+              players={players}
+            />
+          ))}
+        </div>
+      </details>
+    </article>
+  )
+}
+
 function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatus }) {
   const [paymentSearch, setPaymentSearch] = useState('')
   const safeTeams = Array.isArray(teams) ? teams.filter(Boolean) : []
@@ -2245,8 +2367,17 @@ function PaymentTracker({ teams = [], audit = [], updateTeam, updatePaymentStatu
         </summary>
         <div className="card-list">
           {paymentAudit.length === 0 && <p className="empty">No payment changes recorded yet.</p>}
-          {paymentAudit.map((item, index) => (
-            <PaymentAuditEntry key={String(item?.id || `${item?.action || 'payment-audit'}-${index}`)} item={item} />
+          {consolidateAuditEntries(paymentAudit).map((group, index) => group.items.length === 1 ? (
+            <PaymentAuditEntry key={String(group.items[0]?.id || `${group.key}-${index}`)} item={group.items[0]} />
+          ) : (
+            <ConsolidatedAuditEntry
+              key={`${group.key}:${group.items[0]?.id || index}`}
+              group={group}
+              matches={[]}
+              teams={teams}
+              players={[]}
+              EntryComponent={PaymentAuditEntry}
+            />
           ))}
         </div>
       </details>
