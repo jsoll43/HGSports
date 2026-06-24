@@ -1482,7 +1482,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
     <div className="actions">
       <div className="match-action-buttons">
         <button className={open === 'score' ? 'score-toggle active' : 'score-toggle'} type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>
-          {open === 'score' ? 'Score Entry Open' : 'Submit Score'}
+          {open === 'score' ? 'Close Score Submission' : 'Open Score Submission'}
         </button>
       </div>
       {open === 'score' && (
@@ -1493,7 +1493,6 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <p className="score-entry-notice">Score fields are open — enter scores below.</p>
           <p className="helper-text">Save games as you play. Saved games will be here when you return.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
@@ -1531,7 +1530,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
         </form>
       )}
       {open === 'reschedule' && (
-        <form className="inline-form" onSubmit={(event) => {
+        <form className="inline-form reschedule-form" onSubmit={(event) => {
           event.preventDefault()
           if (!pinIsValid()) return
           markRescheduled(match.id, note, selectedPlayer.id)
@@ -2660,7 +2659,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
     <div className="actions">
       <div className="match-action-buttons">
         <button className={open === 'score' ? 'score-toggle active' : 'score-toggle'} type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>
-          {open === 'score' ? 'Score Entry Open' : 'Submit Score'}
+          {open === 'score' ? 'Close Score Submission' : 'Open Score Submission'}
         </button>
       </div>
       {open === 'score' && (
@@ -2671,7 +2670,6 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <p className="score-entry-notice">Score fields are open — enter scores below.</p>
           <p className="helper-text">Save Game 1 now and come back after Game 2. Saved scores will be restored automatically.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
@@ -2709,7 +2707,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
         </form>
       )}
       {open === 'reschedule' && (
-        <form className="inline-form" onSubmit={(event) => {
+        <form className="inline-form reschedule-form" onSubmit={(event) => {
           event.preventDefault()
           if (!pinIsValid()) return
           markRescheduled(match.id, note, selectedPlayer.id)

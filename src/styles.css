@@ -920,15 +920,16 @@ textarea {
 }
 
 .reschedule-corner-button {
-  min-height: 0;
-  border: 1px solid #b7e8f2;
+  min-height: 28px;
+  border: 0;
   border-radius: 6px;
-  padding: 4px 6px;
-  background: #f5fbff;
-  color: #516171;
+  padding: 5px 9px;
+  background: #0b2545;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(11, 37, 69, 0.18);
   cursor: pointer;
-  font-size: 0.66rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 900;
   line-height: 1.1;
   white-space: nowrap;
 }
@@ -1216,6 +1217,10 @@ textarea {
   gap: 8px;
 }
 
+.actions .reschedule-form {
+  order: -1;
+}
+
 .single-button-row {
   display: grid;
 }
@@ -1269,14 +1274,6 @@ textarea {
 .score-games {
   display: grid;
   gap: 12px;
-}
-
-.score-entry-notice {
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #dff8fb;
-  color: #006b76 !important;
-  font-weight: 900 !important;
 }
 
 .score-game-card {
