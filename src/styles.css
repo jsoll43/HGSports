@@ -1217,10 +1217,6 @@ textarea {
   gap: 8px;
 }
 
-.actions .reschedule-form {
-  order: -1;
-}
-
 .single-button-row {
   display: grid;
 }

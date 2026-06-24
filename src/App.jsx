@@ -686,15 +686,33 @@ function App() {
     log('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
-  function markRescheduled(matchId, note, submittedBy) {
+  function markRescheduled(matchId, submittedBy) {
+    const match = matches.find((item) => item.id === matchId)
+    const undo = match?.status === 'rescheduled'
     setMatches((items) =>
       items.map((match) =>
         match.id === matchId
-          ? { ...match, status: 'rescheduled', rescheduleNote: note || 'Makeup needed', rescheduledBy: submittedBy, rescheduledAt: new Date().toISOString() }
+          ? undo
+            ? {
+                ...match,
+                status: match.statusBeforeReschedule || 'scheduled',
+                statusBeforeReschedule: undefined,
+                rescheduleNote: undefined,
+                rescheduledBy: undefined,
+                rescheduledAt: undefined,
+              }
+            : {
+                ...match,
+                status: 'rescheduled',
+                statusBeforeReschedule: match.status,
+                rescheduleNote: undefined,
+                rescheduledBy: submittedBy,
+                rescheduledAt: new Date().toISOString(),
+              }
           : match,
       ),
     )
-    log('match_rescheduled', { matchId, submittedBy, note })
+    log(undo ? 'match_reschedule_undone' : 'match_rescheduled', { matchId, submittedBy })
   }
 
   function approveScore(matchId) {
@@ -820,15 +838,33 @@ function App() {
     logBocce('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
-  function markBocceRescheduled(matchId, note, submittedBy) {
+  function markBocceRescheduled(matchId, submittedBy) {
+    const match = bocceMatches.find((item) => item.id === matchId)
+    const undo = match?.status === 'rescheduled'
     setBocceMatches((items) =>
       items.map((match) =>
         match.id === matchId
-          ? { ...match, status: 'rescheduled', rescheduleNote: note || 'Makeup needed', rescheduledBy: submittedBy, rescheduledAt: new Date().toISOString() }
+          ? undo
+            ? {
+                ...match,
+                status: match.statusBeforeReschedule || 'scheduled',
+                statusBeforeReschedule: undefined,
+                rescheduleNote: undefined,
+                rescheduledBy: undefined,
+                rescheduledAt: undefined,
+              }
+            : {
+                ...match,
+                status: 'rescheduled',
+                statusBeforeReschedule: match.status,
+                rescheduleNote: undefined,
+                rescheduledBy: submittedBy,
+                rescheduledAt: new Date().toISOString(),
+              }
           : match,
       ),
     )
-    logBocce('match_rescheduled', { matchId, submittedBy, note })
+    logBocce(undo ? 'match_reschedule_undone' : 'match_rescheduled', { matchId, submittedBy })
   }
 
   function approveBocceScore(matchId) {
@@ -1365,13 +1401,23 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
         <div className="match-status-actions">
           <StatusBadge status={status} />
           {!compact && showContacts && match.status !== 'final' && selectedPlayer && markRescheduled && (
-            <button className="reschedule-corner-button" type="button" onClick={() => setActionOpen(actionOpen === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+            <button
+              aria-pressed={match.status === 'rescheduled'}
+              className={`reschedule-corner-button ${match.status === 'rescheduled' ? 'undo' : ''}`}
+              type="button"
+              onClick={() => {
+                setActionOpen('')
+                markRescheduled(match.id, selectedPlayer.id)
+              }}
+            >
+              {match.status === 'rescheduled' ? 'Undo Reschedule' : 'Mark Rescheduled'}
+            </button>
           )}
         </div>
       </div>
       {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
       {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
-        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} open={actionOpen} setOpen={setActionOpen} />
+        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}
       {!compact && showContacts && (
         <BocceContactTools match={match} teams={teams} players={players} textOnly={Boolean(selectedPlayer)} />
@@ -1441,7 +1487,7 @@ function BocceContactTools({ match, teams = [], players, textOnly = false }) {
   )
 }
 
-function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled, open, setOpen }) {
+function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const [pin, setPin] = useState('')
@@ -1452,7 +1498,6 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   const [attemptedGames, setAttemptedGames] = useState([])
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [pinAttempted, setPinAttempted] = useState(false)
-  const [note, setNote] = useState('')
   const score = games.map((game) => game.map(scoreNumber))
   const errors = validateBocceScore(score)
 
@@ -1527,19 +1572,6 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
           </div>
           {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
           {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
-        </form>
-      )}
-      {open === 'reschedule' && (
-        <form className="inline-form reschedule-form" onSubmit={(event) => {
-          event.preventDefault()
-          if (!pinIsValid()) return
-          markRescheduled(match.id, note, selectedPlayer.id)
-          setOpen('')
-        }}>
-          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
-          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Optional note or proposed makeup date" />
-          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
-          <button type="submit">Save Reschedule</button>
         </form>
       )}
     </div>
@@ -2101,7 +2133,16 @@ function BocceAuditEntry({ item, matches, teams, players }) {
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} marked a bocce match rescheduled</h2>
         <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
-        <p>{item.details.note || 'No note provided.'}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'match_reschedule_undone' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} undid a bocce reschedule</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -2377,7 +2418,16 @@ function AuditEntry({ item, matches, teams, players }) {
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} marked a match rescheduled</h2>
         <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
-        <p>{item.details.note || 'No note provided.'}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'match_reschedule_undone' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} undid a reschedule</h2>
+        <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
       </article>
     )
   }
@@ -2565,13 +2615,23 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
         <div className="match-status-actions">
           <StatusBadge status={status} />
           {showContacts && match.status !== 'final' && selectedPlayer && markRescheduled && (
-            <button className="reschedule-corner-button" type="button" onClick={() => setActionOpen(actionOpen === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+            <button
+              aria-pressed={match.status === 'rescheduled'}
+              className={`reschedule-corner-button ${match.status === 'rescheduled' ? 'undo' : ''}`}
+              type="button"
+              onClick={() => {
+                setActionOpen('')
+                markRescheduled(match.id, selectedPlayer.id)
+              }}
+            >
+              {match.status === 'rescheduled' ? 'Undo Reschedule' : 'Mark Rescheduled'}
+            </button>
           )}
         </div>
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
       {showContacts && match.status !== 'final' && (
-        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} open={actionOpen} setOpen={setActionOpen} />
+        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}
       {showContacts && selectedPlayer && (
         <ContactTools match={match} teams={teams} players={players} selectedPlayer={selectedPlayer} />
@@ -2618,7 +2678,7 @@ function ContactTools({ match, teams, players, selectedPlayer }) {
   )
 }
 
-function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled, open, setOpen }) {
+function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const [pin, setPin] = useState('')
@@ -2629,7 +2689,6 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
   const [attemptedGames, setAttemptedGames] = useState([])
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [pinAttempted, setPinAttempted] = useState(false)
-  const [note, setNote] = useState('')
   const score = games.map((game) => game.map(scoreNumber))
   const errors = validateScore(score)
 
@@ -2704,19 +2763,6 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           </div>
           {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
           {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
-        </form>
-      )}
-      {open === 'reschedule' && (
-        <form className="inline-form reschedule-form" onSubmit={(event) => {
-          event.preventDefault()
-          if (!pinIsValid()) return
-          markRescheduled(match.id, note, selectedPlayer.id)
-          setOpen('')
-        }}>
-          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
-          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Optional note or proposed makeup date" />
-          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
-          <button type="submit">Save Reschedule</button>
         </form>
       )}
     </div>
@@ -3135,7 +3181,7 @@ function parseScheduleTimeMinutes(time) {
 }
 
 function publicStatus(match) {
-  if (match.status === 'rescheduled') return 'Pending reschedule'
+  if (match.status === 'rescheduled') return 'Rescheduled'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
   if (match.draftScore?.some((game) => Array.isArray(game))) return 'Score in progress'
@@ -3144,7 +3190,7 @@ function publicStatus(match) {
 }
 
 function boccePublicStatus(match) {
-  if (match.status === 'rescheduled') return 'Pending reschedule'
+  if (match.status === 'rescheduled') return 'Rescheduled'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
   if (match.draftScore?.some((game) => Array.isArray(game))) return 'Score in progress'
@@ -3328,7 +3374,7 @@ function StatusBadge({ status }) {
   const className = [
     'status',
     status.includes('needed') ? 'warning' : '',
-    status.includes('Pending reschedule') ? 'reschedule' : '',
+    status === 'Rescheduled' ? 'reschedule' : '',
   ].filter(Boolean).join(' ')
 
   return <span className={className}>{status}</span>
