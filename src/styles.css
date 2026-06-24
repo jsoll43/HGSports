@@ -1285,8 +1285,37 @@ textarea {
   color: #805600;
 }
 
-.actions .save-game-button {
+.score-game-entry-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.score-game-entry-row .score-grid {
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, 58px);
+  gap: 8px;
+}
+
+.score-game-entry-row .score-grid label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.76rem;
+}
+
+.score-game-entry-row input {
   min-height: 44px;
+  padding: 7px 5px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.actions .save-game-button {
+  flex: 1;
+  min-width: 105px;
+  min-height: 44px;
+  padding: 0 8px;
 }
 
 .actions .final-score-submit {

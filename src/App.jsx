@@ -1502,14 +1502,16 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
                     {saved && <span>Saved</span>}
                     {!saved && wasSaved && <span className="unsaved">Unsaved changes</span>}
                   </div>
-                  <div className="score-grid bocce-score-grid">
-                    <label>{teamA?.name || 'Team A'}<input type="number" min="0" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                    <label>{teamB?.name || 'Team B'}<input type="number" min="0" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                  <div className="score-game-entry-row">
+                    <div className="score-grid bocce-score-grid">
+                      <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                      <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                    </div>
+                    <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
+                      {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                    </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
-                  <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                    {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
-                  </button>
                 </section>
               )
             })}
@@ -2669,14 +2671,16 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
                     {saved && <span>Saved</span>}
                     {!saved && wasSaved && <span className="unsaved">Unsaved changes</span>}
                   </div>
-                  <div className="score-grid">
-                    <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                    <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                  <div className="score-game-entry-row">
+                    <div className="score-grid">
+                      <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                      <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                    </div>
+                    <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
+                      {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                    </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
-                  <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                    {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
-                  </button>
                 </section>
               )
             })}
@@ -2939,6 +2943,7 @@ function scoreNumber(value) {
 
 function validateCornholeGame(game, index) {
   if (!Number.isFinite(game[0]) || !Number.isFinite(game[1])) return `Game ${index + 1}: both scores are required.`
+  if (!Number.isInteger(game[0]) || !Number.isInteger(game[1])) return `Game ${index + 1}: scores must be whole numbers.`
   if (game[0] < 0 || game[1] < 0) return `Game ${index + 1}: scores cannot be negative.`
   if (game[0] > 21 || game[1] > 21) return `Game ${index + 1}: no score over 21.`
   if (game[0] === game[1]) return `Game ${index + 1}: no ties.`
@@ -2958,7 +2963,9 @@ function validateBocceGame(game, index) {
   const margin = Math.abs(a - b)
 
   if (!Number.isFinite(a) || !Number.isFinite(b)) return `Game ${index + 1}: both scores are required.`
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return `Game ${index + 1}: scores must be whole numbers.`
   if (a < 0 || b < 0) return `Game ${index + 1}: scores cannot be negative.`
+  if (a > 21 || b > 21) return `Game ${index + 1}: no score over 21.`
   if (a === b) return `Game ${index + 1}: each game must have a winner.`
   if (winner < 11) return `Game ${index + 1}: winner must score at least 11.`
   if (margin < 2) return `Game ${index + 1}: winner must win by at least 2.`
