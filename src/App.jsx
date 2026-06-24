@@ -652,13 +652,38 @@ function App() {
     setMatches((items) =>
       items.map((match) =>
         match.id === matchId
-          ? { ...match, status: 'pending', score, submittedBy, submittedAt: new Date().toISOString() }
+          ? {
+              ...match,
+              status: 'pending',
+              score,
+              submittedBy,
+              submittedAt: new Date().toISOString(),
+              draftScore: undefined,
+              draftGameSavedAt: undefined,
+              draftUpdatedAt: undefined,
+              draftSavedBy: undefined,
+            }
           : match,
       ),
     )
     log('score_submitted', { matchId, submittedBy, score })
     setSubmissionConfirmation({ matchId, at: new Date().toISOString() })
     setPage('submitted')
+  }
+
+  function saveScoreGame(matchId, gameIndex, gameScore, savedBy) {
+    const savedAt = new Date().toISOString()
+    setMatches((items) =>
+      items.map((match) => {
+        if (match.id !== matchId) return match
+        const draftScore = Array.isArray(match.draftScore) ? [...match.draftScore] : []
+        const draftGameSavedAt = Array.isArray(match.draftGameSavedAt) ? [...match.draftGameSavedAt] : []
+        draftScore[gameIndex] = gameScore
+        draftGameSavedAt[gameIndex] = savedAt
+        return { ...match, draftScore, draftGameSavedAt, draftUpdatedAt: savedAt, draftSavedBy: savedBy }
+      }),
+    )
+    log('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
   function markRescheduled(matchId, note, submittedBy) {
@@ -761,13 +786,38 @@ function App() {
     setBocceMatches((items) =>
       items.map((match) =>
         match.id === matchId
-          ? { ...match, status: 'pending', score, submittedBy, submittedAt: new Date().toISOString() }
+          ? {
+              ...match,
+              status: 'pending',
+              score,
+              submittedBy,
+              submittedAt: new Date().toISOString(),
+              draftScore: undefined,
+              draftGameSavedAt: undefined,
+              draftUpdatedAt: undefined,
+              draftSavedBy: undefined,
+            }
           : match,
       ),
     )
     logBocce('score_submitted', { matchId, submittedBy, score })
     setBocceSubmissionConfirmation({ matchId, at: new Date().toISOString() })
     setPage('bocce-submitted')
+  }
+
+  function saveBocceScoreGame(matchId, gameIndex, gameScore, savedBy) {
+    const savedAt = new Date().toISOString()
+    setBocceMatches((items) =>
+      items.map((match) => {
+        if (match.id !== matchId) return match
+        const draftScore = Array.isArray(match.draftScore) ? [...match.draftScore] : []
+        const draftGameSavedAt = Array.isArray(match.draftGameSavedAt) ? [...match.draftGameSavedAt] : []
+        draftScore[gameIndex] = gameScore
+        draftGameSavedAt[gameIndex] = savedAt
+        return { ...match, draftScore, draftGameSavedAt, draftUpdatedAt: savedAt, draftSavedBy: savedBy }
+      }),
+    )
+    logBocce('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
   function markBocceRescheduled(matchId, note, submittedBy) {
@@ -861,6 +911,7 @@ function App() {
             setSelectedPlayerId={setSelectedBoccePlayerId}
             standings={bocceStandings}
             submitScore={submitBocceScore}
+            saveScoreGame={saveBocceScoreGame}
             markRescheduled={markBocceRescheduled}
           />
         )}
@@ -898,6 +949,7 @@ function App() {
             setSelectedPlayerId={setSelectedPlayerId}
             standings={standings}
             submitScore={submitScore}
+            saveScoreGame={saveScoreGame}
             markRescheduled={markRescheduled}
             setPage={setPage}
           />
@@ -1119,7 +1171,7 @@ function BocceHome({ matches, teams, standings, setPage }) {
   )
 }
 
-function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, markRescheduled }) {
+function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, markRescheduled }) {
   if (!selectedPlayer || !selectedTeam) {
     return (
       <section className="stack">
@@ -1184,6 +1236,7 @@ function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam,
             viewerTeam={selectedTeam}
             selectedPlayer={selectedPlayer}
             submitScore={submitScore}
+            saveScoreGame={saveScoreGame}
             markRescheduled={markRescheduled}
             showContacts
           />
@@ -1202,6 +1255,7 @@ function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam,
               viewerTeam={selectedTeam}
               selectedPlayer={selectedPlayer}
               submitScore={submitScore}
+              saveScoreGame={saveScoreGame}
               markRescheduled={markRescheduled}
               showContacts
             />
@@ -1280,7 +1334,7 @@ function BocceRules() {
   )
 }
 
-function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, markRescheduled, compact = false }) {
+function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, saveScoreGame, markRescheduled, compact = false }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
@@ -1311,7 +1365,7 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
       </div>
       {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
       {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
-        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
+        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} />
       )}
       {!compact && showContacts && (
         <BocceContactTools match={match} teams={teams} players={players} textOnly={Boolean(selectedPlayer)} />
@@ -1381,23 +1435,42 @@ function BocceContactTools({ match, teams = [], players, textOnly = false }) {
   )
 }
 
-function BocceMatchActions({ match, teams, selectedPlayer, submitScore, markRescheduled }) {
+function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
-  const [game1A, setGame1A] = useState(11)
-  const [game1B, setGame1B] = useState(8)
-  const [game2A, setGame2A] = useState(8)
-  const [game2B, setGame2B] = useState(11)
-  const [game3A, setGame3A] = useState(11)
-  const [game3B, setGame3B] = useState(9)
+  const [games, setGames] = useState(() => Array.from({ length: 3 }, (_, gameIndex) => [
+    match.draftScore?.[gameIndex]?.[0] ?? '',
+    match.draftScore?.[gameIndex]?.[1] ?? '',
+  ]))
+  const [attemptedGames, setAttemptedGames] = useState([])
+  const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [pinAttempted, setPinAttempted] = useState(false)
   const [note, setNote] = useState('')
-  const score = [[Number(game1A), Number(game1B)], [Number(game2A), Number(game2B)], [Number(game3A), Number(game3B)]]
+  const score = games.map((game) => game.map(scoreNumber))
   const errors = validateBocceScore(score)
 
   function pinIsValid() {
     return pin.trim().toLowerCase() === PIN
+  }
+
+  function updateGame(gameIndex, teamIndex, value) {
+    setGames((items) => items.map((game, index) => (
+      index === gameIndex ? game.map((scoreValue, side) => (side === teamIndex ? value : scoreValue)) : game
+    )))
+  }
+
+  function gameIsSaved(gameIndex) {
+    const savedGame = match.draftScore?.[gameIndex]
+    return Boolean(savedGame) && savedGame.every((value, side) => Number(value) === score[gameIndex][side])
+  }
+
+  function handleSaveGame(gameIndex) {
+    setPinAttempted(true)
+    setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
+    if (!pinIsValid() || validateBocceGame(score[gameIndex], gameIndex)) return
+    saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
   }
 
   return (
@@ -1409,21 +1482,41 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, markResc
       {open === 'score' && (
         <form className="inline-form" onSubmit={(event) => {
           event.preventDefault()
+          setPinAttempted(true)
+          setSubmitAttempted(true)
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
           <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
-          <div className="score-grid bocce-score-grid">
-            <label>Game 1 {teamA?.name || 'Team A'}<input type="number" min="0" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
-            <label>Game 1 {teamB?.name || 'Team B'}<input type="number" min="0" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
-            <label>Game 2 {teamA?.name || 'Team A'}<input type="number" min="0" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
-            <label>Game 2 {teamB?.name || 'Team B'}<input type="number" min="0" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
-            <label>Game 3 {teamA?.name || 'Team A'}<input type="number" min="0" value={game3A} onChange={(event) => setGame3A(event.target.value)} /></label>
-            <label>Game 3 {teamB?.name || 'Team B'}<input type="number" min="0" value={game3B} onChange={(event) => setGame3B(event.target.value)} /></label>
+          <p className="helper-text">Save games as you play. Saved games will be here when you return.</p>
+          <div className="score-games">
+            {games.map((game, gameIndex) => {
+              const gameError = validateBocceGame(score[gameIndex], gameIndex)
+              const saved = gameIsSaved(gameIndex)
+              const wasSaved = Boolean(match.draftScore?.[gameIndex])
+              const showError = submitAttempted || attemptedGames.includes(gameIndex)
+              return (
+                <section className={`score-game-card ${saved ? 'saved' : ''}`} key={gameIndex}>
+                  <div className="score-game-heading">
+                    <h3>Game {gameIndex + 1}</h3>
+                    {saved && <span>Saved</span>}
+                    {!saved && wasSaved && <span className="unsaved">Unsaved changes</span>}
+                  </div>
+                  <div className="score-grid bocce-score-grid">
+                    <label>{teamA?.name || 'Team A'}<input type="number" min="0" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                    <label>{teamB?.name || 'Team B'}<input type="number" min="0" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                  </div>
+                  {showError && gameError && <p className="error">{gameError}</p>}
+                  <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
+                    {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                  </button>
+                </section>
+              )
+            })}
           </div>
-          {errors.map((error) => <p className="error" key={error}>{error}</p>)}
-          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
-          <button type="submit">Submit for Approval</button>
+          {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
+          {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
+          <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
         </form>
       )}
       {open === 'reschedule' && (
@@ -1491,7 +1584,7 @@ function CornholeRules() {
   )
 }
 
-function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, markRescheduled }) {
+function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, markRescheduled }) {
   if (!selectedPlayer || !selectedTeam) {
     return (
       <section className="stack">
@@ -1564,6 +1657,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
             viewerTeam={selectedTeam}
             selectedPlayer={selectedPlayer}
             submitScore={submitScore}
+            saveScoreGame={saveScoreGame}
             markRescheduled={markRescheduled}
             showContacts
             showPaymentWarnings={false}
@@ -1583,6 +1677,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
               viewerTeam={selectedTeam}
               selectedPlayer={selectedPlayer}
               submitScore={submitScore}
+              saveScoreGame={saveScoreGame}
               markRescheduled={markRescheduled}
               showContacts
               showPaymentWarnings={false}
@@ -1965,7 +2060,19 @@ function BocceScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }
 
 function BocceAuditEntry({ item, matches, teams, players }) {
   const match = matches.find((entry) => entry.id === item.details?.matchId)
-  const actor = item.details?.submittedBy ? playerName(players, item.details.submittedBy) : 'Commissioner'
+  const actorId = item.details?.submittedBy || item.details?.savedBy
+  const actor = actorId ? playerName(players, actorId) : 'Commissioner'
+
+  if (item.action === 'score_game_saved' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} saved bocce Game {item.details.game}</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        <p>{item.details.score.join('-')}</p>
+      </article>
+    )
+  }
 
   if (item.action === 'score_submitted' && match) {
     return (
@@ -2225,7 +2332,19 @@ function ScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
 
 function AuditEntry({ item, matches, teams, players }) {
   const match = item.details?.matchId ? matches.find((candidate) => candidate.id === item.details.matchId) : null
-  const actor = item.details?.submittedBy ? playerName(players, item.details.submittedBy) : 'Admin'
+  const actorId = item.details?.submittedBy || item.details?.savedBy
+  const actor = actorId ? playerName(players, actorId) : 'Admin'
+
+  if (item.action === 'score_game_saved' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} saved Game {item.details.game}</h2>
+        <p>{matchTitle(match, teams)} Â· {gameDateLabel(match)}</p>
+        <p>{item.details.score.join('-')}</p>
+      </article>
+    )
+  }
 
   if (item.action === 'score_submitted' && match) {
     const teamA = getTeam(teams, match.teamA)
@@ -2363,7 +2482,7 @@ function PaymentWarning() {
   return <span className="payment-warning">Unpaid</span>
 }
 
-function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, submitScore, markRescheduled }) {
+function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
   if (item.type === 'bye') return <ByeCard item={item} team={viewerTeam} />
 
   return (
@@ -2374,6 +2493,7 @@ function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, 
       viewerTeam={viewerTeam}
       selectedPlayer={selectedPlayer}
       submitScore={submitScore}
+      saveScoreGame={saveScoreGame}
       markRescheduled={markRescheduled}
       showContacts
       showPaymentWarnings={false}
@@ -2404,7 +2524,7 @@ function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
   )
 }
 
-function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, markRescheduled }) {
+function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, saveScoreGame, markRescheduled }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
@@ -2435,7 +2555,7 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
       {showContacts && match.status !== 'final' && (
-        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} markRescheduled={markRescheduled} />
+        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} />
       )}
       {showContacts && selectedPlayer && (
         <ContactTools match={match} teams={teams} players={players} selectedPlayer={selectedPlayer} />
@@ -2482,21 +2602,42 @@ function ContactTools({ match, teams, players, selectedPlayer }) {
   )
 }
 
-function MatchActions({ match, teams, selectedPlayer, submitScore, markRescheduled }) {
+function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
-  const [game1A, setGame1A] = useState(21)
-  const [game1B, setGame1B] = useState(0)
-  const [game2A, setGame2A] = useState(0)
-  const [game2B, setGame2B] = useState(21)
+  const [games, setGames] = useState(() => Array.from({ length: 2 }, (_, gameIndex) => [
+    match.draftScore?.[gameIndex]?.[0] ?? '',
+    match.draftScore?.[gameIndex]?.[1] ?? '',
+  ]))
+  const [attemptedGames, setAttemptedGames] = useState([])
+  const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [pinAttempted, setPinAttempted] = useState(false)
   const [note, setNote] = useState('')
-  const score = [[Number(game1A), Number(game1B)], [Number(game2A), Number(game2B)]]
+  const score = games.map((game) => game.map(scoreNumber))
   const errors = validateScore(score)
 
   function pinIsValid() {
     return pin.trim().toLowerCase() === PIN
+  }
+
+  function updateGame(gameIndex, teamIndex, value) {
+    setGames((items) => items.map((game, index) => (
+      index === gameIndex ? game.map((scoreValue, side) => (side === teamIndex ? value : scoreValue)) : game
+    )))
+  }
+
+  function gameIsSaved(gameIndex) {
+    const savedGame = match.draftScore?.[gameIndex]
+    return Boolean(savedGame) && savedGame.every((value, side) => Number(value) === score[gameIndex][side])
+  }
+
+  function handleSaveGame(gameIndex) {
+    setPinAttempted(true)
+    setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
+    if (!pinIsValid() || validateCornholeGame(score[gameIndex], gameIndex)) return
+    saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
   }
 
   return (
@@ -2508,19 +2649,41 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, markReschedul
       {open === 'score' && (
         <form className="inline-form" onSubmit={(event) => {
           event.preventDefault()
+          setPinAttempted(true)
+          setSubmitAttempted(true)
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
           <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
-          <div className="score-grid">
-            <label>Game 1 {teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game1A} onChange={(event) => setGame1A(event.target.value)} /></label>
-            <label>Game 1 {teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game1B} onChange={(event) => setGame1B(event.target.value)} /></label>
-            <label>Game 2 {teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game2A} onChange={(event) => setGame2A(event.target.value)} /></label>
-            <label>Game 2 {teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game2B} onChange={(event) => setGame2B(event.target.value)} /></label>
+          <p className="helper-text">Save Game 1 now and come back after Game 2. Saved scores will be restored automatically.</p>
+          <div className="score-games">
+            {games.map((game, gameIndex) => {
+              const gameError = validateCornholeGame(score[gameIndex], gameIndex)
+              const saved = gameIsSaved(gameIndex)
+              const wasSaved = Boolean(match.draftScore?.[gameIndex])
+              const showError = submitAttempted || attemptedGames.includes(gameIndex)
+              return (
+                <section className={`score-game-card ${saved ? 'saved' : ''}`} key={gameIndex}>
+                  <div className="score-game-heading">
+                    <h3>Game {gameIndex + 1}</h3>
+                    {saved && <span>Saved</span>}
+                    {!saved && wasSaved && <span className="unsaved">Unsaved changes</span>}
+                  </div>
+                  <div className="score-grid">
+                    <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                    <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                  </div>
+                  {showError && gameError && <p className="error">{gameError}</p>}
+                  <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
+                    {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                  </button>
+                </section>
+              )
+            })}
           </div>
-          {errors.map((error) => <p className="error" key={error}>{error}</p>)}
-          {!pinIsValid() && pin && <p className="error">PIN should be glen.</p>}
-          <button type="submit">Submit for Approval</button>
+          {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
+          {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
+          <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
         </form>
       )}
       {open === 'reschedule' && (
@@ -2770,32 +2933,41 @@ function withBocceRankLabels(rows) {
   })
 }
 
+function scoreNumber(value) {
+  return value === '' || value === null || value === undefined ? Number.NaN : Number(value)
+}
+
+function validateCornholeGame(game, index) {
+  if (!Number.isFinite(game[0]) || !Number.isFinite(game[1])) return `Game ${index + 1}: both scores are required.`
+  if (game[0] < 0 || game[1] < 0) return `Game ${index + 1}: scores cannot be negative.`
+  if (game[0] > 21 || game[1] > 21) return `Game ${index + 1}: no score over 21.`
+  if (game[0] === game[1]) return `Game ${index + 1}: no ties.`
+  if (game[0] !== 21 && game[1] !== 21) return `Game ${index + 1}: one team must have 21.`
+  if (game[0] === 21 && game[1] === 21) return `Game ${index + 1}: only one team can have 21.`
+  return ''
+}
+
 function validateScore(score) {
-  return score.map((game, index) => {
-    if (game[0] > 21 || game[1] > 21) return `Game ${index + 1}: no score over 21.`
-    if (game[0] === game[1]) return `Game ${index + 1}: no ties.`
-    if (game[0] !== 21 && game[1] !== 21) return `Game ${index + 1}: one team must have 21.`
-    if (game[0] === 21 && game[1] === 21) return `Game ${index + 1}: only one team can have 21.`
-    return ''
-  }).filter(Boolean)
+  return score.map(validateCornholeGame).filter(Boolean)
+}
+
+function validateBocceGame(game, index) {
+  const a = Number(game[0])
+  const b = Number(game[1])
+  const winner = Math.max(a, b)
+  const margin = Math.abs(a - b)
+
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return `Game ${index + 1}: both scores are required.`
+  if (a < 0 || b < 0) return `Game ${index + 1}: scores cannot be negative.`
+  if (a === b) return `Game ${index + 1}: each game must have a winner.`
+  if (winner < 11) return `Game ${index + 1}: winner must score at least 11.`
+  if (margin < 2) return `Game ${index + 1}: winner must win by at least 2.`
+  return ''
 }
 
 function validateBocceScore(score) {
   if (score.length !== 3) return ['Bocce matches must include exactly 3 game scores.']
-
-  return score.map((game, index) => {
-    const a = Number(game[0])
-    const b = Number(game[1])
-    const winner = Math.max(a, b)
-    const margin = Math.abs(a - b)
-
-    if (Number.isNaN(a) || Number.isNaN(b)) return `Game ${index + 1}: both scores are required.`
-    if (a < 0 || b < 0) return `Game ${index + 1}: scores cannot be negative.`
-    if (a === b) return `Game ${index + 1}: each game must have a winner.`
-    if (winner < 11) return `Game ${index + 1}: winner must score at least 11.`
-    if (margin < 2) return `Game ${index + 1}: winner must win by at least 2.`
-    return ''
-  }).filter(Boolean)
+  return score.map(validateBocceGame).filter(Boolean)
 }
 
 function isOverdue(match) {
@@ -2941,9 +3113,10 @@ function parseScheduleTimeMinutes(time) {
 
 function publicStatus(match) {
   if (match.status === 'rescheduled') return 'Pending reschedule'
-  if (isOverdue(match)) return 'Score needed or makeup required'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
+  if (match.draftScore?.some((game) => Array.isArray(game))) return 'Score in progress'
+  if (isOverdue(match)) return 'Score needed or makeup required'
   return 'Scheduled'
 }
 
@@ -2951,6 +3124,7 @@ function boccePublicStatus(match) {
   if (match.status === 'rescheduled') return 'Pending reschedule'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
+  if (match.draftScore?.some((game) => Array.isArray(game))) return 'Score in progress'
   if (new Date(`${match.date}T23:59:59`) < new Date()) return 'Score needed or makeup required'
   return 'Scheduled'
 }

@@ -1240,6 +1240,61 @@ textarea {
   gap: 10px;
 }
 
+.score-games {
+  display: grid;
+  gap: 12px;
+}
+
+.score-game-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #cfeff6;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fcff;
+}
+
+.score-game-card.saved {
+  border-color: #87d6a2;
+  background: #effbf3;
+}
+
+.score-game-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.score-game-heading h3 {
+  margin: 0;
+  color: #0b2545;
+}
+
+.score-game-heading span {
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #d7f5e1;
+  color: #176b35;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.score-game-heading span.unsaved {
+  background: #fff2bd;
+  color: #805600;
+}
+
+.actions .save-game-button {
+  min-height: 44px;
+}
+
+.actions .final-score-submit {
+  min-height: 54px;
+  background: #00899a;
+  font-size: 1rem;
+}
+
 .error {
   margin: 0;
   color: #b91c1c;
