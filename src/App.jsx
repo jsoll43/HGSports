@@ -1335,6 +1335,7 @@ function BocceRules() {
 }
 
 function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, saveScoreGame, markRescheduled, compact = false }) {
+  const [actionOpen, setActionOpen] = useState('')
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
@@ -1361,11 +1362,16 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
           </h2>
           <span>Bocce court</span>
         </div>
-        <StatusBadge status={status} />
+        <div className="match-status-actions">
+          <StatusBadge status={status} />
+          {!compact && showContacts && match.status !== 'final' && selectedPlayer && markRescheduled && (
+            <button className="reschedule-corner-button" type="button" onClick={() => setActionOpen(actionOpen === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+          )}
+        </div>
       </div>
       {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
       {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
-        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} />
+        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} open={actionOpen} setOpen={setActionOpen} />
       )}
       {!compact && showContacts && (
         <BocceContactTools match={match} teams={teams} players={players} textOnly={Boolean(selectedPlayer)} />
@@ -1435,10 +1441,9 @@ function BocceContactTools({ match, teams = [], players, textOnly = false }) {
   )
 }
 
-function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
+function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
-  const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
   const [games, setGames] = useState(() => Array.from({ length: 3 }, (_, gameIndex) => [
     match.draftScore?.[gameIndex]?.[0] ?? '',
@@ -1476,8 +1481,9 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   return (
     <div className="actions">
       <div className="match-action-buttons">
-        <button type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>Submit Score</button>
-        <button type="button" className="secondary" onClick={() => setOpen(open === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+        <button className={open === 'score' ? 'score-toggle active' : 'score-toggle'} type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>
+          {open === 'score' ? 'Score Entry Open' : 'Submit Score'}
+        </button>
       </div>
       {open === 'score' && (
         <form className="inline-form" onSubmit={(event) => {
@@ -1487,7 +1493,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
+          <p className="score-entry-notice">Score fields are open — enter scores below.</p>
           <p className="helper-text">Save games as you play. Saved games will be here when you return.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
@@ -1504,11 +1510,11 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
                   </div>
                   <div className="score-game-entry-row">
                     <div className="score-grid bocce-score-grid">
-                      <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                      <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                      <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                      <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
                     </div>
                     <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                      {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                      Save
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
@@ -1516,9 +1522,12 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
               )
             })}
           </div>
+          <div className="score-submit-row">
+            <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
+            <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
+          </div>
           {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
           {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
-          <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
         </form>
       )}
       {open === 'reschedule' && (
@@ -2527,6 +2536,7 @@ function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
 }
 
 function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, saveScoreGame, markRescheduled }) {
+  const [actionOpen, setActionOpen] = useState('')
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
@@ -2553,11 +2563,16 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
           </h2>
           <span>{match.flight} Band</span>
         </div>
-        <StatusBadge status={status} />
+        <div className="match-status-actions">
+          <StatusBadge status={status} />
+          {showContacts && match.status !== 'final' && selectedPlayer && markRescheduled && (
+            <button className="reschedule-corner-button" type="button" onClick={() => setActionOpen(actionOpen === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+          )}
+        </div>
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
       {showContacts && match.status !== 'final' && (
-        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} />
+        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} markRescheduled={markRescheduled} open={actionOpen} setOpen={setActionOpen} />
       )}
       {showContacts && selectedPlayer && (
         <ContactTools match={match} teams={teams} players={players} selectedPlayer={selectedPlayer} />
@@ -2604,10 +2619,9 @@ function ContactTools({ match, teams, players, selectedPlayer }) {
   )
 }
 
-function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
+function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, markRescheduled, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
-  const [open, setOpen] = useState('')
   const [pin, setPin] = useState('')
   const [games, setGames] = useState(() => Array.from({ length: 2 }, (_, gameIndex) => [
     match.draftScore?.[gameIndex]?.[0] ?? '',
@@ -2645,8 +2659,9 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
   return (
     <div className="actions">
       <div className="match-action-buttons">
-        <button type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>Submit Score</button>
-        <button type="button" className="secondary" onClick={() => setOpen(open === 'reschedule' ? '' : 'reschedule')}>Mark Rescheduled</button>
+        <button className={open === 'score' ? 'score-toggle active' : 'score-toggle'} type="button" onClick={() => setOpen(open === 'score' ? '' : 'score')}>
+          {open === 'score' ? 'Score Entry Open' : 'Submit Score'}
+        </button>
       </div>
       {open === 'score' && (
         <form className="inline-form" onSubmit={(event) => {
@@ -2656,7 +2671,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <input value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" type="password" />
+          <p className="score-entry-notice">Score fields are open — enter scores below.</p>
           <p className="helper-text">Save Game 1 now and come back after Game 2. Saved scores will be restored automatically.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
@@ -2673,11 +2688,11 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
                   </div>
                   <div className="score-game-entry-row">
                     <div className="score-grid">
-                      <label>{teamA?.name || 'Team A'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                      <label>{teamB?.name || 'Team B'}<input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                      <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                      <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
                     </div>
                     <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                      {saved ? `Game ${gameIndex + 1} Saved` : `Save Game ${gameIndex + 1}`}
+                      Save
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
@@ -2685,9 +2700,12 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
               )
             })}
           </div>
+          <div className="score-submit-row">
+            <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
+            <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
+          </div>
           {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
           {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
-          <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
         </form>
       )}
       {open === 'reschedule' && (

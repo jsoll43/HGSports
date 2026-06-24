@@ -912,6 +912,27 @@ textarea {
   color: #805600;
 }
 
+.match-status-actions {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 5px;
+}
+
+.reschedule-corner-button {
+  min-height: 0;
+  border: 1px solid #b7e8f2;
+  border-radius: 6px;
+  padding: 4px 6px;
+  background: #f5fbff;
+  color: #516171;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .score-line {
   border-radius: 8px;
   padding: 10px;
@@ -1205,6 +1226,11 @@ textarea {
   font-size: 1.08rem;
 }
 
+.match-action-buttons .score-toggle.active {
+  background: #0b2545;
+  box-shadow: 0 0 0 3px rgba(0, 137, 154, 0.18);
+}
+
 .match-action-buttons button.secondary {
   min-height: 42px;
 }
@@ -1243,6 +1269,14 @@ textarea {
 .score-games {
   display: grid;
   gap: 12px;
+}
+
+.score-entry-notice {
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #dff8fb;
+  color: #006b76 !important;
+  font-weight: 900 !important;
 }
 
 .score-game-card {
@@ -1292,15 +1326,24 @@ textarea {
 }
 
 .score-game-entry-row .score-grid {
-  flex: 0 0 auto;
-  grid-template-columns: repeat(2, 58px);
+  flex: 1 1 auto;
+  grid-template-columns: repeat(2, minmax(72px, 1fr));
   gap: 8px;
 }
 
 .score-game-entry-row .score-grid label {
   min-width: 0;
-  overflow-wrap: anywhere;
   font-size: 0.76rem;
+}
+
+.score-team-name {
+  display: -webkit-box;
+  min-height: 2.2em;
+  overflow: hidden;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .score-game-entry-row input {
@@ -1324,6 +1367,18 @@ textarea {
   min-height: 54px;
   background: #00899a;
   font-size: 1rem;
+}
+
+.score-submit-row {
+  display: grid;
+  grid-template-columns: minmax(84px, 130px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+
+.score-submit-row .score-pin-input,
+.score-submit-row .final-score-submit {
+  min-height: 54px;
 }
 
 .error {
