@@ -12,6 +12,14 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
 }
@@ -29,6 +37,8 @@ a {
 }
 
 .app-shell {
+  width: 100%;
+  min-width: 0;
   min-height: 100svh;
   background:
     radial-gradient(circle at top right, rgba(45, 192, 208, 0.22), transparent 24rem),
@@ -121,6 +131,7 @@ a {
 
 .content {
   width: min(100%, 960px);
+  min-width: 0;
   margin: 0 auto;
   padding: 18px 16px 96px;
 }
@@ -128,6 +139,7 @@ a {
 .stack {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .hero-card,
@@ -161,6 +173,12 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
+}
+
+.profile-top p {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .hero-card h1,
@@ -176,6 +194,7 @@ a {
 
 .profile-card h1 {
   font-size: clamp(1.45rem, 7vw, 2.4rem);
+  overflow-wrap: anywhere;
 }
 
 .hero-card p,
@@ -535,7 +554,7 @@ a {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -554,6 +573,8 @@ a {
 .standing-card,
 .simple-card,
 .history-panel {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #cfeff6;
   border-radius: 12px;
   background: #fff;
@@ -599,11 +620,13 @@ a {
 .card-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .priority-match {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .history-panel {
@@ -865,6 +888,7 @@ textarea {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .match-head > div:first-child {
@@ -945,6 +969,7 @@ textarea {
   text-align: center;
   font-size: 0.72rem;
   font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .status.warning {
@@ -962,9 +987,11 @@ textarea {
   flex: 0 0 auto;
   justify-items: end;
   gap: 5px;
+  max-width: min(42%, 140px);
 }
 
 .reschedule-corner-button {
+  max-width: 100%;
   min-height: 28px;
   border: 0;
   border-radius: 6px;
@@ -976,7 +1003,7 @@ textarea {
   font-size: 0.64rem;
   font-weight: 900;
   line-height: 1.1;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .score-line {
@@ -1009,6 +1036,8 @@ textarea {
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 900;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .text-disabled {
@@ -1253,7 +1282,7 @@ textarea {
 
 .text-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 

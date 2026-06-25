@@ -794,12 +794,6 @@ function App() {
     setMatches((items) => items.map((match) => (match.id === matchId ? { ...match, ...patch } : match)))
   }
 
-  function regenerateSchedule() {
-    const generated = createSeasonSchedule(teams)
-    setMatches(generated)
-    log('schedule_generated', { matches: generated.length, startDate: '2026-06-22' })
-  }
-
   function submitBocceScore(matchId, score, submittedBy) {
     setBocceMatches((items) =>
       items.map((match) =>
@@ -911,12 +905,6 @@ function App() {
     setBocceMatches((items) => items.map((match) => (match.id === matchId ? { ...match, ...patch } : match)))
   }
 
-  function regenerateBocceSchedule() {
-    const generated = createBocceSchedule(bocceTeams)
-    setBocceMatches(generated)
-    logBocce('schedule_generated', { matches: generated.length, startDate: '2026-06-24' })
-  }
-
   return (
     <div className="app-shell">
       <header className={`site-header ${headerHidden ? 'hidden' : ''}`}>
@@ -970,7 +958,6 @@ function App() {
             updateTeam={updateBocceTeam}
             updatePlayer={updateBoccePlayer}
             updateMatch={updateBocceMatch}
-            regenerateSchedule={regenerateBocceSchedule}
           />
         )}
         {page === 'home' && <Home standings={standings} setPage={setPage} />}
@@ -1017,7 +1004,6 @@ function App() {
             updateTeamPaymentStatus={updateTeamPaymentStatus}
             updatePlayer={updatePlayer}
             updateMatch={updateMatch}
-            regenerateSchedule={regenerateSchedule}
           />
         )}
       </main>
@@ -1839,7 +1825,6 @@ function Admin({
   updateTeamPaymentStatus,
   updatePlayer,
   updateMatch,
-  regenerateSchedule,
 }) {
   const [password, setPassword] = useState('')
   const [tab, setTab] = useState('Scores')
@@ -1909,7 +1894,7 @@ function Admin({
         />
       )}
       {tab === 'Schedule' && (
-        <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
+        <ScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} />
       )}
       {tab === 'Import' && <ScheduleImport importSchedule={importSchedule} teams={teams} />}
       {tab === 'Snapshots' && (
@@ -1943,7 +1928,6 @@ function BocceAdmin({
   updateTeam,
   updatePlayer,
   updateMatch,
-  regenerateSchedule,
 }) {
   const [password, setPassword] = useState('')
   const [tab, setTab] = useState('Scores')
@@ -2005,7 +1989,7 @@ function BocceAdmin({
         <BocceRosterEditor teams={teams} players={players} updateTeam={updateTeam} updatePlayer={updatePlayer} />
       )}
       {tab === 'Schedule' && (
-        <BocceScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} regenerateSchedule={regenerateSchedule} />
+        <BocceScheduleEditor matches={matches} teams={teams} updateMatch={updateMatch} />
       )}
       {tab === 'Snapshots' && (
         <Card title="Daily Snapshots">
@@ -2066,12 +2050,11 @@ function BocceRosterEditor({ teams, players, updateTeam, updatePlayer }) {
   )
 }
 
-function BocceScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
+function BocceScheduleEditor({ matches, teams, updateMatch }) {
   const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
   return (
     <Card title="Bocce Schedule Editor">
-      <button type="button" onClick={regenerateSchedule}>Regenerate Round Robin</button>
-      <p className="helper-text">Regenerating replaces bocce matches with a five-week Wednesday round robin.</p>
+      <p className="helper-text">Edit individual matches below. Changes are saved immediately.</p>
       <div className="card-list">
         {weeks.map((week) => (
           <section className="schedule-week" key={week}>
@@ -2465,7 +2448,7 @@ function RosterEditor({ teams, players, updateTeam, updatePlayer }) {
   )
 }
 
-function ScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
+function ScheduleEditor({ matches, teams, updateMatch }) {
   const [flight, setFlight] = useState('All')
   const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
   const filtered = matches
@@ -2474,8 +2457,7 @@ function ScheduleEditor({ matches, teams, updateMatch, regenerateSchedule }) {
 
   return (
     <Card title="Editable Schedule">
-      <p className="empty">The generator starts Monday, June 22, 2026 and rotates band times each week: 6:00 PM, 6:45 PM, and 7:30 PM.</p>
-      <button type="button" onClick={regenerateSchedule}>Generate June 22 Round Robin</button>
+      <p className="helper-text">Edit individual matches below. Changes are saved immediately.</p>
       <label className="field">
         Band
         <select value={flight} onChange={(event) => setFlight(event.target.value)}>
