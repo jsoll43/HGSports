@@ -1537,6 +1537,10 @@ textarea {
   color: #fff;
 }
 
+.standing-row .back-value.leader {
+  color: #8b98a5;
+}
+
 .stat {
   display: grid;
   gap: 2px;

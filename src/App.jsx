@@ -1834,6 +1834,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
 
 function Standings({ standings }) {
   const [flight, setFlight] = useState('Green')
+  const leaderPoints = standings[flight][0]?.points || 0
   return (
     <section className="stack">
       <PageTitle title="Standings" />
@@ -1844,17 +1845,20 @@ function Standings({ standings }) {
           <span>Team</span>
           <span>Pts</span>
           <span>Game</span>
-          <span>Diff</span>
+          <span title="Points back">Back</span>
         </div>
-        {standings[flight].map((row) => (
-          <article className="standing-row" key={row.team.id}>
-            <strong>{row.rankLabel}</strong>
-            <span className="team-name"><TeamName team={row.team} /></span>
-            <span className="points">{row.points}</span>
-            <span>{row.gameWins}-{row.gameLosses}</span>
-            <span>{row.diff}</span>
-          </article>
-        ))}
+        {standings[flight].map((row) => {
+          const pointsBack = leaderPoints - row.points
+          return (
+            <article className="standing-row" key={row.team.id}>
+              <strong>{row.rankLabel}</strong>
+              <span className="team-name"><TeamName team={row.team} /></span>
+              <span className="points">{row.points}</span>
+              <span>{row.gameWins}-{row.gameLosses}</span>
+              <span className={pointsBack === 0 ? 'back-value leader' : 'back-value'}>{pointsBack}</span>
+            </article>
+          )
+        })}
       </section>
     </section>
   )
