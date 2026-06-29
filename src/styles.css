@@ -1546,7 +1546,7 @@ button:disabled {
 
 .bocce-standings-grid .standings-header,
 .bocce-standings-grid .standing-row {
-  grid-template-columns: 34px minmax(0, 1fr) 58px 40px 42px;
+  grid-template-columns: 34px minmax(0, 1fr) 64px 44px 46px;
 }
 
 .standings-header {
