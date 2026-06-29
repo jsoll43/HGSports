@@ -360,15 +360,17 @@ function normalizeAppData(data = {}) {
   const teams = migrateRosterTeams(Array.isArray(data.teams) ? data.teams : initialTeams)
   const players = migrateRosterPlayers(Array.isArray(data.players) ? data.players : initialPlayers)
   const shouldRegenerateSchedule = data.scheduleVersion !== CORNHOLE_SCHEDULE_VERSION
+  const audit = Array.isArray(data.audit) ? data.audit : []
+  const matches = shouldRegenerateSchedule
+    ? migrateSeasonSchedule(data.matches, teams)
+    : Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams)
 
   return {
     selectedPlayerId: typeof data.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
     teams,
     players,
-    matches: shouldRegenerateSchedule
-      ? migrateSeasonSchedule(data.matches, teams)
-      : Array.isArray(data.matches) ? data.matches : createSeasonSchedule(teams),
-    audit: Array.isArray(data.audit) ? data.audit : [],
+    matches: restoreScoredMatchesFromAudit(matches, audit),
+    audit,
     snapshots: Array.isArray(data.snapshots) ? data.snapshots : [],
     scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
   }
@@ -377,15 +379,113 @@ function normalizeAppData(data = {}) {
 function normalizeBocceData(data = {}) {
   const teams = migrateBocceTeams(Array.isArray(data?.teams) ? data.teams : initialBocceTeams)
   const players = Array.isArray(data?.players) ? data.players : initialBoccePlayers
+  const audit = Array.isArray(data?.audit) ? data.audit : []
+  const matches = Array.isArray(data?.matches) ? data.matches : createBocceSchedule(teams)
 
   return {
     selectedPlayerId: typeof data?.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
     teams,
     players,
-    matches: Array.isArray(data?.matches) ? data.matches : createBocceSchedule(teams),
-    audit: Array.isArray(data?.audit) ? data.audit : [],
+    matches: restoreScoredMatchesFromAudit(matches, audit),
+    audit,
     snapshots: Array.isArray(data?.snapshots) ? data.snapshots : [],
   }
+}
+
+function restoreScoredMatchesFromAudit(matches, audit) {
+  const scoreEvents = buildScoreEventsByMatch(audit)
+  if (scoreEvents.size === 0) return matches
+
+  return matches.map((match) => {
+    const event = scoreEvents.get(match.id)
+    if (event?.status === 'rejected') {
+      return {
+        ...match,
+        status: match.status === 'final' || match.status === 'pending' ? 'scheduled' : match.status,
+        score: undefined,
+        submittedBy: undefined,
+        submittedAt: undefined,
+        approvedAt: undefined,
+      }
+    }
+    if (!event?.score) return match
+
+    if (event.status === 'final' && (match.status !== 'final' || !Array.isArray(match.score))) {
+      return {
+        ...match,
+        status: 'final',
+        score: event.score,
+        submittedBy: match.submittedBy || event.submittedBy,
+        submittedAt: match.submittedAt || event.submittedAt,
+        approvedAt: match.approvedAt || event.approvedAt,
+        draftScore: undefined,
+        draftGameSavedAt: undefined,
+        draftUpdatedAt: undefined,
+        draftSavedBy: undefined,
+      }
+    }
+
+    if (event.status === 'pending' && match.status === 'scheduled' && !Array.isArray(match.score)) {
+      return {
+        ...match,
+        status: 'pending',
+        score: event.score,
+        submittedBy: match.submittedBy || event.submittedBy,
+        submittedAt: match.submittedAt || event.submittedAt,
+      }
+    }
+
+    return match
+  })
+}
+
+function buildScoreEventsByMatch(audit) {
+  const events = new Map()
+  const items = [...(Array.isArray(audit) ? audit : [])]
+    .filter((item) => item?.details?.matchId)
+    .sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')))
+
+  items.forEach((item) => {
+    const matchId = item.details.matchId
+    const current = events.get(matchId) || {}
+
+    if (item.action === 'score_submitted') {
+      const score = normalizeAuditScore(item.details.score)
+      if (score) {
+        events.set(matchId, {
+          status: 'pending',
+          score,
+          submittedBy: item.details.submittedBy,
+          submittedAt: item.at,
+          approvedAt: undefined,
+        })
+      }
+      return
+    }
+
+    if (item.action === 'score_approved') {
+      const score = normalizeAuditScore(item.details.score) || current.score
+      if (score) events.set(matchId, { ...current, status: 'final', score, approvedAt: item.at })
+      return
+    }
+
+    if (item.action === 'score_rejected') {
+      events.set(matchId, { status: 'rejected' })
+    }
+  })
+
+  return events
+}
+
+function normalizeAuditScore(score) {
+  if (!Array.isArray(score)) return null
+  const normalized = score.map((game) => {
+    if (!Array.isArray(game) || game.length < 2) return null
+    const a = Number(game[0])
+    const b = Number(game[1])
+    return Number.isFinite(a) && Number.isFinite(b) ? [a, b] : null
+  })
+  return normalized.length > 0 && normalized.every(Boolean) ? normalized : null
 }
 
 function migrateBocceTeams(teams) {
@@ -716,12 +816,13 @@ function App() {
   }
 
   function approveScore(matchId) {
+    const match = matches.find((item) => item.id === matchId)
     setMatches((items) =>
       items.map((match) =>
         match.id === matchId ? { ...match, status: 'final', approvedAt: new Date().toISOString() } : match,
       ),
     )
-    log('score_approved', { matchId })
+    log('score_approved', { matchId, score: match?.score })
   }
 
   function rejectScore(matchId) {
