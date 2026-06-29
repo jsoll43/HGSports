@@ -14,6 +14,7 @@ const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
 
 const flights = ['Green', 'Red', 'White']
+const matchStatuses = ['scheduled', 'rescheduled', 'pending', 'final']
 const bocceTimes = ['6:00 PM', '7:00 PM', '8:00 PM']
 
 const initialTeams = [
@@ -1425,14 +1426,19 @@ function BocceStandings({ standings }) {
 
 function BocceSchedule({ matches, teams, players }) {
   const [week, setWeek] = useState('All')
+  const [status, setStatus] = useState('All')
   const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
-  const filtered = matches.filter((match) => week === 'All' || match.week === Number(week))
+  const filtered = matches.filter((match) =>
+    (week === 'All' || match.week === Number(week)) &&
+    (status === 'All' || match.status === status)
+  )
 
   return (
     <section className="stack">
       <PageTitle eyebrow="Wednesday nights" title="Bocce Schedule" />
-      <div className="filters one-filter">
+      <div className="filters">
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label className="field">Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="All">All Statuses</option>{matchStatuses.map((item) => <option key={item} value={item}>{formatStatusOption(item)}</option>)}</select></label>
       </div>
       <div className="card-list">
         {filtered.map((match) => <BocceMatchCard key={match.id} match={match} teams={teams} players={players} />)}
@@ -1857,9 +1863,14 @@ function Standings({ standings }) {
 function Schedule({ matches, teams }) {
   const [flight, setFlight] = useState('All')
   const [week, setWeek] = useState(() => getCurrentScheduleWeek(matches))
+  const [status, setStatus] = useState('All')
   const weeks = [...new Set(matches.map((match) => match.week))].sort((a, b) => a - b)
   const filtered = matches
-    .filter((match) => (flight === 'All' || match.flight === flight) && (week === 'All' || match.week === Number(week)))
+    .filter((match) =>
+      (flight === 'All' || match.flight === flight) &&
+      (week === 'All' || match.week === Number(week)) &&
+      (status === 'All' || match.status === status)
+    )
     .sort(bySchedule)
 
   return (
@@ -1869,6 +1880,7 @@ function Schedule({ matches, teams }) {
         <strong>Full Schedule</strong>
         <label className="field">Band<select value={flight} onChange={(event) => setFlight(event.target.value)}><option>All</option>{flights.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label className="field">Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="All">All Statuses</option>{matchStatuses.map((item) => <option key={item} value={item}>{formatStatusOption(item)}</option>)}</select></label>
       </div>
       <div className="card-list">
         {filtered.map((match) => <MatchCard key={match.id} match={match} teams={teams} />)}
@@ -3410,6 +3422,11 @@ function boccePublicStatus(match) {
   if (match.draftScore?.some((game) => Array.isArray(game))) return 'Score in progress'
   if (new Date(`${match.date}T23:59:59`) < new Date()) return 'Score needed or makeup required'
   return 'Scheduled'
+}
+
+function formatStatusOption(status) {
+  if (status === 'pending') return 'Pending'
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
 function getTeam(teams, id) {
