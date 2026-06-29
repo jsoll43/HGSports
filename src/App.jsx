@@ -1591,14 +1591,25 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   const [attemptedGames, setAttemptedGames] = useState([])
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [pinAttempted, setPinAttempted] = useState(false)
+  const [savedGameIndex, setSavedGameIndex] = useState(null)
   const score = games.map((game) => game.map(scoreNumber))
   const errors = validateBocceScore(score)
+  const pinError = pinAttempted && !pin.trim()
+    ? 'Enter the league PIN.'
+    : pinAttempted && pin && !pinIsValid()
+      ? 'PIN should be glen.'
+      : ''
+  const submitErrors = [
+    ...(pinError ? [pinError] : []),
+    ...(submitAttempted ? errors : []),
+  ]
 
   function pinIsValid() {
     return pin.trim().toLowerCase() === PIN
   }
 
   function updateGame(gameIndex, teamIndex, value) {
+    setSavedGameIndex(null)
     setGames((items) => items.map((game, index) => (
       index === gameIndex ? game.map((scoreValue, side) => (side === teamIndex ? value : scoreValue)) : game
     )))
@@ -1614,6 +1625,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
     setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
     if (!pinIsValid() || validateBocceGame(score[gameIndex], gameIndex)) return
     saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
+    setSavedGameIndex(gameIndex)
   }
 
   return (
@@ -1638,6 +1650,8 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
               const saved = gameIsSaved(gameIndex)
               const wasSaved = Boolean(match.draftScore?.[gameIndex])
               const showError = submitAttempted || attemptedGames.includes(gameIndex)
+              const showPinError = attemptedGames.includes(gameIndex) && pinError
+              const showSavedMessage = savedGameIndex === gameIndex && saved
               return (
                 <section className={`score-game-card ${saved ? 'saved' : ''}`} key={gameIndex}>
                   <div className="score-game-heading">
@@ -1655,6 +1669,8 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
+                  {showPinError && <p className="error">{pinError}</p>}
+                  {showSavedMessage && <p className="success-text" role="status">Game {gameIndex + 1} saved.</p>}
                 </section>
               )
             })}
@@ -1663,8 +1679,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
             <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
             <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
           </div>
-          {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
-          {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
+          {submitErrors.length > 0 && <ValidationList title="Before submitting" items={submitErrors} tone="error" />}
         </form>
       )}
     </div>
