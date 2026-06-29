@@ -1645,6 +1645,12 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
     )))
   }
 
+  function clearGame(gameIndex) {
+    setGames((items) => items.map((game, index) => (index === gameIndex ? ['', ''] : game)))
+    setAttemptedGames((items) => items.filter((index) => index !== gameIndex))
+    setSavedGameIndex(null)
+  }
+
   function gameIsSaved(gameIndex) {
     const savedGame = match.draftScore?.[gameIndex]
     return Boolean(savedGame) && savedGame.every((value, side) => Number(value) === score[gameIndex][side])
@@ -1653,7 +1659,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   function handleSaveGame(gameIndex) {
     if (gameIsSaved(gameIndex)) {
       unsaveScoreGame(match.id, gameIndex, selectedPlayer.id)
-      setSavedGameIndex(null)
+      clearGame(gameIndex)
       return
     }
 
@@ -1666,6 +1672,16 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   function handleAddGame() {
     setVisibleGameCount((count) => Math.min(count + 1, 3))
     setSavedGameIndex(null)
+  }
+
+  function handleRemoveGame() {
+    if (visibleGameCount <= 1) return
+    const gameIndex = visibleGameCount - 1
+    if (Array.isArray(match.draftScore?.[gameIndex])) {
+      unsaveScoreGame(match.id, gameIndex, selectedPlayer.id)
+    }
+    clearGame(gameIndex)
+    setVisibleGameCount((count) => Math.max(count - 1, 1))
   }
 
   return (
@@ -1713,10 +1729,19 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
               )
             })}
           </div>
-          {visibleGameCount < 3 && (
-            <button className="secondary add-game-button" type="button" onClick={handleAddGame}>
-              Add Game {visibleGameCount + 1}
-            </button>
+          {(visibleGameCount < 3 || visibleGameCount > 1) && (
+            <div className="game-count-actions">
+              {visibleGameCount < 3 && (
+                <button className="secondary add-game-button" type="button" onClick={handleAddGame}>
+                  Add Game {visibleGameCount + 1}
+                </button>
+              )}
+              {visibleGameCount > 1 && (
+                <button className="secondary remove-game-button" type="button" onClick={handleRemoveGame}>
+                  Remove Game {visibleGameCount}
+                </button>
+              )}
+            </div>
           )}
           <p className="helper-text submit-helper">Submitting sends all {visibleGameCount} game{visibleGameCount === 1 ? '' : 's'} shown above for this match.</p>
           <div className="score-submit-row">

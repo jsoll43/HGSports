@@ -1430,7 +1430,14 @@ textarea {
   white-space: nowrap;
 }
 
-.actions .add-game-button {
+.game-count-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.actions .add-game-button,
+.actions .remove-game-button {
   min-height: 46px;
 }
 
