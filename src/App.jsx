@@ -411,7 +411,7 @@ function restoreScoredMatchesFromAudit(matches, audit) {
     }
     if (!event?.score) return match
 
-    if (event.status === 'final' && (match.status !== 'final' || !Array.isArray(match.score))) {
+    if (event.status === 'final') {
       return {
         ...match,
         status: 'final',
@@ -426,7 +426,7 @@ function restoreScoredMatchesFromAudit(matches, audit) {
       }
     }
 
-    if (event.status === 'pending' && match.status === 'scheduled' && !Array.isArray(match.score)) {
+    if (event.status === 'pending' && match.status !== 'final') {
       return {
         ...match,
         status: 'pending',
@@ -467,6 +467,16 @@ function buildScoreEventsByMatch(audit) {
     if (item.action === 'score_approved') {
       const score = normalizeAuditScore(item.details.score) || current.score
       if (score) events.set(matchId, { ...current, status: 'final', score, approvedAt: item.at })
+      return
+    }
+
+    if (item.action === 'score_corrected') {
+      const score = normalizeAuditScore(item.details.score)
+      if (score) events.set(matchId, {
+        ...current,
+        status: item.details.status || current.status || 'pending',
+        score,
+      })
       return
     }
 
@@ -986,12 +996,13 @@ function App() {
   }
 
   function approveBocceScore(matchId) {
+    const match = bocceMatches.find((item) => item.id === matchId)
     setBocceMatches((items) =>
       items.map((match) =>
         match.id === matchId ? { ...match, status: 'final', approvedAt: new Date().toISOString() } : match,
       ),
     )
-    logBocce('score_approved', { matchId })
+    logBocce('score_approved', { matchId, score: match?.score })
   }
 
   function rejectBocceScore(matchId) {
@@ -1001,6 +1012,25 @@ function App() {
       ),
     )
     logBocce('score_rejected', { matchId })
+  }
+
+  function correctBocceScore(matchId, score) {
+    const match = bocceMatches.find((item) => item.id === matchId)
+    setBocceMatches((items) =>
+      items.map((match) =>
+        match.id === matchId
+          ? {
+              ...match,
+              score,
+              draftScore: undefined,
+              draftGameSavedAt: undefined,
+              draftUpdatedAt: undefined,
+              draftSavedBy: undefined,
+            }
+          : match,
+      ),
+    )
+    logBocce('score_corrected', { matchId, score, status: match?.status || 'pending' })
   }
 
   function createBocceSnapshot() {
@@ -1079,6 +1109,7 @@ function App() {
             snapshots={bocceSnapshots}
             approveScore={approveBocceScore}
             rejectScore={rejectBocceScore}
+            correctScore={correctBocceScore}
             createSnapshot={createBocceSnapshot}
             updateTeam={updateBocceTeam}
             updatePlayer={updateBoccePlayer}
@@ -2125,6 +2156,7 @@ function BocceAdmin({
   snapshots,
   approveScore,
   rejectScore,
+  correctScore,
   createSnapshot,
   updateTeam,
   updatePlayer,
@@ -2150,7 +2182,12 @@ function BocceAdmin({
     )
   }
 
-  const pending = matches.filter((match) => match.status === 'pending')
+  const scoredMatches = matches
+    .filter((match) => ['pending', 'final'].includes(match.status) && Array.isArray(match.score))
+    .sort((a, b) => {
+      const statusSort = Number(a.status === 'final') - Number(b.status === 'final')
+      return statusSort || bySchedule(a, b)
+    })
 
   return (
     <section className="stack">
@@ -2169,19 +2206,19 @@ function BocceAdmin({
       </div>
       <Segmented options={['Scores', 'Roster', 'Schedule', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
       {tab === 'Scores' && (
-        <Card title="Pending Bocce Scores">
-          {pending.length === 0 && <p className="empty">No pending bocce scores.</p>}
+        <Card title="Bocce Scores">
+          {scoredMatches.length === 0 && <p className="empty">No bocce scores submitted yet.</p>}
           <div className="card-list">
-            {pending.map((match) => (
-              <article className="simple-card" key={match.id}>
-                <p>Week {match.week} - {matchTitle(match, teams)}</p>
-                <h2>{formatBocceScore(match.score)}</h2>
-                <p>Submitted by {playerName(players, match.submittedBy)}</p>
-                <div className="button-row">
-                  <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
-                  <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>
-                </div>
-              </article>
+            {scoredMatches.map((match) => (
+              <BocceAdminScoreCard
+                key={match.id}
+                match={match}
+                teams={teams}
+                players={players}
+                approveScore={approveScore}
+                rejectScore={rejectScore}
+                correctScore={correctScore}
+              />
             ))}
           </div>
         </Card>
@@ -2206,6 +2243,82 @@ function BocceAdmin({
         </Card>
       )}
     </section>
+  )
+}
+
+function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore, correctScore }) {
+  const [games, setGames] = useState(() => Array.from({ length: Math.max(1, match.score?.length || 1) }, (_, gameIndex) => [
+    match.score?.[gameIndex]?.[0] ?? '',
+    match.score?.[gameIndex]?.[1] ?? '',
+  ]))
+  const [attempted, setAttempted] = useState(false)
+  const [message, setMessage] = useState('')
+  const score = games.map((game) => game.map(scoreNumber))
+  const errors = validateBocceScore(score)
+  const hasChanges = formatBocceScore(score) !== formatBocceScore(match.score)
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+
+  function updateGame(gameIndex, teamIndex, value) {
+    setMessage('')
+    setGames((items) => items.map((game, index) => (
+      index === gameIndex ? game.map((scoreValue, side) => (side === teamIndex ? value : scoreValue)) : game
+    )))
+  }
+
+  function addGame() {
+    setMessage('')
+    setGames((items) => items.length < 3 ? [...items, ['', '']] : items)
+  }
+
+  function removeGame() {
+    setMessage('')
+    setGames((items) => items.length > 1 ? items.slice(0, -1) : items)
+  }
+
+  function saveCorrection() {
+    setAttempted(true)
+    if (errors.length) return
+    correctScore(match.id, score)
+    setMessage('Score correction saved.')
+  }
+
+  return (
+    <article className="simple-card admin-score-card">
+      <p>Week {match.week} - {matchTitle(match, teams)}</p>
+      <h2>{formatBocceScore(match.score)}</h2>
+      <p>{match.status === 'final' ? 'Approved' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
+      <div className="admin-score-games">
+        {games.map((game, gameIndex) => {
+          const gameError = validateBocceGame(score[gameIndex], gameIndex)
+          return (
+            <section className="admin-score-game" key={gameIndex}>
+              <h3>Game {gameIndex + 1}</h3>
+              <div className="score-grid bocce-score-grid">
+                <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+              </div>
+              {attempted && gameError && <p className="error">{gameError}</p>}
+            </section>
+          )
+        })}
+      </div>
+      <div className="game-count-actions">
+        {games.length < 3 && <button className="secondary add-game-button" type="button" onClick={addGame}>Add Game {games.length + 1}</button>}
+        {games.length > 1 && <button className="secondary remove-game-button" type="button" onClick={removeGame}>Remove Game {games.length}</button>}
+      </div>
+      <div className="button-row admin-score-actions">
+        <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
+        {match.status === 'pending' ? (
+          <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
+        ) : (
+          <button type="button" className="secondary" disabled>Approved</button>
+        )}
+        {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+      </div>
+      {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
+      {message && <p className="success-text" role="status">{message}</p>}
+    </article>
   )
 }
 
@@ -2309,6 +2422,17 @@ function BocceAuditEntry({ item, matches, teams, players }) {
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
         <h2>{actor} submitted a bocce score</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        <p>{formatBocceScore(item.details.score)}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_corrected' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin corrected a bocce score</h2>
         <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
         <p>{formatBocceScore(item.details.score)}</p>
       </article>

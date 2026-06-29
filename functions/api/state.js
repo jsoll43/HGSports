@@ -117,7 +117,7 @@ function restoreScoredMatchesFromAudit(matches, audit) {
 
     if (!event.score) return match
 
-    if (event.status === 'final' && (match.status !== 'final' || !Array.isArray(match.score))) {
+    if (event.status === 'final') {
       return clearDraftFields({
         ...match,
         status: 'final',
@@ -128,7 +128,7 @@ function restoreScoredMatchesFromAudit(matches, audit) {
       })
     }
 
-    if (event.status === 'pending' && match.status === 'scheduled' && !Array.isArray(match.score)) {
+    if (event.status === 'pending' && match.status !== 'final') {
       return {
         ...match,
         status: 'pending',
@@ -169,6 +169,16 @@ function buildScoreEventsByMatch(audit) {
     if (item.action === 'score_approved') {
       const score = normalizeAuditScore(item.details.score) || current.score
       if (score) events.set(matchId, { ...current, status: 'final', score, approvedAt: item.at })
+      return
+    }
+
+    if (item.action === 'score_corrected') {
+      const score = normalizeAuditScore(item.details.score)
+      if (score) events.set(matchId, {
+        ...current,
+        status: item.details.status || current.status || 'pending',
+        score,
+      })
       return
     }
 

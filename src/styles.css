@@ -1227,7 +1227,8 @@ textarea {
 }
 
 .admin-team-card,
-.admin-match-card {
+.admin-match-card,
+.admin-score-card {
   gap: 12px;
 }
 
@@ -1262,6 +1263,33 @@ textarea {
 
 .admin-match-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-score-games {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-score-game {
+  display: grid;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fcff;
+}
+
+.admin-score-game h3 {
+  margin: 0;
+  color: #0b2545;
+}
+
+.admin-score-actions {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .schedule-week {
