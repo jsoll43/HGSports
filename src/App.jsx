@@ -934,6 +934,28 @@ function App() {
     logBocce('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
+  function unsaveBocceScoreGame(matchId, gameIndex, savedBy) {
+    const savedAt = new Date().toISOString()
+    setBocceMatches((items) =>
+      items.map((match) => {
+        if (match.id !== matchId) return match
+        const draftScore = Array.isArray(match.draftScore) ? [...match.draftScore] : []
+        const draftGameSavedAt = Array.isArray(match.draftGameSavedAt) ? [...match.draftGameSavedAt] : []
+        draftScore[gameIndex] = undefined
+        draftGameSavedAt[gameIndex] = undefined
+        const hasSavedGame = draftScore.some((game) => Array.isArray(game))
+        return {
+          ...match,
+          draftScore: hasSavedGame ? draftScore : undefined,
+          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : undefined,
+          draftUpdatedAt: hasSavedGame ? savedAt : undefined,
+          draftSavedBy: hasSavedGame ? savedBy : undefined,
+        }
+      }),
+    )
+    logBocce('score_game_unsaved', { matchId, game: gameIndex + 1, savedBy })
+  }
+
   function markBocceRescheduled(matchId, submittedBy) {
     const match = bocceMatches.find((item) => item.id === matchId)
     const undo = match?.status === 'rescheduled'
@@ -1038,6 +1060,7 @@ function App() {
             standings={bocceStandings}
             submitScore={submitBocceScore}
             saveScoreGame={saveBocceScoreGame}
+            unsaveScoreGame={unsaveBocceScoreGame}
             markRescheduled={markBocceRescheduled}
           />
         )}
@@ -1295,7 +1318,7 @@ function BocceHome({ matches, teams, standings, setPage }) {
   )
 }
 
-function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, markRescheduled }) {
+function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled }) {
   if (!selectedPlayer || !selectedTeam) {
     return (
       <section className="stack">
@@ -1361,6 +1384,7 @@ function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam,
             selectedPlayer={selectedPlayer}
             submitScore={submitScore}
             saveScoreGame={saveScoreGame}
+            unsaveScoreGame={unsaveScoreGame}
             markRescheduled={markRescheduled}
             showContacts
           />
@@ -1380,6 +1404,7 @@ function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam,
               selectedPlayer={selectedPlayer}
               submitScore={submitScore}
               saveScoreGame={saveScoreGame}
+              unsaveScoreGame={unsaveScoreGame}
               markRescheduled={markRescheduled}
               showContacts
             />
@@ -1406,16 +1431,16 @@ function BocceStandings({ standings }) {
         <div className="standings-header">
           <span>Rank</span>
           <span>Team</span>
-          <span>GW</span>
-          <span>Match</span>
+          <span>Record</span>
+          <span>GB</span>
           <span>Pts</span>
         </div>
         {standings.map((row) => (
           <article className="standing-row" key={row.team.id}>
             <strong>{row.rankLabel}</strong>
             <span className="team-name">{row.team.name}</span>
-            <span className="points">{row.gameWins}</span>
-            <span>{row.matchWins}-{row.matchLosses}</span>
+            <span className="points">{row.gameWins}-{row.gameLosses}</span>
+            <span>{formatGamesBack(row.gamesBack)}</span>
             <span>{row.points}</span>
           </article>
         ))}
@@ -1463,7 +1488,7 @@ function BocceRules() {
   )
 }
 
-function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, saveScoreGame, markRescheduled, compact = false }) {
+function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled, compact = false }) {
   const [actionOpen, setActionOpen] = useState('')
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
@@ -1510,7 +1535,7 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
       </div>
       {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
       {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
-        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} open={actionOpen} setOpen={setActionOpen} />
+        <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} unsaveScoreGame={unsaveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}
       {!compact && showContacts && (
         <BocceContactTools match={match} teams={teams} players={players} textOnly={Boolean(selectedPlayer)} />
@@ -1580,20 +1605,25 @@ function BocceContactTools({ match, teams = [], players, textOnly = false }) {
   )
 }
 
-function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, open, setOpen }) {
+function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, unsaveScoreGame, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
+  const savedDraftGameCount = Array.isArray(match.draftScore)
+    ? Math.max(1, ...match.draftScore.map((game, index) => Array.isArray(game) ? index + 1 : 0))
+    : 1
   const [pin, setPin] = useState('')
   const [games, setGames] = useState(() => Array.from({ length: 3 }, (_, gameIndex) => [
     match.draftScore?.[gameIndex]?.[0] ?? '',
     match.draftScore?.[gameIndex]?.[1] ?? '',
   ]))
+  const [visibleGameCount, setVisibleGameCount] = useState(savedDraftGameCount)
   const [attemptedGames, setAttemptedGames] = useState([])
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [pinAttempted, setPinAttempted] = useState(false)
   const [savedGameIndex, setSavedGameIndex] = useState(null)
   const score = games.map((game) => game.map(scoreNumber))
-  const errors = validateBocceScore(score)
+  const activeScore = score.slice(0, visibleGameCount)
+  const errors = validateBocceScore(activeScore)
   const pinError = pinAttempted && !pin.trim()
     ? 'Enter the league PIN.'
     : pinAttempted && pin && !pinIsValid()
@@ -1621,10 +1651,21 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   }
 
   function handleSaveGame(gameIndex) {
+    if (gameIsSaved(gameIndex)) {
+      unsaveScoreGame(match.id, gameIndex, selectedPlayer.id)
+      setSavedGameIndex(null)
+      return
+    }
+
     setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
     if (validateBocceGame(score[gameIndex], gameIndex)) return
     saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
     setSavedGameIndex(gameIndex)
+  }
+
+  function handleAddGame() {
+    setVisibleGameCount((count) => Math.min(count + 1, 3))
+    setSavedGameIndex(null)
   }
 
   return (
@@ -1640,11 +1681,11 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
           setPinAttempted(true)
           setSubmitAttempted(true)
           if (!pinIsValid() || errors.length) return
-          submitScore(match.id, score, selectedPlayer.id)
+          submitScore(match.id, activeScore, selectedPlayer.id)
         }}>
           <p className="helper-text">Save games as you play. Saved games will be here when you return.</p>
           <div className="score-games">
-            {games.map((game, gameIndex) => {
+            {games.slice(0, visibleGameCount).map((game, gameIndex) => {
               const gameError = validateBocceGame(score[gameIndex], gameIndex)
               const saved = gameIsSaved(gameIndex)
               const wasSaved = Boolean(match.draftScore?.[gameIndex])
@@ -1663,7 +1704,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
                       <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
                     </div>
                     <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                      Save
+                      {saved ? 'Unsave' : 'Save'}
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
@@ -1672,9 +1713,15 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
               )
             })}
           </div>
+          {visibleGameCount < 3 && (
+            <button className="secondary add-game-button" type="button" onClick={handleAddGame}>
+              Add Game {visibleGameCount + 1}
+            </button>
+          )}
+          <p className="helper-text submit-helper">Submitting sends all {visibleGameCount} game{visibleGameCount === 1 ? '' : 's'} shown above for this match.</p>
           <div className="score-submit-row">
             <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
-            <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
+            <button className="final-score-submit" type="submit">Submit All Games for Approval</button>
           </div>
           {submitErrors.length > 0 && <ValidationList title="Before submitting" items={submitErrors} tone="error" />}
         </form>
@@ -2222,6 +2269,16 @@ function BocceAuditEntry({ item, matches, teams, players }) {
     )
   }
 
+  if (item.action === 'score_game_unsaved' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} unsaved bocce Game {item.details.game}</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+      </article>
+    )
+  }
+
   if (item.action === 'score_submitted' && match) {
     return (
       <article className="simple-card audit-entry">
@@ -2275,7 +2332,7 @@ function auditGroupKey(item) {
     return details.teamId ? `payment:${details.teamId}` : null
   }
 
-  if (item?.action === 'score_game_saved') {
+  if (item?.action === 'score_game_saved' || item?.action === 'score_game_unsaved') {
     return details.matchId ? `score-draft:${details.matchId}:${details.savedBy || ''}` : null
   }
 
@@ -2285,7 +2342,7 @@ function auditGroupKey(item) {
 function auditGroupFamily(item) {
   if (item?.action === 'match_rescheduled' || item?.action === 'match_reschedule_undone') return 'schedule'
   if (item?.action === 'payment_marked_paid' || item?.action === 'payment_unmarked_paid') return 'payment'
-  if (item?.action === 'score_game_saved') return 'score-draft'
+  if (item?.action === 'score_game_saved' || item?.action === 'score_game_unsaved') return 'score-draft'
   return null
 }
 
@@ -3204,15 +3261,14 @@ function buildBocceStandings(matches, teams) {
     }
   })
 
-  const sortedRows = rows.sort((a, b) =>
-    b.gameWins - a.gameWins ||
-    b.matchWins - a.matchWins ||
-    b.points - a.points ||
-    b.diff - a.diff ||
-    a.team.name.localeCompare(b.team.name),
-  )
+  const sortedRows = rows.sort(compareBocceRows)
+  const leader = sortedRows[0] || { gameWins: 0, gameLosses: 0 }
+  const rowsWithGamesBack = sortedRows.map((row) => ({
+    ...row,
+    gamesBack: Math.max(0, ((leader.gameWins - row.gameWins) + (row.gameLosses - leader.gameLosses)) / 2),
+  }))
 
-  return withBocceRankLabels(sortedRows)
+  return withBocceRankLabels(rowsWithGamesBack)
 }
 
 function withRankLabels(rows) {
@@ -3227,18 +3283,34 @@ function withBocceRankLabels(rows) {
   return rows.map((row) => {
     const rank = rows.findIndex((item) =>
       item.gameWins === row.gameWins &&
-      item.matchWins === row.matchWins &&
-      item.points === row.points &&
-      item.diff === row.diff,
+      item.gameLosses === row.gameLosses &&
+      item.points === row.points
     ) + 1
     const isTied = rows.filter((item) =>
       item.gameWins === row.gameWins &&
-      item.matchWins === row.matchWins &&
-      item.points === row.points &&
-      item.diff === row.diff,
+      item.gameLosses === row.gameLosses &&
+      item.points === row.points
     ).length > 1
     return { ...row, rank, rankLabel: isTied ? `T-${rank}` : String(rank) }
   })
+}
+
+function compareBocceRows(a, b) {
+  return gameWinPercentage(b) - gameWinPercentage(a) ||
+    b.gameWins - a.gameWins ||
+    a.gameLosses - b.gameLosses ||
+    b.points - a.points ||
+    a.team.name.localeCompare(b.team.name)
+}
+
+function gameWinPercentage(row) {
+  const games = row.gameWins + row.gameLosses
+  return games > 0 ? row.gameWins / games : 0
+}
+
+function formatGamesBack(value) {
+  if (!Number.isFinite(value) || value <= 0) return '-'
+  return Number.isInteger(value) ? String(value) : value.toFixed(1)
 }
 
 function scoreNumber(value) {
@@ -3277,7 +3349,7 @@ function validateBocceGame(game, index) {
 }
 
 function validateBocceScore(score) {
-  if (score.length !== 3) return ['Bocce matches must include exactly 3 game scores.']
+  if (score.length < 1 || score.length > 3) return ['Bocce matches must include 1 to 3 game scores.']
   return score.map(validateBocceGame).filter(Boolean)
 }
 

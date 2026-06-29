@@ -1430,6 +1430,15 @@ textarea {
   white-space: nowrap;
 }
 
+.actions .add-game-button {
+  min-height: 46px;
+}
+
+.submit-helper {
+  border-left: 4px solid #00899a;
+  padding-left: 10px;
+}
+
 .actions .final-score-submit {
   min-height: 54px;
   background: #00899a;
@@ -1498,6 +1507,11 @@ textarea {
   grid-template-columns: 34px minmax(0, 1fr) 40px 48px 32px;
   align-items: center;
   gap: 4px;
+}
+
+.bocce-standings-grid .standings-header,
+.bocce-standings-grid .standing-row {
+  grid-template-columns: 34px minmax(0, 1fr) 58px 40px 42px;
 }
 
 .standings-header {
