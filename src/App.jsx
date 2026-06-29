@@ -1621,9 +1621,8 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
   }
 
   function handleSaveGame(gameIndex) {
-    setPinAttempted(true)
     setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
-    if (!pinIsValid() || validateBocceGame(score[gameIndex], gameIndex)) return
+    if (validateBocceGame(score[gameIndex], gameIndex)) return
     saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
     setSavedGameIndex(gameIndex)
   }
@@ -1650,7 +1649,6 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
               const saved = gameIsSaved(gameIndex)
               const wasSaved = Boolean(match.draftScore?.[gameIndex])
               const showError = submitAttempted || attemptedGames.includes(gameIndex)
-              const showPinError = attemptedGames.includes(gameIndex) && pinError
               const showSavedMessage = savedGameIndex === gameIndex && saved
               return (
                 <section className={`score-game-card ${saved ? 'saved' : ''}`} key={gameIndex}>
@@ -1669,7 +1667,6 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
-                  {showPinError && <p className="error">{pinError}</p>}
                   {showSavedMessage && <p className="success-text" role="status">Game {gameIndex + 1} saved.</p>}
                 </section>
               )
