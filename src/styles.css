@@ -1492,6 +1492,16 @@ button:disabled {
   min-height: 54px;
 }
 
+@media (min-width: 641px) {
+  .score-submit-row {
+    grid-template-columns: minmax(84px, 130px) max-content;
+  }
+
+  .score-submit-row .final-score-submit {
+    white-space: nowrap;
+  }
+}
+
 .error {
   margin: 0;
   color: #b91c1c;
