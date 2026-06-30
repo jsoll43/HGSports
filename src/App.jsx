@@ -511,16 +511,17 @@ function migrateRosterTeams(teams) {
 
   return initialTeams.map((team) => {
     const existing = existingById.get(team.id)
-    return {
-      ...team,
-      paid: Boolean(existing?.paid ?? team.paid),
-      paymentNote: existing?.paymentNote || team.paymentNote,
-    }
+    return existing ? { ...team, ...existing } : team
   })
 }
 
 function migrateRosterPlayers(players) {
-  return initialPlayers
+  const existingById = new Map(players.map((player) => [player.id, player]))
+
+  return initialPlayers.map((player) => {
+    const existing = existingById.get(player.id)
+    return existing ? { ...player, ...existing } : player
+  })
 }
 
 function migrateSeasonSchedule(matches, teams) {
@@ -2347,13 +2348,94 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
   )
 }
 
+function cloneRosterItems(items) {
+  return items.map((item) => ({ ...item }))
+}
+
+function rosterSignature(teams, players) {
+  return JSON.stringify({ teams, players })
+}
+
+function useRosterDraft(teams, players) {
+  const [draftTeams, setDraftTeams] = useState(() => cloneRosterItems(teams))
+  const [draftPlayers, setDraftPlayers] = useState(() => cloneRosterItems(players))
+  const [message, setMessage] = useState('')
+  const hasChanges = rosterSignature(teams, players) !== rosterSignature(draftTeams, draftPlayers)
+
+  useEffect(() => {
+    setDraftTeams(cloneRosterItems(teams))
+    setDraftPlayers(cloneRosterItems(players))
+  }, [teams, players])
+
+  function updateDraftTeam(teamId, patch) {
+    setMessage('')
+    setDraftTeams((items) => items.map((team) => (team.id === teamId ? { ...team, ...patch } : team)))
+  }
+
+  function updateDraftPlayer(playerId, patch) {
+    setMessage('')
+    setDraftPlayers((items) => items.map((player) => (player.id === playerId ? { ...player, ...patch } : player)))
+  }
+
+  function undoChanges() {
+    setDraftTeams(cloneRosterItems(teams))
+    setDraftPlayers(cloneRosterItems(players))
+    setMessage('Roster changes undone.')
+  }
+
+  return {
+    draftTeams,
+    draftPlayers,
+    hasChanges,
+    message,
+    setMessage,
+    updateDraftTeam,
+    updateDraftPlayer,
+    undoChanges,
+  }
+}
+
+function commitRosterDraft({ teams, players, draftTeams, draftPlayers, updateTeam, updatePlayer }) {
+  const teamsById = new Map(teams.map((team) => [team.id, team]))
+  const playersById = new Map(players.map((player) => [player.id, player]))
+
+  draftTeams.forEach((team) => {
+    if (JSON.stringify(teamsById.get(team.id)) !== JSON.stringify(team)) updateTeam(team.id, team)
+  })
+
+  draftPlayers.forEach((player) => {
+    if (JSON.stringify(playersById.get(player.id)) !== JSON.stringify(player)) updatePlayer(player.id, player)
+  })
+}
+
 function BocceRosterEditor({ teams, players, updateTeam, updatePlayer }) {
+  const {
+    draftTeams,
+    draftPlayers,
+    hasChanges,
+    message,
+    setMessage,
+    updateDraftTeam,
+    updateDraftPlayer,
+    undoChanges,
+  } = useRosterDraft(teams, players)
+
+  function saveChanges() {
+    commitRosterDraft({ teams, players, draftTeams, draftPlayers, updateTeam, updatePlayer })
+    setMessage('Roster changes saved.')
+  }
+
   return (
     <Card title="Bocce Teams and Public Contacts">
       <p className="empty">Phone numbers and emails appear on public bocce match pages.</p>
+      <div className="button-row roster-actions">
+        <button type="button" disabled={!hasChanges} onClick={saveChanges}>Save Changes</button>
+        <button type="button" className="secondary" disabled={!hasChanges} onClick={undoChanges}>Undo Changes</button>
+      </div>
+      {message && <p className="success-text" role="status">{message}</p>}
       <div className="card-list">
-        {[...teams].sort((a, b) => a.number - b.number).map((team) => {
-          const teamPlayers = players.filter((player) => player.teamId === team.id)
+        {[...draftTeams].sort((a, b) => a.number - b.number).map((team) => {
+          const teamPlayers = draftPlayers.filter((player) => player.teamId === team.id)
           return (
             <article className="simple-card admin-team-card" key={team.id}>
               <div className="admin-team-head bocce-admin-team-head">
@@ -2363,21 +2445,21 @@ function BocceRosterEditor({ teams, players, updateTeam, updatePlayer }) {
                     type="number"
                     min="1"
                     value={team.number}
-                    onChange={(event) => updateTeam(team.id, { number: Number(event.target.value) })}
+                    onChange={(event) => updateDraftTeam(team.id, { number: Number(event.target.value) })}
                   />
                 </label>
                 <label className="field team-name-field">
                   Team Name
-                  <input value={team.name} onChange={(event) => updateTeam(team.id, { name: event.target.value })} />
+                  <input value={team.name} onChange={(event) => updateDraftTeam(team.id, { name: event.target.value })} />
                 </label>
               </div>
               <div className="admin-player-grid">
                 {teamPlayers.map((player) => (
                   <div className="admin-player-card" key={player.id}>
-                    <label className="field">First<input value={player.first} onChange={(event) => updatePlayer(player.id, { first: event.target.value })} /></label>
-                    <label className="field">Last<input value={player.last} onChange={(event) => updatePlayer(player.id, { last: event.target.value })} /></label>
-                    <label className="field">Phone<input value={player.phone || ''} onChange={(event) => updatePlayer(player.id, { phone: event.target.value })} /></label>
-                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updatePlayer(player.id, { email: event.target.value })} /></label>
+                    <label className="field">First<input value={player.first} onChange={(event) => updateDraftPlayer(player.id, { first: event.target.value })} /></label>
+                    <label className="field">Last<input value={player.last} onChange={(event) => updateDraftPlayer(player.id, { last: event.target.value })} /></label>
+                    <label className="field">Phone<input value={player.phone || ''} onChange={(event) => updateDraftPlayer(player.id, { phone: event.target.value })} /></label>
+                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updateDraftPlayer(player.id, { email: event.target.value })} /></label>
                   </div>
                 ))}
               </div>
@@ -2761,12 +2843,33 @@ function PaymentCallout() {
 }
 
 function RosterEditor({ teams, players, updateTeam, updatePlayer }) {
+  const {
+    draftTeams,
+    draftPlayers,
+    hasChanges,
+    message,
+    setMessage,
+    updateDraftTeam,
+    updateDraftPlayer,
+    undoChanges,
+  } = useRosterDraft(teams, players)
+
+  function saveChanges() {
+    commitRosterDraft({ teams, players, draftTeams, draftPlayers, updateTeam, updatePlayer })
+    setMessage('Roster changes saved.')
+  }
+
   return (
     <Card title="Teams, Players, Phones, and Admin Emails">
       <p className="empty">Emails are stored here for admin use only. Player pages only use phone numbers for texting.</p>
+      <div className="button-row roster-actions">
+        <button type="button" disabled={!hasChanges} onClick={saveChanges}>Save Changes</button>
+        <button type="button" className="secondary" disabled={!hasChanges} onClick={undoChanges}>Undo Changes</button>
+      </div>
+      {message && <p className="success-text" role="status">{message}</p>}
       <div className="card-list">
-        {[...teams].sort((a, b) => a.number - b.number).map((team) => {
-          const teamPlayers = players.filter((player) => player.teamId === team.id)
+        {[...draftTeams].sort((a, b) => a.number - b.number).map((team) => {
+          const teamPlayers = draftPlayers.filter((player) => player.teamId === team.id)
           return (
             <article className="simple-card admin-team-card" key={team.id}>
               <div className="admin-team-head">
@@ -2776,27 +2879,27 @@ function RosterEditor({ teams, players, updateTeam, updatePlayer }) {
                     type="number"
                     min="1"
                     value={team.number}
-                    onChange={(event) => updateTeam(team.id, { number: Number(event.target.value) })}
+                    onChange={(event) => updateDraftTeam(team.id, { number: Number(event.target.value) })}
                   />
                 </label>
                 <label className="field">
                   Band
-                  <select value={team.flight} onChange={(event) => updateTeam(team.id, { flight: event.target.value })}>
+                  <select value={team.flight} onChange={(event) => updateDraftTeam(team.id, { flight: event.target.value })}>
                     {flights.map((flight) => <option key={flight}>{flight}</option>)}
                   </select>
                 </label>
                 <label className="field team-name-field">
                   Team Name
-                  <input value={team.name} onChange={(event) => updateTeam(team.id, { name: event.target.value })} />
+                  <input value={team.name} onChange={(event) => updateDraftTeam(team.id, { name: event.target.value })} />
                 </label>
               </div>
               <div className="admin-player-grid">
                 {teamPlayers.map((player) => (
                   <div className="admin-player-card" key={player.id}>
-                    <label className="field">First<input value={player.first} onChange={(event) => updatePlayer(player.id, { first: event.target.value })} /></label>
-                    <label className="field">Last<input value={player.last} onChange={(event) => updatePlayer(player.id, { last: event.target.value })} /></label>
-                    <label className="field">Phone<input value={player.phone} onChange={(event) => updatePlayer(player.id, { phone: event.target.value })} /></label>
-                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updatePlayer(player.id, { email: event.target.value })} /></label>
+                    <label className="field">First<input value={player.first} onChange={(event) => updateDraftPlayer(player.id, { first: event.target.value })} /></label>
+                    <label className="field">Last<input value={player.last} onChange={(event) => updateDraftPlayer(player.id, { last: event.target.value })} /></label>
+                    <label className="field">Phone<input value={player.phone} onChange={(event) => updateDraftPlayer(player.id, { phone: event.target.value })} /></label>
+                    <label className="field">Email<input value={player.email || ''} onChange={(event) => updateDraftPlayer(player.id, { email: event.target.value })} /></label>
                   </div>
                 ))}
               </div>
