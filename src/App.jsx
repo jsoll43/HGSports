@@ -797,6 +797,28 @@ function App() {
     log('score_game_saved', { matchId, game: gameIndex + 1, savedBy, score: gameScore })
   }
 
+  function unsaveScoreGame(matchId, gameIndex, savedBy) {
+    const savedAt = new Date().toISOString()
+    setMatches((items) =>
+      items.map((match) => {
+        if (match.id !== matchId) return match
+        const draftScore = Array.isArray(match.draftScore) ? [...match.draftScore] : []
+        const draftGameSavedAt = Array.isArray(match.draftGameSavedAt) ? [...match.draftGameSavedAt] : []
+        draftScore[gameIndex] = undefined
+        draftGameSavedAt[gameIndex] = undefined
+        const hasSavedGame = draftScore.some((game) => Array.isArray(game))
+        return {
+          ...match,
+          draftScore: hasSavedGame ? draftScore : undefined,
+          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : undefined,
+          draftUpdatedAt: hasSavedGame ? savedAt : undefined,
+          draftSavedBy: hasSavedGame ? savedBy : undefined,
+        }
+      }),
+    )
+    log('score_game_unsaved', { matchId, game: gameIndex + 1, savedBy })
+  }
+
   function markRescheduled(matchId, submittedBy) {
     const match = matches.find((item) => item.id === matchId)
     const undo = match?.status === 'rescheduled'
@@ -1129,6 +1151,7 @@ function App() {
             standings={standings}
             submitScore={submitScore}
             saveScoreGame={saveScoreGame}
+            unsaveScoreGame={unsaveScoreGame}
             markRescheduled={markRescheduled}
             setPage={setPage}
           />
@@ -1834,7 +1857,7 @@ function CornholeRules() {
   )
 }
 
-function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, markRescheduled }) {
+function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, selectedPlayerId, setSelectedPlayerId, standings, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled }) {
   if (!selectedPlayer || !selectedTeam) {
     return (
       <section className="stack">
@@ -1908,6 +1931,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
             selectedPlayer={selectedPlayer}
             submitScore={submitScore}
             saveScoreGame={saveScoreGame}
+            unsaveScoreGame={unsaveScoreGame}
             markRescheduled={markRescheduled}
             showContacts
             showPaymentWarnings={false}
@@ -1928,6 +1952,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
               selectedPlayer={selectedPlayer}
               submitScore={submitScore}
               saveScoreGame={saveScoreGame}
+              unsaveScoreGame={unsaveScoreGame}
               markRescheduled={markRescheduled}
               showContacts
               showPaymentWarnings={false}
@@ -2845,6 +2870,16 @@ function AuditEntry({ item, matches, teams, players }) {
     )
   }
 
+  if (item.action === 'score_game_unsaved' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>{actor} unsaved Game {item.details.game}</h2>
+        <p>{matchTitle(match, teams)} Â· {gameDateLabel(match)}</p>
+      </article>
+    )
+  }
+
   if (item.action === 'score_submitted' && match) {
     const teamA = getTeam(teams, match.teamA)
     const teamB = getTeam(teams, match.teamB)
@@ -2990,7 +3025,7 @@ function PaymentWarning() {
   return <span className="payment-warning">Unpaid</span>
 }
 
-function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, submitScore, saveScoreGame, markRescheduled }) {
+function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled }) {
   if (item.type === 'bye') return <ByeCard item={item} team={viewerTeam} />
 
   return (
@@ -3002,6 +3037,7 @@ function MyScheduleItemCard({ item, teams, players, viewerTeam, selectedPlayer, 
       selectedPlayer={selectedPlayer}
       submitScore={submitScore}
       saveScoreGame={saveScoreGame}
+      unsaveScoreGame={unsaveScoreGame}
       markRescheduled={markRescheduled}
       showContacts
       showPaymentWarnings={false}
@@ -3032,7 +3068,7 @@ function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
   )
 }
 
-function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, saveScoreGame, markRescheduled }) {
+function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled }) {
   const [actionOpen, setActionOpen] = useState('')
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
@@ -3079,7 +3115,7 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
       </div>
       {match.score && <p className="score-line">{formatScore(match.score)}</p>}
       {showContacts && match.status !== 'final' && (
-        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} open={actionOpen} setOpen={setActionOpen} />
+        <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} unsaveScoreGame={unsaveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}
       {showContacts && selectedPlayer && (
         <ContactTools match={match} teams={teams} players={players} selectedPlayer={selectedPlayer} />
@@ -3126,7 +3162,7 @@ function ContactTools({ match, teams, players, selectedPlayer }) {
   )
 }
 
-function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, open, setOpen }) {
+function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame, unsaveScoreGame, open, setOpen }) {
   const teamA = getTeam(teams, match.teamA)
   const teamB = getTeam(teams, match.teamB)
   const [pin, setPin] = useState('')
@@ -3150,12 +3186,23 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
     )))
   }
 
+  function clearGame(gameIndex) {
+    setGames((items) => items.map((game, index) => (index === gameIndex ? ['', ''] : game)))
+    setAttemptedGames((items) => items.filter((index) => index !== gameIndex))
+  }
+
   function gameIsSaved(gameIndex) {
     const savedGame = match.draftScore?.[gameIndex]
     return Boolean(savedGame) && savedGame.every((value, side) => Number(value) === score[gameIndex][side])
   }
 
   function handleSaveGame(gameIndex) {
+    if (gameIsSaved(gameIndex)) {
+      unsaveScoreGame(match.id, gameIndex, selectedPlayer.id)
+      clearGame(gameIndex)
+      return
+    }
+
     setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
     if (validateCornholeGame(score[gameIndex], gameIndex)) return
     saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
@@ -3196,7 +3243,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
                       <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
                     </div>
                     <button className="secondary save-game-button" type="button" onClick={() => handleSaveGame(gameIndex)}>
-                      Save
+                      {saved ? 'Unsave' : 'Save'}
                     </button>
                   </div>
                   {showError && gameError && <p className="error">{gameError}</p>}
