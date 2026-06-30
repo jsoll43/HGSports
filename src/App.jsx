@@ -3156,9 +3156,8 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
   }
 
   function handleSaveGame(gameIndex) {
-    setPinAttempted(true)
     setAttemptedGames((items) => items.includes(gameIndex) ? items : [...items, gameIndex])
-    if (!pinIsValid() || validateCornholeGame(score[gameIndex], gameIndex)) return
+    if (validateCornholeGame(score[gameIndex], gameIndex)) return
     saveScoreGame(match.id, gameIndex, score[gameIndex], selectedPlayer.id)
   }
 
@@ -3177,7 +3176,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <p className="helper-text">Save Game 1 now and come back after Game 2. Saved scores will be restored automatically.</p>
+          <p className="helper-text">Save games as you play. Enter the PIN only when submitting the final score for approval.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
               const gameError = validateCornholeGame(score[gameIndex], gameIndex)
