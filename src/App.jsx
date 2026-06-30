@@ -769,10 +769,10 @@ function App() {
               score,
               submittedBy,
               submittedAt: new Date().toISOString(),
-              draftScore: undefined,
-              draftGameSavedAt: undefined,
-              draftUpdatedAt: undefined,
-              draftSavedBy: undefined,
+              draftScore: null,
+              draftGameSavedAt: null,
+              draftUpdatedAt: null,
+              draftSavedBy: null,
             }
           : match,
       ),
@@ -809,10 +809,10 @@ function App() {
         const hasSavedGame = draftScore.some((game) => Array.isArray(game))
         return {
           ...match,
-          draftScore: hasSavedGame ? draftScore : undefined,
-          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : undefined,
-          draftUpdatedAt: hasSavedGame ? savedAt : undefined,
-          draftSavedBy: hasSavedGame ? savedBy : undefined,
+          draftScore: hasSavedGame ? draftScore : null,
+          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : null,
+          draftUpdatedAt: hasSavedGame ? savedAt : null,
+          draftSavedBy: hasSavedGame ? savedBy : null,
         }
       }),
     )
@@ -938,10 +938,10 @@ function App() {
               score,
               submittedBy,
               submittedAt: new Date().toISOString(),
-              draftScore: undefined,
-              draftGameSavedAt: undefined,
-              draftUpdatedAt: undefined,
-              draftSavedBy: undefined,
+              draftScore: null,
+              draftGameSavedAt: null,
+              draftUpdatedAt: null,
+              draftSavedBy: null,
             }
           : match,
       ),
@@ -978,10 +978,10 @@ function App() {
         const hasSavedGame = draftScore.some((game) => Array.isArray(game))
         return {
           ...match,
-          draftScore: hasSavedGame ? draftScore : undefined,
-          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : undefined,
-          draftUpdatedAt: hasSavedGame ? savedAt : undefined,
-          draftSavedBy: hasSavedGame ? savedBy : undefined,
+          draftScore: hasSavedGame ? draftScore : null,
+          draftGameSavedAt: hasSavedGame ? draftGameSavedAt : null,
+          draftUpdatedAt: hasSavedGame ? savedAt : null,
+          draftSavedBy: hasSavedGame ? savedBy : null,
         }
       }),
     )
@@ -1044,10 +1044,10 @@ function App() {
           ? {
               ...match,
               score,
-              draftScore: undefined,
-              draftGameSavedAt: undefined,
-              draftUpdatedAt: undefined,
-              draftSavedBy: undefined,
+              draftScore: null,
+              draftGameSavedAt: null,
+              draftUpdatedAt: null,
+              draftSavedBy: null,
             }
           : match,
       ),
