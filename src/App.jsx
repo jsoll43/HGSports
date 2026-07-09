@@ -1588,7 +1588,7 @@ function BocceMatchCard({ match, teams, players = [], viewerTeam, selectedPlayer
           )}
         </div>
       </div>
-      {match.score && <p className="score-line">{formatBocceScore(match.score)}</p>}
+      <ScoreBreakdown score={match.score} teamA={teamA} teamB={teamB} viewerTeam={viewerTeam} />
       {!compact && showContacts && match.status !== 'final' && selectedPlayer && submitScore && markRescheduled && (
         <BocceMatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} unsaveScoreGame={unsaveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}
@@ -3171,6 +3171,54 @@ function TeamName({ team, fallback = 'TBD', showPaymentWarning = true }) {
   )
 }
 
+function ScoreBreakdown({ score, teamA, teamB, viewerTeam }) {
+  if (!Array.isArray(score) || score.length === 0) return null
+
+  const viewerSide = viewerTeam?.id === teamA?.id
+    ? 0
+    : viewerTeam?.id === teamB?.id
+      ? 1
+      : null
+  const viewerGameWins = viewerSide === null
+    ? null
+    : score.filter((game) => Number(game?.[viewerSide]) > Number(game?.[viewerSide === 0 ? 1 : 0])).length
+  const viewerGameLosses = viewerSide === null ? null : score.length - viewerGameWins
+
+  return (
+    <div className="score-line score-breakdown">
+      {viewerSide !== null && (
+        <div className="score-summary-pill">Your games: {viewerGameWins}-{viewerGameLosses}</div>
+      )}
+      <table className="score-table">
+        <thead>
+          <tr>
+            <th scope="col">Team</th>
+            {score.map((game, index) => <th scope="col" key={index}>G{index + 1}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          <ScoreBreakdownRow team={teamA} fallback="Team A" score={score} side={0} viewerSide={viewerSide} />
+          <ScoreBreakdownRow team={teamB} fallback="Team B" score={score} side={1} viewerSide={viewerSide} />
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function ScoreBreakdownRow({ team, fallback, score, side, viewerSide }) {
+  const isViewer = viewerSide === side
+
+  return (
+    <tr className={isViewer ? 'viewer-score-row' : ''}>
+      <th scope="row">
+        <span>{team?.name || fallback}</span>
+        {isViewer && <em>Your team</em>}
+      </th>
+      {score.map((game, index) => <td key={index}>{Number(game?.[side] ?? 0)}</td>)}
+    </tr>
+  )
+}
+
 function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, showContacts = false, showPaymentWarnings = true, submitScore, saveScoreGame, unsaveScoreGame, markRescheduled }) {
   const [actionOpen, setActionOpen] = useState('')
   const teamA = getTeam(teams, match.teamA)
@@ -3216,7 +3264,7 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
           )}
         </div>
       </div>
-      {match.score && <p className="score-line">{formatScore(match.score)}</p>}
+      <ScoreBreakdown score={match.score} teamA={teamA} teamB={teamB} viewerTeam={viewerTeam} />
       {showContacts && match.status !== 'final' && (
         <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} unsaveScoreGame={unsaveScoreGame} open={actionOpen} setOpen={setActionOpen} />
       )}

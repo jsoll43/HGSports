@@ -1014,6 +1014,75 @@ textarea {
   font-weight: 900 !important;
 }
 
+.score-breakdown {
+  display: grid;
+  gap: 8px;
+}
+
+.score-summary-pill {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #dff8fb;
+  color: #006b78;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.score-table th,
+.score-table td {
+  padding: 6px 8px;
+  border-top: 1px solid #d8f2f8;
+  text-align: center;
+}
+
+.score-table thead th {
+  border-top: 0;
+  color: #415875;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.score-table th:first-child {
+  width: 64%;
+  text-align: left;
+}
+
+.score-table tbody th {
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.score-table tbody th span {
+  display: block;
+}
+
+.score-table tbody th em {
+  display: inline-block;
+  margin-top: 3px;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: #0b2545;
+  color: #fff;
+  font-size: 0.68rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+.score-table td {
+  font-size: 1rem;
+}
+
+.viewer-score-row {
+  background: #f8fdff;
+}
+
 .contacts,
 .actions,
 .inline-form,
