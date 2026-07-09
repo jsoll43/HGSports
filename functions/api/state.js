@@ -156,11 +156,11 @@ function buildScoreEventsByMatch(audit) {
       const score = normalizeAuditScore(item.details.score)
       if (score) {
         events.set(matchId, {
-          status: 'pending',
+          status: 'final',
           score,
           submittedBy: item.details.submittedBy,
           submittedAt: item.at,
-          approvedAt: undefined,
+          approvedAt: item.details.approvedAt || item.at,
         })
       }
       return
@@ -176,7 +176,7 @@ function buildScoreEventsByMatch(audit) {
       const score = normalizeAuditScore(item.details.score)
       if (score) events.set(matchId, {
         ...current,
-        status: item.details.status || current.status || 'pending',
+        status: item.details.status === 'pending' ? 'final' : item.details.status || current.status || 'final',
         score,
       })
       return

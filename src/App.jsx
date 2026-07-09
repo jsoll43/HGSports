@@ -454,11 +454,11 @@ function buildScoreEventsByMatch(audit) {
       const score = normalizeAuditScore(item.details.score)
       if (score) {
         events.set(matchId, {
-          status: 'pending',
+          status: 'final',
           score,
           submittedBy: item.details.submittedBy,
           submittedAt: item.at,
-          approvedAt: undefined,
+          approvedAt: item.details.approvedAt || item.at,
         })
       }
       return
@@ -474,7 +474,7 @@ function buildScoreEventsByMatch(audit) {
       const score = normalizeAuditScore(item.details.score)
       if (score) events.set(matchId, {
         ...current,
-        status: item.details.status || current.status || 'pending',
+        status: item.details.status === 'pending' ? 'final' : item.details.status || current.status || 'final',
         score,
       })
       return
@@ -761,15 +761,17 @@ function App() {
   }
 
   function submitScore(matchId, score, submittedBy) {
+    const submittedAt = new Date().toISOString()
     setMatches((items) =>
       items.map((match) =>
         match.id === matchId
           ? {
               ...match,
-              status: 'pending',
+              status: 'final',
               score,
               submittedBy,
-              submittedAt: new Date().toISOString(),
+              submittedAt,
+              approvedAt: submittedAt,
               draftScore: null,
               draftGameSavedAt: null,
               draftUpdatedAt: null,
@@ -778,8 +780,8 @@ function App() {
           : match,
       ),
     )
-    log('score_submitted', { matchId, submittedBy, score })
-    setSubmissionConfirmation({ matchId, at: new Date().toISOString() })
+    log('score_submitted', { matchId, submittedBy, score, autoApproved: true, approvedAt: submittedAt })
+    setSubmissionConfirmation({ matchId, at: submittedAt })
     setPage('submitted')
   }
 
@@ -862,10 +864,31 @@ function App() {
   function rejectScore(matchId) {
     setMatches((items) =>
       items.map((match) =>
-        match.id === matchId ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined } : match,
+        match.id === matchId
+          ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined, approvedAt: undefined }
+          : match,
       ),
     )
     log('score_rejected', { matchId })
+  }
+
+  function correctScore(matchId, score) {
+    const match = matches.find((item) => item.id === matchId)
+    setMatches((items) =>
+      items.map((match) =>
+        match.id === matchId
+          ? {
+              ...match,
+              score,
+              draftScore: null,
+              draftGameSavedAt: null,
+              draftUpdatedAt: null,
+              draftSavedBy: null,
+            }
+          : match,
+      ),
+    )
+    log('score_corrected', { matchId, score, status: match?.status || 'final' })
   }
 
   function createSnapshot() {
@@ -930,15 +953,17 @@ function App() {
   }
 
   function submitBocceScore(matchId, score, submittedBy) {
+    const submittedAt = new Date().toISOString()
     setBocceMatches((items) =>
       items.map((match) =>
         match.id === matchId
           ? {
               ...match,
-              status: 'pending',
+              status: 'final',
               score,
               submittedBy,
-              submittedAt: new Date().toISOString(),
+              submittedAt,
+              approvedAt: submittedAt,
               draftScore: null,
               draftGameSavedAt: null,
               draftUpdatedAt: null,
@@ -947,8 +972,8 @@ function App() {
           : match,
       ),
     )
-    logBocce('score_submitted', { matchId, submittedBy, score })
-    setBocceSubmissionConfirmation({ matchId, at: new Date().toISOString() })
+    logBocce('score_submitted', { matchId, submittedBy, score, autoApproved: true, approvedAt: submittedAt })
+    setBocceSubmissionConfirmation({ matchId, at: submittedAt })
     setPage('bocce-submitted')
   }
 
@@ -1031,7 +1056,7 @@ function App() {
   function rejectBocceScore(matchId) {
     setBocceMatches((items) =>
       items.map((match) =>
-        match.id === matchId ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined } : match,
+        match.id === matchId ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined, approvedAt: undefined } : match,
       ),
     )
     logBocce('score_rejected', { matchId })
@@ -1053,7 +1078,7 @@ function App() {
           : match,
       ),
     )
-    logBocce('score_corrected', { matchId, score, status: match?.status || 'pending' })
+    logBocce('score_corrected', { matchId, score, status: match?.status || 'final' })
   }
 
   function createBocceSnapshot() {
@@ -1178,6 +1203,7 @@ function App() {
             snapshots={snapshots}
             approveScore={approveScore}
             rejectScore={rejectScore}
+            correctScore={correctScore}
             createSnapshot={createSnapshot}
             importSchedule={importSchedule}
             updateTeam={updateTeam}
@@ -1344,7 +1370,7 @@ function BocceHome({ matches, teams, standings, setPage }) {
         <div>
           <p className="eyebrow">HGBBL</p>
           <h1>2026 Bocce Ball League</h1>
-          <p>Wednesday night matchups, team contacts, standings, and score approval.</p>
+          <p>Wednesday night matchups, team contacts, standings, and score corrections.</p>
         </div>
       </div>
       <div className="quick-grid">
@@ -1801,7 +1827,7 @@ function BocceMatchActions({ match, teams, selectedPlayer, submitScore, saveScor
           <p className="helper-text submit-helper">Submitting sends all {visibleGameCount} game{visibleGameCount === 1 ? '' : 's'} shown above for this match.</p>
           <div className="score-submit-row">
             <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
-            <button className="final-score-submit" type="submit">Submit All Games for Approval</button>
+            <button className="final-score-submit" type="submit">Submit Final Score</button>
           </div>
           {submitErrors.length > 0 && <ValidationList title="Before submitting" items={submitErrors} tone="error" />}
         </form>
@@ -2054,9 +2080,9 @@ function ScoreSubmitted({ confirmation, setPage, homePage = 'home', myPage = 'my
   return (
     <section className="submitted-screen">
       <div className="submitted-card">
-        <p className="eyebrow">Pending commissioner approval</p>
+        <p className="eyebrow">Final score recorded</p>
         <h1>Score Submitted</h1>
-        <p>Your score was saved and sent to the admin queue. Standings will update after approval.</p>
+        <p>Your score was saved and standings are updated. Admins can still correct it later if needed.</p>
         {confirmation?.at && <span>Submitted {new Date(confirmation.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>}
         <div className="submitted-actions">
           <button type="button" onClick={() => setPage(myPage)}>Back to My Matches</button>
@@ -2077,6 +2103,7 @@ function Admin({
   snapshots,
   approveScore,
   rejectScore,
+  correctScore,
   createSnapshot,
   importSchedule,
   updateTeam,
@@ -2104,7 +2131,12 @@ function Admin({
     )
   }
 
-  const pending = matches.filter((match) => match.status === 'pending')
+  const scoredMatches = matches
+    .filter((match) => ['pending', 'final'].includes(match.status) && Array.isArray(match.score))
+    .sort((a, b) => {
+      const statusSort = Number(a.status === 'final') - Number(b.status === 'final')
+      return statusSort || bySchedule(a, b)
+    })
 
   return (
     <section className="stack">
@@ -2123,19 +2155,19 @@ function Admin({
       </div>
       <Segmented options={['Scores', 'Payments', 'Roster', 'Schedule', 'Import', 'Snapshots', 'Audit']} value={tab} onChange={setTab} />
       {tab === 'Scores' && (
-        <Card title="Pending Scores">
-          {pending.length === 0 && <p className="empty">No pending scores.</p>}
+        <Card title="Scores">
+          {scoredMatches.length === 0 && <p className="empty">No scores submitted yet.</p>}
           <div className="card-list">
-            {pending.map((match) => (
-              <article className="simple-card" key={match.id}>
-                <p>Week {match.week} · {matchTitle(match, teams)}</p>
-                <h2>{formatScore(match.score)}</h2>
-                <p>Submitted by {playerName(players, match.submittedBy)}</p>
-                <div className="button-row">
-                  <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
-                  <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>
-                </div>
-              </article>
+            {scoredMatches.map((match) => (
+              <CornholeAdminScoreCard
+                key={match.id}
+                match={match}
+                teams={teams}
+                players={players}
+                approveScore={approveScore}
+                rejectScore={rejectScore}
+                correctScore={correctScore}
+              />
             ))}
           </div>
         </Card>
@@ -2169,6 +2201,68 @@ function Admin({
         </Card>
       )}
     </section>
+  )
+}
+
+function CornholeAdminScoreCard({ match, teams, players, approveScore, rejectScore, correctScore }) {
+  const [games, setGames] = useState(() => Array.from({ length: 2 }, (_, gameIndex) => [
+    match.score?.[gameIndex]?.[0] ?? '',
+    match.score?.[gameIndex]?.[1] ?? '',
+  ]))
+  const [attempted, setAttempted] = useState(false)
+  const [message, setMessage] = useState('')
+  const score = games.map((game) => game.map(scoreNumber))
+  const errors = validateScore(score)
+  const hasChanges = formatScore(score) !== formatScore(match.score)
+  const teamA = getTeam(teams, match.teamA)
+  const teamB = getTeam(teams, match.teamB)
+
+  function updateGame(gameIndex, teamIndex, value) {
+    setMessage('')
+    setGames((items) => items.map((game, index) => (
+      index === gameIndex ? game.map((scoreValue, side) => (side === teamIndex ? value : scoreValue)) : game
+    )))
+  }
+
+  function saveCorrection() {
+    setAttempted(true)
+    if (errors.length) return
+    correctScore(match.id, score)
+    setMessage('Score correction saved.')
+  }
+
+  return (
+    <article className="simple-card admin-score-card">
+      <p>Week {match.week} - {matchTitle(match, teams)}</p>
+      <h2>{formatScore(match.score)}</h2>
+      <p>{match.status === 'final' ? 'Final' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
+      <div className="admin-score-games">
+        {games.map((game, gameIndex) => {
+          const gameError = validateCornholeGame(score[gameIndex], gameIndex)
+          return (
+            <section className="admin-score-game" key={gameIndex}>
+              <h3>Game {gameIndex + 1}</h3>
+              <div className="score-grid">
+                <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+              </div>
+              {attempted && gameError && <p className="error">{gameError}</p>}
+            </section>
+          )
+        })}
+      </div>
+      <div className="button-row admin-score-actions">
+        <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
+        {match.status === 'pending' ? (
+          <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
+        ) : (
+          <button type="button" className="secondary" disabled>Final</button>
+        )}
+        {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+      </div>
+      {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
+      {message && <p className="success-text" role="status">{message}</p>}
+    </article>
   )
 }
 
@@ -2313,7 +2407,7 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
     <article className="simple-card admin-score-card">
       <p>Week {match.week} - {matchTitle(match, teams)}</p>
       <h2>{formatBocceScore(match.score)}</h2>
-      <p>{match.status === 'final' ? 'Approved' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
+      <p>{match.status === 'final' ? 'Final' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
       <div className="admin-score-games">
         {games.map((game, gameIndex) => {
           const gameError = validateBocceGame(score[gameIndex], gameIndex)
@@ -2338,7 +2432,7 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
         {match.status === 'pending' ? (
           <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
         ) : (
-          <button type="button" className="secondary" disabled>Approved</button>
+          <button type="button" className="secondary" disabled>Final</button>
         )}
         {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
       </div>
@@ -2528,7 +2622,7 @@ function BocceAuditEntry({ item, matches, teams, players }) {
     return (
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
-        <h2>{actor} submitted a bocce score</h2>
+        <h2>{actor} submitted a bocce score{item.details.autoApproved ? ' (auto-approved)' : ''}</h2>
         <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
         <p>{formatBocceScore(item.details.score)}</p>
       </article>
@@ -2990,10 +3084,21 @@ function AuditEntry({ item, matches, teams, players }) {
     return (
       <article className="simple-card audit-entry">
         <p>{new Date(item.at).toLocaleString()}</p>
-        <h2>{actor} submitted a score</h2>
+        <h2>{actor} submitted a score{item.details.autoApproved ? ' (auto-approved)' : ''}</h2>
         <p>{matchTitle(match, teams)} · {gameDateLabel(match)}</p>
         <p>{teamA?.name || 'Team A'}: {score[0][0]} + {score[1][0]} = {score[0][0] + score[1][0]} points</p>
         <p>{teamB?.name || 'Team B'}: {score[0][1]} + {score[1][1]} = {score[0][1] + score[1][1]} points</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_corrected' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin corrected a score</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        <p>{formatScore(item.details.score)}</p>
       </article>
     )
   }
@@ -3374,7 +3479,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           if (!pinIsValid() || errors.length) return
           submitScore(match.id, score, selectedPlayer.id)
         }}>
-          <p className="helper-text">Save games as you play. Enter the PIN only when submitting the final score for approval.</p>
+          <p className="helper-text">Save games as you play. Enter the PIN only when submitting the final score.</p>
           <div className="score-games">
             {games.map((game, gameIndex) => {
               const gameError = validateCornholeGame(score[gameIndex], gameIndex)
@@ -3404,7 +3509,7 @@ function MatchActions({ match, teams, selectedPlayer, submitScore, saveScoreGame
           </div>
           <div className="score-submit-row">
             <input className="score-pin-input" value={pin} onChange={(event) => setPin(event.target.value)} placeholder="PIN" aria-label="League PIN" type="password" />
-            <button className="final-score-submit" type="submit">Save &amp; Submit for Approval</button>
+            <button className="final-score-submit" type="submit">Save &amp; Submit Final Score</button>
           </div>
           {pinAttempted && !pin.trim() && <p className="error">Enter the league PIN.</p>}
           {pinAttempted && pin && !pinIsValid() && <p className="error">PIN should be glen.</p>}
