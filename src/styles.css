@@ -1334,6 +1334,29 @@ textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.admin-score-editor {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #cfeff6;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fcff;
+}
+
+.admin-score-editor summary {
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #0b2545;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.admin-score-editor[open] summary {
+  margin-bottom: 12px;
+}
+
 .admin-score-games {
   display: grid;
   gap: 10px;
@@ -1344,7 +1367,7 @@ textarea {
   gap: 8px;
   border-radius: 8px;
   padding: 10px;
-  background: #f8fcff;
+  background: #fff;
 }
 
 .admin-score-game h3 {

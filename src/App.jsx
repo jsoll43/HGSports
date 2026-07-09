@@ -2236,32 +2236,35 @@ function CornholeAdminScoreCard({ match, teams, players, approveScore, rejectSco
       <p>Week {match.week} - {matchTitle(match, teams)}</p>
       <h2>{formatScore(match.score)}</h2>
       <p>{match.status === 'final' ? 'Final' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
-      <div className="admin-score-games">
-        {games.map((game, gameIndex) => {
-          const gameError = validateCornholeGame(score[gameIndex], gameIndex)
-          return (
-            <section className="admin-score-game" key={gameIndex}>
-              <h3>Game {gameIndex + 1}</h3>
-              <div className="score-grid">
-                <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
-              </div>
-              {attempted && gameError && <p className="error">{gameError}</p>}
-            </section>
-          )
-        })}
-      </div>
-      <div className="button-row admin-score-actions">
-        <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
-        {match.status === 'pending' ? (
-          <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
-        ) : (
-          <button type="button" className="secondary" disabled>Final</button>
-        )}
-        {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
-      </div>
-      {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
-      {message && <p className="success-text" role="status">{message}</p>}
+      <details className="admin-score-editor">
+        <summary>Edit score</summary>
+        <div className="admin-score-games">
+          {games.map((game, gameIndex) => {
+            const gameError = validateCornholeGame(score[gameIndex], gameIndex)
+            return (
+              <section className="admin-score-game" key={gameIndex}>
+                <h3>Game {gameIndex + 1}</h3>
+                <div className="score-grid">
+                  <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                  <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                </div>
+                {attempted && gameError && <p className="error">{gameError}</p>}
+              </section>
+            )
+          })}
+        </div>
+        <div className="button-row admin-score-actions">
+          <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
+          {match.status === 'pending' ? (
+            <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
+          ) : (
+            <button type="button" className="secondary" disabled>Final</button>
+          )}
+          {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+        </div>
+        {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
+        {message && <p className="success-text" role="status">{message}</p>}
+      </details>
     </article>
   )
 }
@@ -2408,36 +2411,39 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
       <p>Week {match.week} - {matchTitle(match, teams)}</p>
       <h2>{formatBocceScore(match.score)}</h2>
       <p>{match.status === 'final' ? 'Final' : 'Pending'} - Submitted by {playerName(players, match.submittedBy)}</p>
-      <div className="admin-score-games">
-        {games.map((game, gameIndex) => {
-          const gameError = validateBocceGame(score[gameIndex], gameIndex)
-          return (
-            <section className="admin-score-game" key={gameIndex}>
-              <h3>Game {gameIndex + 1}</h3>
-              <div className="score-grid bocce-score-grid">
-                <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
-                <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
-              </div>
-              {attempted && gameError && <p className="error">{gameError}</p>}
-            </section>
-          )
-        })}
-      </div>
-      <div className="game-count-actions">
-        {games.length < 3 && <button className="secondary add-game-button" type="button" onClick={addGame}>Add Game {games.length + 1}</button>}
-        {games.length > 1 && <button className="secondary remove-game-button" type="button" onClick={removeGame}>Remove Game {games.length}</button>}
-      </div>
-      <div className="button-row admin-score-actions">
-        <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
-        {match.status === 'pending' ? (
-          <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
-        ) : (
-          <button type="button" className="secondary" disabled>Final</button>
-        )}
-        {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
-      </div>
-      {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
-      {message && <p className="success-text" role="status">{message}</p>}
+      <details className="admin-score-editor">
+        <summary>Edit score</summary>
+        <div className="admin-score-games">
+          {games.map((game, gameIndex) => {
+            const gameError = validateBocceGame(score[gameIndex], gameIndex)
+            return (
+              <section className="admin-score-game" key={gameIndex}>
+                <h3>Game {gameIndex + 1}</h3>
+                <div className="score-grid bocce-score-grid">
+                  <label><span className="score-team-name" title={teamA?.name || 'Team A'}>{teamA?.name || 'Team A'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[0]} onChange={(event) => updateGame(gameIndex, 0, event.target.value)} /></label>
+                  <label><span className="score-team-name" title={teamB?.name || 'Team B'}>{teamB?.name || 'Team B'}</span><input type="number" min="0" max="21" step="1" inputMode="numeric" value={game[1]} onChange={(event) => updateGame(gameIndex, 1, event.target.value)} /></label>
+                </div>
+                {attempted && gameError && <p className="error">{gameError}</p>}
+              </section>
+            )
+          })}
+        </div>
+        <div className="game-count-actions">
+          {games.length < 3 && <button className="secondary add-game-button" type="button" onClick={addGame}>Add Game {games.length + 1}</button>}
+          {games.length > 1 && <button className="secondary remove-game-button" type="button" onClick={removeGame}>Remove Game {games.length}</button>}
+        </div>
+        <div className="button-row admin-score-actions">
+          <button type="button" disabled={!hasChanges} onClick={saveCorrection}>Save Correction</button>
+          {match.status === 'pending' ? (
+            <button type="button" onClick={() => approveScore(match.id)}>Approve</button>
+          ) : (
+            <button type="button" className="secondary" disabled>Final</button>
+          )}
+          {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+        </div>
+        {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
+        {message && <p className="success-text" role="status">{message}</p>}
+      </details>
     </article>
   )
 }
