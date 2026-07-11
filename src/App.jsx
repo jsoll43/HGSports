@@ -1934,7 +1934,7 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
       </div>
       {!selectedTeam.paid && <PaymentCallout />}
       <div className="stat-grid">
-        <Stat label="Record" value={`${row?.matchWins || 0}-${row?.matchLosses || 0}`} />
+        <Stat label="Record" value={`${row?.gameWins || 0}-${row?.gameLosses || 0}`} />
         <Stat label="Points" value={row?.points || 0} />
         <Stat label="Rank" value={row ? row.rankLabel : '-'} />
       </div>
