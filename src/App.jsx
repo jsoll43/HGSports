@@ -1142,7 +1142,7 @@ function App() {
             markRescheduled={markBocceRescheduled}
           />
         )}
-        {page === 'bocce-standings' && <BocceStandings standings={bocceStandings} />}
+        {page === 'bocce-standings' && <BocceStandings standings={bocceStandings} matches={bocceMatches} teams={bocceTeams} />}
         {page === 'bocce-schedule' && <BocceSchedule matches={bocceMatches} teams={bocceTeams} players={boccePlayers} />}
         {page === 'bocce-rules' && <BocceRules />}
         {page === 'bocce-submitted' && <ScoreSubmitted confirmation={bocceSubmissionConfirmation} setPage={setPage} homePage="bocce-home" myPage="bocce-my" />}
@@ -1182,7 +1182,7 @@ function App() {
             setPage={setPage}
           />
         )}
-        {page === 'standings' && <Standings standings={standings} />}
+        {page === 'standings' && <Standings standings={standings} matches={matches} teams={teams} />}
         {page === 'schedule' && <Schedule matches={matches} teams={teams} />}
         {page === 'rules' && <CornholeRules />}
         {page === 'trophy' && <TrophyRoom />}
@@ -1504,10 +1504,13 @@ function BocceMyMatches({ matches, teams, players, selectedPlayer, selectedTeam,
   )
 }
 
-function BocceStandings({ standings }) {
+function BocceStandings({ standings, matches, teams }) {
+  const [selectedTeamId, setSelectedTeamId] = useState('')
+
   return (
     <section className="stack">
       <PageTitle title="Bocce Standings" />
+      <p className="standings-help">Select a team to see every matchup and score.</p>
       <section className="standings-grid bocce-standings-grid" aria-label="Bocce standings">
         <div className="standings-header">
           <span>Rank</span>
@@ -1516,15 +1519,37 @@ function BocceStandings({ standings }) {
           <span>GB</span>
           <span>Pts</span>
         </div>
-        {standings.map((row) => (
-          <article className="standing-row" key={row.team.id}>
-            <strong>{row.rankLabel}</strong>
-            <span className="team-name">{row.team.name}</span>
-            <span className="points">{row.gameWins}-{row.gameLosses}</span>
-            <span>{formatGamesBack(row.gamesBack)}</span>
-            <span>{row.points}</span>
-          </article>
-        ))}
+        {standings.map((row) => {
+          const isSelected = selectedTeamId === row.team.id
+          const breakdownId = `bocce-breakdown-${row.team.id}`
+
+          return (
+            <div className="standing-entry" key={row.team.id}>
+              <button
+                aria-controls={breakdownId}
+                aria-expanded={isSelected}
+                className={`standing-row ${isSelected ? 'selected' : ''}`}
+                type="button"
+                onClick={() => setSelectedTeamId(isSelected ? '' : row.team.id)}
+              >
+                <strong>{row.rankLabel}</strong>
+                <span className="team-name">{row.team.name}</span>
+                <span className="points">{row.gameWins}-{row.gameLosses}</span>
+                <span>{formatGamesBack(row.gamesBack)}</span>
+                <span>{row.points}</span>
+              </button>
+              {isSelected && (
+                <TeamMatchBreakdown
+                  id={breakdownId}
+                  matches={matches}
+                  row={row}
+                  sport="bocce"
+                  teams={teams}
+                />
+              )}
+            </div>
+          )
+        })}
       </section>
     </section>
   )
@@ -1999,13 +2024,21 @@ function MyMatches({ matches, teams, players, selectedPlayer, selectedTeam, sele
   )
 }
 
-function Standings({ standings }) {
+function Standings({ standings, matches, teams }) {
   const [flight, setFlight] = useState('Green')
+  const [selectedTeamId, setSelectedTeamId] = useState('')
   const leaderPoints = standings[flight][0]?.points || 0
+
+  function selectFlight(nextFlight) {
+    setFlight(nextFlight)
+    setSelectedTeamId('')
+  }
+
   return (
     <section className="stack">
       <PageTitle title="Standings" />
-      <Segmented options={flights} value={flight} onChange={setFlight} />
+      <Segmented options={flights} value={flight} onChange={selectFlight} />
+      <p className="standings-help">Select a team to see every matchup and score.</p>
       <section className="standings-grid" aria-label={`${flight} standings`}>
         <div className="standings-header">
           <span>Rank</span>
@@ -2016,18 +2049,115 @@ function Standings({ standings }) {
         </div>
         {standings[flight].map((row) => {
           const pointsBack = leaderPoints - row.points
+          const isSelected = selectedTeamId === row.team.id
+          const breakdownId = `cornhole-breakdown-${row.team.id}`
+
           return (
-            <article className="standing-row" key={row.team.id}>
-              <strong>{row.rankLabel}</strong>
-              <span className="team-name"><TeamName team={row.team} /></span>
-              <span className="points">{row.points}</span>
-              <span>{row.gameWins}-{row.gameLosses}</span>
-              <span className={pointsBack === 0 ? 'back-value leader' : 'back-value'}>{pointsBack}</span>
-            </article>
+            <div className="standing-entry" key={row.team.id}>
+              <button
+                aria-controls={breakdownId}
+                aria-expanded={isSelected}
+                className={`standing-row ${isSelected ? 'selected' : ''}`}
+                type="button"
+                onClick={() => setSelectedTeamId(isSelected ? '' : row.team.id)}
+              >
+                <strong>{row.rankLabel}</strong>
+                <span className="team-name"><TeamName team={row.team} /></span>
+                <span className="points">{row.points}</span>
+                <span>{row.gameWins}-{row.gameLosses}</span>
+                <span className={pointsBack === 0 ? 'back-value leader' : 'back-value'}>{pointsBack}</span>
+              </button>
+              {isSelected && (
+                <TeamMatchBreakdown
+                  id={breakdownId}
+                  matches={matches}
+                  row={row}
+                  sport="cornhole"
+                  teams={teams}
+                />
+              )}
+            </div>
           )
         })}
       </section>
     </section>
+  )
+}
+
+function TeamMatchBreakdown({ id, matches, row, sport, teams }) {
+  const teamMatches = matches
+    .filter((match) => match.teamA === row.team.id || match.teamB === row.team.id)
+    .sort(bySchedule)
+  const completedMatches = teamMatches.filter((match) => match.status === 'final' && Array.isArray(match.score)).length
+
+  return (
+    <section className="team-match-breakdown" id={id} aria-label={`${row.team.name} match breakdown`}>
+      <div className="breakdown-heading">
+        <div>
+          <span>Match breakdown</span>
+          <h2>{row.team.name}</h2>
+        </div>
+        <span>{completedMatches} of {teamMatches.length} played</span>
+      </div>
+      <div className="breakdown-stats" aria-label="Team totals">
+        <div><span>Points</span><strong>{row.points}</strong></div>
+        <div><span>Games</span><strong>{row.gameWins}-{row.gameLosses}</strong></div>
+        <div><span>Matches</span><strong>{row.played}</strong></div>
+      </div>
+      <div className="team-result-list">
+        {teamMatches.map((match) => (
+          <TeamMatchResult
+            key={match.id}
+            match={match}
+            sport={sport}
+            team={row.team}
+            teams={teams}
+          />
+        ))}
+      </div>
+      {teamMatches.length === 0 && <p className="empty">No matches are scheduled for this team.</p>}
+    </section>
+  )
+}
+
+function TeamMatchResult({ match, sport, team, teams }) {
+  const teamSide = match.teamA === team.id ? 0 : 1
+  const opponent = getTeam(teams, teamSide === 0 ? match.teamB : match.teamA)
+  const score = Array.isArray(match.score) ? match.score : []
+  const gameWins = score.filter((game) => Number(game?.[teamSide]) > Number(game?.[teamSide === 0 ? 1 : 0])).length
+  const gameLosses = score.length - gameWins
+  const isFinal = match.status === 'final' && score.length > 0
+  const result = isFinal
+    ? gameWins > gameLosses ? 'Win' : gameWins < gameLosses ? 'Loss' : 'Split'
+    : sport === 'bocce' ? boccePublicStatus(match) : publicStatus(match)
+  const resultClass = isFinal ? result.toLowerCase() : 'open'
+  const scoreLabel = score
+    .map((game) => `${Number(game?.[teamSide] ?? 0)}-${Number(game?.[teamSide === 0 ? 1 : 0] ?? 0)}`)
+    .join(' · ')
+
+  return (
+    <article className="team-result">
+      <div className="team-result-main">
+        <span className={`result-badge ${resultClass}`}>{result}</span>
+        <div>
+          <span>Week {match.week} · {formatDate(match.date)}</span>
+          <h3>vs {opponent?.name || 'TBD'}</h3>
+        </div>
+      </div>
+      <div className="team-result-score">
+        {score.length > 0 ? (
+          <>
+            <strong>{gameWins}-{gameLosses} games</strong>
+            <span>{scoreLabel}</span>
+          </>
+        ) : (
+          <>
+            <strong>{match.time}</strong>
+            <span>No score yet</span>
+          </>
+        )}
+      </div>
+    </article>
   )
 }
 
