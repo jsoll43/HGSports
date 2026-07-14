@@ -55,7 +55,7 @@ const initialPlayers = [
   { id: 'player-2b', first: 'John', last: 'Hourani', phone: '8562619462', email: 'jhourani@comcast.net', teamId: 'team-2' },
   { id: 'player-3a', first: 'Michael', last: 'Brody', phone: '609-556-9824', email: 'mbrody31@gmail.com', teamId: 'team-3' },
   { id: 'player-3b', first: 'Keith', last: 'Van Leeuwen', phone: '302-723-9449', email: 'Keith.vanleeuwen@gmail.com', teamId: 'team-3' },
-  { id: 'player-4a', first: 'Brian', last: 'Kemner', phone: '856-261-3748', email: 'bkemner11@msn.com', teamId: 'team-4' },
+  { id: 'player-4a', first: 'Brian', last: 'Kemner', phone: '856-261-3784', email: 'bkemner11@msn.com', teamId: 'team-4' },
   { id: 'player-4b', first: 'Tom', last: 'Polizzi', phone: '856- 981-6803', email: 'Tompolizzi78@gmail.com', teamId: 'team-4' },
   { id: 'player-5a', first: 'Scott', last: 'Schreiber', phone: '609-330-6880', email: 'schreibs13@gmail.com', teamId: 'team-5' },
   { id: 'player-5b', first: 'Travis', last: 'Schreiber', phone: '856-739-2632', email: 'schrei37@rowan.edu', teamId: 'team-5' },
@@ -520,7 +520,14 @@ function migrateRosterPlayers(players) {
 
   return initialPlayers.map((player) => {
     const existing = existingById.get(player.id)
-    return existing ? { ...player, ...existing } : player
+    const merged = existing ? { ...player, ...existing } : player
+
+    // Correct the previously seeded typo without overwriting later admin edits.
+    if (player.id === 'player-4a' && String(merged.phone || '').replace(/\D/g, '') === '8562613748') {
+      return { ...merged, phone: player.phone }
+    }
+
+    return merged
   })
 }
 
