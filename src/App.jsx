@@ -1510,7 +1510,7 @@ function BocceStandings({ standings, matches, teams }) {
   return (
     <section className="stack">
       <PageTitle title="Bocce Standings" />
-      <p className="standings-help">Select a team to see every matchup and score.</p>
+      <p className="standings-help">Select a team to see the completed matches affecting their standings.</p>
       <section className="standings-grid bocce-standings-grid" aria-label="Bocce standings">
         <div className="standings-header">
           <span>Rank</span>
@@ -1543,7 +1543,6 @@ function BocceStandings({ standings, matches, teams }) {
                   id={breakdownId}
                   matches={matches}
                   row={row}
-                  sport="bocce"
                   teams={teams}
                 />
               )}
@@ -2038,7 +2037,7 @@ function Standings({ standings, matches, teams }) {
     <section className="stack">
       <PageTitle title="Standings" />
       <Segmented options={flights} value={flight} onChange={selectFlight} />
-      <p className="standings-help">Select a team to see every matchup and score.</p>
+      <p className="standings-help">Select a team to see the completed matches affecting their standings.</p>
       <section className="standings-grid" aria-label={`${flight} standings`}>
         <div className="standings-header">
           <span>Rank</span>
@@ -2072,7 +2071,6 @@ function Standings({ standings, matches, teams }) {
                   id={breakdownId}
                   matches={matches}
                   row={row}
-                  sport="cornhole"
                   teams={teams}
                 />
               )}
@@ -2084,11 +2082,14 @@ function Standings({ standings, matches, teams }) {
   )
 }
 
-function TeamMatchBreakdown({ id, matches, row, sport, teams }) {
+function TeamMatchBreakdown({ id, matches, row, teams }) {
   const teamMatches = matches
-    .filter((match) => match.teamA === row.team.id || match.teamB === row.team.id)
+    .filter((match) =>
+      match.status === 'final' &&
+      Array.isArray(match.score) &&
+      (match.teamA === row.team.id || match.teamB === row.team.id)
+    )
     .sort(bySchedule)
-  const completedMatches = teamMatches.filter((match) => match.status === 'final' && Array.isArray(match.score)).length
 
   return (
     <section className="team-match-breakdown" id={id} aria-label={`${row.team.name} match breakdown`}>
@@ -2097,7 +2098,7 @@ function TeamMatchBreakdown({ id, matches, row, sport, teams }) {
           <span>Match breakdown</span>
           <h2>{row.team.name}</h2>
         </div>
-        <span>{completedMatches} of {teamMatches.length} played</span>
+        <span>{teamMatches.length} played</span>
       </div>
       <div className="breakdown-stats" aria-label="Team totals">
         <div><span>Points</span><strong>{row.points}</strong></div>
@@ -2109,28 +2110,24 @@ function TeamMatchBreakdown({ id, matches, row, sport, teams }) {
           <TeamMatchResult
             key={match.id}
             match={match}
-            sport={sport}
             team={row.team}
             teams={teams}
           />
         ))}
       </div>
-      {teamMatches.length === 0 && <p className="empty">No matches are scheduled for this team.</p>}
+      {teamMatches.length === 0 && <p className="empty">No completed matches are affecting this team&apos;s standings yet.</p>}
     </section>
   )
 }
 
-function TeamMatchResult({ match, sport, team, teams }) {
+function TeamMatchResult({ match, team, teams }) {
   const teamSide = match.teamA === team.id ? 0 : 1
   const opponent = getTeam(teams, teamSide === 0 ? match.teamB : match.teamA)
   const score = Array.isArray(match.score) ? match.score : []
   const gameWins = score.filter((game) => Number(game?.[teamSide]) > Number(game?.[teamSide === 0 ? 1 : 0])).length
   const gameLosses = score.length - gameWins
-  const isFinal = match.status === 'final' && score.length > 0
-  const result = isFinal
-    ? gameWins > gameLosses ? 'Win' : gameWins < gameLosses ? 'Loss' : 'Split'
-    : sport === 'bocce' ? boccePublicStatus(match) : publicStatus(match)
-  const resultClass = isFinal ? result.toLowerCase() : 'open'
+  const result = gameWins > gameLosses ? 'Win' : gameWins < gameLosses ? 'Loss' : 'Split'
+  const resultClass = result.toLowerCase()
   const scoreLabel = score
     .map((game) => `${Number(game?.[teamSide] ?? 0)}-${Number(game?.[teamSide === 0 ? 1 : 0] ?? 0)}`)
     .join(' · ')
