@@ -399,14 +399,18 @@ function restoreScoredMatchesFromAudit(matches, audit) {
 
   return matches.map((match) => {
     const event = scoreEvents.get(match.id)
-    if (event?.status === 'rejected') {
+    if (event?.status === 'rejected' || event?.status === 'reset') {
       return {
         ...match,
-        status: match.status === 'final' || match.status === 'pending' ? 'scheduled' : match.status,
+        status: 'scheduled',
         score: undefined,
         submittedBy: undefined,
         submittedAt: undefined,
         approvedAt: undefined,
+        draftScore: undefined,
+        draftGameSavedAt: undefined,
+        draftUpdatedAt: undefined,
+        draftSavedBy: undefined,
       }
     }
     if (!event?.score) return match
@@ -482,6 +486,11 @@ function buildScoreEventsByMatch(audit) {
 
     if (item.action === 'score_rejected') {
       events.set(matchId, { status: 'rejected' })
+      return
+    }
+
+    if (item.action === 'score_reset') {
+      events.set(matchId, { status: 'reset' })
     }
   })
 
@@ -868,15 +877,27 @@ function App() {
     log('score_approved', { matchId, score: match?.score })
   }
 
-  function rejectScore(matchId) {
+  function resetScore(matchId) {
+    const match = matches.find((item) => item.id === matchId)
     setMatches((items) =>
       items.map((match) =>
         match.id === matchId
-          ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined, approvedAt: undefined }
+          ? {
+              ...match,
+              status: 'scheduled',
+              score: undefined,
+              submittedBy: undefined,
+              submittedAt: undefined,
+              approvedAt: undefined,
+              draftScore: undefined,
+              draftGameSavedAt: undefined,
+              draftUpdatedAt: undefined,
+              draftSavedBy: undefined,
+            }
           : match,
       ),
     )
-    log('score_rejected', { matchId })
+    log('score_reset', { matchId, score: match?.score, previousStatus: match?.status })
   }
 
   function correctScore(matchId, score) {
@@ -1060,13 +1081,27 @@ function App() {
     logBocce('score_approved', { matchId, score: match?.score })
   }
 
-  function rejectBocceScore(matchId) {
+  function resetBocceScore(matchId) {
+    const match = bocceMatches.find((item) => item.id === matchId)
     setBocceMatches((items) =>
       items.map((match) =>
-        match.id === matchId ? { ...match, status: 'scheduled', score: undefined, submittedBy: undefined, submittedAt: undefined, approvedAt: undefined } : match,
+        match.id === matchId
+          ? {
+              ...match,
+              status: 'scheduled',
+              score: undefined,
+              submittedBy: undefined,
+              submittedAt: undefined,
+              approvedAt: undefined,
+              draftScore: undefined,
+              draftGameSavedAt: undefined,
+              draftUpdatedAt: undefined,
+              draftSavedBy: undefined,
+            }
+          : match,
       ),
     )
-    logBocce('score_rejected', { matchId })
+    logBocce('score_reset', { matchId, score: match?.score, previousStatus: match?.status })
   }
 
   function correctBocceScore(matchId, score) {
@@ -1163,7 +1198,7 @@ function App() {
             audit={bocceAudit}
             snapshots={bocceSnapshots}
             approveScore={approveBocceScore}
-            rejectScore={rejectBocceScore}
+            resetScore={resetBocceScore}
             correctScore={correctBocceScore}
             createSnapshot={createBocceSnapshot}
             updateTeam={updateBocceTeam}
@@ -1209,7 +1244,7 @@ function App() {
             audit={audit}
             snapshots={snapshots}
             approveScore={approveScore}
-            rejectScore={rejectScore}
+            resetScore={resetScore}
             correctScore={correctScore}
             createSnapshot={createSnapshot}
             importSchedule={importSchedule}
@@ -2236,7 +2271,7 @@ function Admin({
   audit,
   snapshots,
   approveScore,
-  rejectScore,
+  resetScore,
   correctScore,
   createSnapshot,
   importSchedule,
@@ -2299,7 +2334,7 @@ function Admin({
                 teams={teams}
                 players={players}
                 approveScore={approveScore}
-                rejectScore={rejectScore}
+                resetScore={resetScore}
                 correctScore={correctScore}
               />
             ))}
@@ -2338,7 +2373,7 @@ function Admin({
   )
 }
 
-function CornholeAdminScoreCard({ match, teams, players, approveScore, rejectScore, correctScore }) {
+function CornholeAdminScoreCard({ match, teams, players, approveScore, resetScore, correctScore }) {
   const [games, setGames] = useState(() => Array.from({ length: 2 }, (_, gameIndex) => [
     match.score?.[gameIndex]?.[0] ?? '',
     match.score?.[gameIndex]?.[1] ?? '',
@@ -2363,6 +2398,13 @@ function CornholeAdminScoreCard({ match, teams, players, approveScore, rejectSco
     if (errors.length) return
     correctScore(match.id, score)
     setMessage('Score correction saved.')
+  }
+
+  function resetToUnplayed() {
+    const confirmed = window.confirm(
+      `Reset Week ${match.week}: ${matchTitle(match, teams)} to unplayed? This will remove the submitted score and update the standings.`,
+    )
+    if (confirmed) resetScore(match.id)
   }
 
   return (
@@ -2394,7 +2436,7 @@ function CornholeAdminScoreCard({ match, teams, players, approveScore, rejectSco
           ) : (
             <button type="button" className="secondary" disabled>Final</button>
           )}
-          {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+          <button type="button" className="danger" onClick={resetToUnplayed}>Reset to Unplayed</button>
         </div>
         {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
         {message && <p className="success-text" role="status">{message}</p>}
@@ -2412,7 +2454,7 @@ function BocceAdmin({
   audit,
   snapshots,
   approveScore,
-  rejectScore,
+  resetScore,
   correctScore,
   createSnapshot,
   updateTeam,
@@ -2473,7 +2515,7 @@ function BocceAdmin({
                 teams={teams}
                 players={players}
                 approveScore={approveScore}
-                rejectScore={rejectScore}
+                resetScore={resetScore}
                 correctScore={correctScore}
               />
             ))}
@@ -2503,7 +2545,7 @@ function BocceAdmin({
   )
 }
 
-function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore, correctScore }) {
+function BocceAdminScoreCard({ match, teams, players, approveScore, resetScore, correctScore }) {
   const [games, setGames] = useState(() => Array.from({ length: Math.max(1, match.score?.length || 1) }, (_, gameIndex) => [
     match.score?.[gameIndex]?.[0] ?? '',
     match.score?.[gameIndex]?.[1] ?? '',
@@ -2540,6 +2582,13 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
     setMessage('Score correction saved.')
   }
 
+  function resetToUnplayed() {
+    const confirmed = window.confirm(
+      `Reset Week ${match.week}: ${matchTitle(match, teams)} to unplayed? This will remove the submitted score and update the standings.`,
+    )
+    if (confirmed) resetScore(match.id)
+  }
+
   return (
     <article className="simple-card admin-score-card">
       <p>Week {match.week} - {matchTitle(match, teams)}</p>
@@ -2573,7 +2622,7 @@ function BocceAdminScoreCard({ match, teams, players, approveScore, rejectScore,
           ) : (
             <button type="button" className="secondary" disabled>Final</button>
           )}
-          {match.status === 'pending' && <button type="button" className="secondary" onClick={() => rejectScore(match.id)}>Reject</button>}
+          <button type="button" className="danger" onClick={resetToUnplayed}>Reset to Unplayed</button>
         </div>
         {attempted && errors.length > 0 && <ValidationList title="Fix score before saving" items={errors} tone="error" />}
         {message && <p className="success-text" role="status">{message}</p>}
@@ -2776,6 +2825,17 @@ function BocceAuditEntry({ item, matches, teams, players }) {
         <h2>Admin corrected a bocce score</h2>
         <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
         <p>{formatBocceScore(item.details.score)}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_reset' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin reset a bocce match to unplayed</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        {item.details.score && <p>Removed score: {formatBocceScore(item.details.score)}</p>}
       </article>
     )
   }
@@ -3239,6 +3299,17 @@ function AuditEntry({ item, matches, teams, players }) {
         <h2>Admin corrected a score</h2>
         <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
         <p>{formatScore(item.details.score)}</p>
+      </article>
+    )
+  }
+
+  if (item.action === 'score_reset' && match) {
+    return (
+      <article className="simple-card audit-entry">
+        <p>{new Date(item.at).toLocaleString()}</p>
+        <h2>Admin reset a match to unplayed</h2>
+        <p>{matchTitle(match, teams)} - {gameDateLabel(match)}</p>
+        {item.details.score && <p>Removed score: {formatScore(item.details.score)}</p>}
       </article>
     )
   }

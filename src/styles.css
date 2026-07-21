@@ -1459,6 +1459,11 @@ button:disabled {
   color: #0b2545;
 }
 
+.button-row .danger {
+  background: #b91c1c;
+  color: #fff;
+}
+
 .score-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

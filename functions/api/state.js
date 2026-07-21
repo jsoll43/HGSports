@@ -111,8 +111,8 @@ function restoreScoredMatchesFromAudit(matches, audit) {
     const event = scoreEvents.get(match.id)
     if (!event) return match
 
-    if (event.status === 'rejected') {
-      return clearScoreFields({ ...match, status: match.status === 'final' || match.status === 'pending' ? 'scheduled' : match.status })
+    if (event.status === 'rejected' || event.status === 'reset') {
+      return clearDraftFields(clearScoreFields({ ...match, status: 'scheduled' }))
     }
 
     if (!event.score) return match
@@ -184,6 +184,11 @@ function buildScoreEventsByMatch(audit) {
 
     if (item.action === 'score_rejected') {
       events.set(matchId, { status: 'rejected' })
+      return
+    }
+
+    if (item.action === 'score_reset') {
+      events.set(matchId, { status: 'reset' })
     }
   })
 
