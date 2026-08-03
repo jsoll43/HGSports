@@ -12,9 +12,16 @@ const CORNHOLE_SCHEDULE_VERSION = '2026-28-team-v2'
 const CLOUD_POLL_MS = 8000
 const LEGACY_STORAGE_KEYS = ['hg-cornhole-2026-data']
 const LEGACY_STORAGE_PREFIXES = ['hg-2026-v4']
+const CORNHOLE_CLOSURES = {
+  '2026-08-03': {
+    label: 'Pool closed',
+    message: 'Text your opponents to arrange a makeup date.',
+  },
+}
 
 const flights = ['Green', 'Red', 'White']
 const matchStatuses = ['scheduled', 'rescheduled', 'pending', 'final']
+const cornholeMatchStatuses = ['scheduled', 'needs-reschedule', 'rescheduled', 'pending', 'final']
 const bocceTimes = ['6:00 PM', '7:00 PM', '8:00 PM']
 
 const initialTeams = [
@@ -370,7 +377,7 @@ function normalizeAppData(data = {}) {
     selectedPlayerId: typeof data.selectedPlayerId === 'string' ? data.selectedPlayerId : '',
     teams,
     players,
-    matches: restoreScoredMatchesFromAudit(matches, audit),
+    matches: applyCornholeClosures(restoreScoredMatchesFromAudit(matches, audit)),
     audit,
     snapshots: Array.isArray(data.snapshots) ? data.snapshots : [],
     scheduleVersion: CORNHOLE_SCHEDULE_VERSION,
@@ -546,6 +553,15 @@ function migrateSeasonSchedule(matches, teams) {
 
   const existingById = new Map(matches.map((match) => [match.id, match]))
   return generatedMatches.map((match) => existingById.get(match.id) || match).sort(bySchedule)
+}
+
+function applyCornholeClosures(matches) {
+  return matches.map((match) => {
+    const closure = CORNHOLE_CLOSURES[match.date]
+    if (!closure || ['final', 'pending', 'rescheduled', 'needs-reschedule'].includes(match.status)) return match
+
+    return { ...match, status: 'needs-reschedule' }
+  })
 }
 
 function pageFromPath(pathname) {
@@ -2220,7 +2236,7 @@ function Schedule({ matches, teams }) {
         <strong>Full Schedule</strong>
         <label className="field">Band<select value={flight} onChange={(event) => setFlight(event.target.value)}><option>All</option>{flights.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label className="field">Week<select value={week} onChange={(event) => setWeek(event.target.value)}><option>All</option>{weeks.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label className="field">Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="All">All Statuses</option>{matchStatuses.map((item) => <option key={item} value={item}>{formatStatusOption(item)}</option>)}</select></label>
+        <label className="field">Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="All">All Statuses</option>{cornholeMatchStatuses.map((item) => <option key={item} value={item}>{formatStatusOption(item)}</option>)}</select></label>
       </div>
       <div className="card-list">
         {filtered.map((match) => <MatchCard key={match.id} match={match} teams={teams} />)}
@@ -3236,7 +3252,7 @@ function ScheduleEditor({ matches, teams, updateMatch }) {
                       <label className="field">Date<input type="date" value={match.date} onChange={(event) => updateMatch(match.id, { date: event.target.value })} /></label>
                       <label className="field">Time<input value={match.time} onChange={(event) => updateMatch(match.id, { time: event.target.value })} /></label>
                       <label className="field">Band<select value={match.flight} onChange={(event) => updateMatch(match.id, { flight: event.target.value })}>{flights.map((item) => <option key={item}>{item}</option>)}</select></label>
-                      <label className="field">Status<select value={match.status} onChange={(event) => updateMatch(match.id, { status: event.target.value })}>{['scheduled', 'rescheduled', 'pending', 'final'].map((item) => <option key={item}>{item}</option>)}</select></label>
+                      <label className="field">Status<select value={match.status} onChange={(event) => updateMatch(match.id, { status: event.target.value })}>{cornholeMatchStatuses.map((item) => <option key={item} value={item}>{formatStatusOption(item)}</option>)}</select></label>
                       <label className="field">Team A<select value={match.teamA} onChange={(event) => updateMatch(match.id, { teamA: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
                       <label className="field">Team B<select value={match.teamB} onChange={(event) => updateMatch(match.id, { teamB: event.target.value })}>{teams.map((team) => <option key={team.id} value={team.id}>{team.number}. {team.name}</option>)}</select></label>
                     </div>
@@ -3541,12 +3557,13 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
   const teamB = getTeam(teams, match.teamB)
   const opponent = viewerTeam ? getTeam(teams, viewerTeam.id === match.teamA ? match.teamB : match.teamA) : null
   const status = publicStatus(match)
+  const closure = CORNHOLE_CLOSURES[match.date]
 
   return (
-    <article className={`match-card ${viewerTeam ? 'viewer-match-card' : ''}`}>
+    <article className={`match-card ${viewerTeam ? 'viewer-match-card' : ''} ${closure ? 'closed-date-match' : ''}`}>
       <div className="match-head">
         <div>
-          <p>Week {match.week} · {formatDate(match.date)} at {match.time}</p>
+          <p>Week {match.week} · <span className={closure ? 'closed-schedule-date' : ''}>{formatDate(match.date)}</span> at {match.time}</p>
           <h2 className="match-title">
             {viewerTeam ? (
               <>
@@ -3580,6 +3597,12 @@ function MatchCard({ match, teams, players = [], viewerTeam, selectedPlayer, sho
           )}
         </div>
       </div>
+      {closure && (
+        <div className="closure-notice" role="note">
+          <strong>{closure.label}</strong>
+          <span>{closure.message}</span>
+        </div>
+      )}
       <ScoreBreakdown score={match.score} teamA={teamA} teamB={teamB} viewerTeam={viewerTeam} />
       {showContacts && match.status !== 'final' && (
         <MatchActions match={match} teams={teams} selectedPlayer={selectedPlayer} submitScore={submitScore} saveScoreGame={saveScoreGame} unsaveScoreGame={unsaveScoreGame} open={actionOpen} setOpen={setActionOpen} />
@@ -4157,6 +4180,7 @@ function parseScheduleTimeMinutes(time) {
 }
 
 function publicStatus(match) {
+  if (match.status === 'needs-reschedule') return 'Text to reschedule'
   if (match.status === 'rescheduled') return 'Rescheduled'
   if (match.status === 'pending') return 'Pending commissioner approval'
   if (match.status === 'final') return 'Final'
@@ -4175,6 +4199,7 @@ function boccePublicStatus(match) {
 }
 
 function formatStatusOption(status) {
+  if (status === 'needs-reschedule') return 'Text to reschedule'
   if (status === 'pending') return 'Pending'
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
@@ -4356,6 +4381,7 @@ function StatusBadge({ status }) {
     'status',
     status.includes('needed') ? 'warning' : '',
     status === 'Rescheduled' ? 'reschedule' : '',
+    status === 'Text to reschedule' ? 'closure' : '',
   ].filter(Boolean).join(' ')
 
   return <span className={className}>{status}</span>

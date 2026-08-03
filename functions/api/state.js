@@ -1,5 +1,6 @@
 const RECORD_ID = 'haddon-glen-2026'
 const LEAGUE_KEYS = ['cornhole', 'bocce']
+const CORNHOLE_CLOSED_DATES = new Set(['2026-08-03'])
 
 function json(body, init = {}) {
   return Response.json(body, {
@@ -47,10 +48,24 @@ function repairSportsData(data) {
   LEAGUE_KEYS.forEach((key) => {
     const league = repaired[key]
     if (!isPlainObject(league)) return
-    repaired[key] = repairLeagueData(league)
+    const repairedLeague = repairLeagueData(league)
+    repaired[key] = key === 'cornhole' ? applyCornholeClosures(repairedLeague) : repairedLeague
   })
 
   return repaired
+}
+
+function applyCornholeClosures(league) {
+  if (!Array.isArray(league.matches)) return league
+
+  return {
+    ...league,
+    matches: league.matches.map((match) => {
+      if (!CORNHOLE_CLOSED_DATES.has(match.date)) return match
+      if (['final', 'pending', 'rescheduled', 'needs-reschedule'].includes(match.status)) return match
+      return { ...match, status: 'needs-reschedule' }
+    }),
+  }
 }
 
 function mergeLeagueData(existing, incoming) {

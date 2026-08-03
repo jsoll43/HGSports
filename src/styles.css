@@ -982,6 +982,44 @@ textarea {
   color: #805600;
 }
 
+.status.closure {
+  background: #b42318;
+  color: #fff;
+}
+
+.closed-date-match {
+  border-color: #f3a6a0;
+  background: linear-gradient(180deg, #fff7f6 0, #fff 130px);
+}
+
+.closed-schedule-date {
+  display: inline-block;
+  color: #b42318;
+  font-weight: 950;
+  text-decoration: line-through;
+  text-decoration-color: #b42318;
+  text-decoration-thickness: 3px;
+}
+
+.closure-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  border: 1px solid #f3a6a0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #ffebe9;
+  color: #7a271a;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.closure-notice strong {
+  flex: 0 0 auto;
+  text-transform: uppercase;
+}
+
 .match-status-actions {
   display: grid;
   flex: 0 0 auto;
