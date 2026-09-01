@@ -1579,6 +1579,7 @@ function BocceStandings({ standings, matches, teams }) {
         </div>
         {standings.map((row) => {
           const isSelected = selectedTeamId === row.team.id
+          const hasCompletedAllGames = teamHasCompletedSchedule(matches, row.team.id)
           const breakdownId = `bocce-breakdown-${row.team.id}`
 
           return (
@@ -1591,7 +1592,10 @@ function BocceStandings({ standings, matches, teams }) {
                 onClick={() => setSelectedTeamId(isSelected ? '' : row.team.id)}
               >
                 <strong>{row.rankLabel}</strong>
-                <span className="team-name">{row.team.name}</span>
+                <span className="team-name">
+                  <span className="team-name-text">{row.team.name}</span>
+                  {hasCompletedAllGames && <CompletedScheduleBadge />}
+                </span>
                 <span className="points">{row.gameWins}-{row.gameLosses}</span>
                 <span>{formatGamesBack(row.gamesBack)}</span>
                 <span>{row.points}</span>
@@ -2107,6 +2111,7 @@ function Standings({ standings, matches, teams }) {
         {standings[flight].map((row) => {
           const pointsBack = leaderPoints - row.points
           const isSelected = selectedTeamId === row.team.id
+          const hasCompletedAllGames = teamHasCompletedSchedule(matches, row.team.id)
           const breakdownId = `cornhole-breakdown-${row.team.id}`
 
           return (
@@ -2119,7 +2124,10 @@ function Standings({ standings, matches, teams }) {
                 onClick={() => setSelectedTeamId(isSelected ? '' : row.team.id)}
               >
                 <strong>{row.rankLabel}</strong>
-                <span className="team-name"><TeamName team={row.team} /></span>
+                <span className="team-name">
+                  <TeamName team={row.team} />
+                  {hasCompletedAllGames && <CompletedScheduleBadge />}
+                </span>
                 <span className="points">{row.points}</span>
                 <span>{row.gameWins}-{row.gameLosses}</span>
                 <span className={pointsBack === 0 ? 'back-value leader' : 'back-value'}>{pointsBack}</span>
@@ -2176,6 +2184,10 @@ function TeamMatchBreakdown({ id, matches, row, teams }) {
       {teamMatches.length === 0 && <p className="empty">No completed matches are affecting this team&apos;s standings yet.</p>}
     </section>
   )
+}
+
+function CompletedScheduleBadge() {
+  return <span className="completed-schedule-badge" title="All scheduled games completed">Complete</span>
 }
 
 function TeamMatchResult({ match, team, teams }) {
@@ -3911,6 +3923,11 @@ function buildStandings(matches, teams) {
     result[flight] = withRankLabels(sortedRows)
   })
   return result
+}
+
+function teamHasCompletedSchedule(matches, teamId) {
+  const teamMatches = matches.filter((match) => match.teamA === teamId || match.teamB === teamId)
+  return teamMatches.length > 0 && teamMatches.every((match) => match.status === 'final' && Array.isArray(match.score))
 }
 
 function buildBocceStandings(matches, teams) {

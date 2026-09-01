@@ -1759,10 +1759,37 @@ button:disabled {
 }
 
 .standing-row .team-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.standing-row .team-name > .team-name-text {
   white-space: nowrap;
+}
+
+.completed-schedule-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 17px;
+  border-radius: 999px;
+  padding: 2px 5px;
+  background: #16803c;
+  color: #fff;
+  font-size: 0.53rem;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.standing-row.selected .completed-schedule-badge {
+  background: #b7f7c9;
+  color: #125c2b;
 }
 
 .standing-row .team-name-with-warning {
